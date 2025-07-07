@@ -41,7 +41,13 @@
     "deploy:staging": "NODE_ENV=staging node scripts/deploy.js",
     "deploy:prod": "NODE_ENV=production node scripts/deploy.js",
     "performance:monitor": "node -e \"require('./src/utils/performance').default.flushData()\"",
-    "performance:report": "node -e \"console.log(JSON.stringify(require('./src/utils/performance').default.getPerformanceReport(), null, 2))\""
+    "performance:report": "node -e \"console.log(JSON.stringify(require('./src/utils/performance').default.getPerformanceReport(), null, 2))\"",
+    "docker:build": "chmod +x scripts/docker-build.sh && ./scripts/docker-build.sh",
+    "docker:dev": "docker-compose --profile dev up -d",
+    "docker:prod": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:clean": "docker-compose down -v --rmi local"
   },
   "browserslist": [
     "defaults and fully supports es6-module",

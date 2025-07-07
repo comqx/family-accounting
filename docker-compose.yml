@@ -1,0 +1,110 @@
+# Docker Compose 配置文件
+# 用于本地开发和测试环境
+
+version: '3.8'
+
+services:
+  # 小程序前端服务
+  family-accounting-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: family-accounting-app
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./logs:/var/log/nginx
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - family-accounting-network
+
+  # 开发环境服务
+  family-accounting-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: family-accounting-dev
+    ports:
+      - "10086:10086"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - family-accounting-network
+    profiles:
+      - dev
+
+  # MySQL 数据库（用于后端API）
+  mysql:
+    image: mysql:8.0
+    container_name: family-accounting-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: family_accounting_2024
+      MYSQL_DATABASE: family_accounting
+      MYSQL_USER: family_user
+      MYSQL_PASSWORD: family_pass_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - family-accounting-network
+    profiles:
+      - backend
+
+  # Redis 缓存（用于后端API）
+  redis:
+    image: redis:7-alpine
+    container_name: family-accounting-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - family-accounting-network
+    profiles:
+      - backend
+
+  # Nginx 反向代理（生产环境）
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: family-accounting-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/proxy.conf:/etc/nginx/nginx.conf
+      - ./docker/ssl:/etc/nginx/ssl
+    depends_on:
+      - family-accounting-app
+    restart: unless-stopped
+    networks:
+      - family-accounting-network
+    profiles:
+      - production
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  family-accounting-network:
+    driver: bridge
