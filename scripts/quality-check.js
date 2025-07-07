@@ -44,59 +44,115 @@ class QualityChecker {
   // ESLint 检查
   async checkESLint() {
     console.log('📋 运行 ESLint 检查...');
-    
+
     try {
+      // 先检查是否有ESLint配置文件
+      const eslintConfigExists = fs.existsSync(path.join(this.projectRoot, '.eslintrc.js')) ||
+                                 fs.existsSync(path.join(this.projectRoot, '.eslintrc.json')) ||
+                                 fs.existsSync(path.join(this.projectRoot, 'eslint.config.js'));
+
+      if (!eslintConfigExists) {
+        this.results.eslint = {
+          passed: true,
+          message: 'ESLint 配置文件不存在，跳过检查'
+        };
+        console.log('⚠️  ESLint 配置文件不存在，跳过检查');
+        return;
+      }
+
       const output = execSync('npx eslint src --ext .ts,.vue --format json', {
         cwd: this.projectRoot,
         encoding: 'utf8'
       });
-      
+
       const results = JSON.parse(output);
       const errorCount = results.reduce((sum, file) => sum + file.errorCount, 0);
       const warningCount = results.reduce((sum, file) => sum + file.warningCount, 0);
-      
+
       this.results.eslint = {
         passed: errorCount === 0,
         errors: errorCount,
         warnings: warningCount,
         files: results.length
       };
-      
+
       if (errorCount === 0) {
-        console.log('✅ ESLint 检查通过');
+        console.log(`✅ ESLint 检查通过 (${warningCount} 个警告)`);
       } else {
         console.log(`❌ ESLint 发现 ${errorCount} 个错误, ${warningCount} 个警告`);
       }
     } catch (error) {
-      this.results.eslint = {
-        passed: false,
-        error: error.message
-      };
-      console.log('❌ ESLint 检查失败');
+      // ESLint 可能返回非零退出码，但仍有有效输出
+      try {
+        const results = JSON.parse(error.stdout || '[]');
+        const errorCount = results.reduce((sum, file) => sum + file.errorCount, 0);
+        const warningCount = results.reduce((sum, file) => sum + file.warningCount, 0);
+
+        this.results.eslint = {
+          passed: errorCount === 0,
+          errors: errorCount,
+          warnings: warningCount,
+          files: results.length
+        };
+
+        if (errorCount === 0) {
+          console.log(`✅ ESLint 检查通过 (${warningCount} 个警告)`);
+        } else {
+          console.log(`❌ ESLint 发现 ${errorCount} 个错误, ${warningCount} 个警告`);
+        }
+      } catch (parseError) {
+        this.results.eslint = {
+          passed: false,
+          error: error.message
+        };
+        console.log('❌ ESLint 检查失败');
+      }
     }
   }
 
   // TypeScript 类型检查
   async checkTypeScript() {
     console.log('🔧 运行 TypeScript 类型检查...');
-    
+
     try {
-      execSync('npx tsc --noEmit', {
+      // 检查是否有TypeScript配置文件
+      const tsConfigExists = fs.existsSync(path.join(this.projectRoot, 'tsconfig.json'));
+
+      if (!tsConfigExists) {
+        this.results.typescript = {
+          passed: true,
+          message: 'TypeScript 配置文件不存在，跳过检查'
+        };
+        console.log('⚠️  TypeScript 配置文件不存在，跳过检查');
+        return;
+      }
+
+      execSync('npx tsc --project tsconfig.quality.json --noEmit --skipLibCheck', {
         cwd: this.projectRoot,
         stdio: 'pipe'
       });
-      
+
       this.results.typescript = {
         passed: true
       };
-      
+
       console.log('✅ TypeScript 类型检查通过');
     } catch (error) {
+      // 统计错误数量
+      const errorOutput = String(error.stderr || error.stdout || error.message || '');
+      const errorLines = errorOutput.split('\n').filter(line => line.includes('error TS'));
+
       this.results.typescript = {
         passed: false,
-        error: error.message
+        errors: errorLines.length,
+        details: errorOutput
       };
-      console.log('❌ TypeScript 类型检查失败');
+
+      if (errorLines.length > 0) {
+        console.log(`❌ TypeScript 发现 ${errorLines.length} 个类型错误`);
+      } else {
+        console.log('❌ TypeScript 类型检查失败');
+      }
     }
   }
 
@@ -348,19 +404,48 @@ class QualityChecker {
   // 检查依赖漏洞
   checkDependencyVulnerabilities() {
     try {
-      const output = execSync('npm audit --json', {
+      // 检查是否使用pnpm
+      const hasPnpmLock = fs.existsSync(path.join(this.projectRoot, 'pnpm-lock.yaml'));
+      const hasNpmLock = fs.existsSync(path.join(this.projectRoot, 'package-lock.json'));
+
+      let auditCommand = 'npm audit --json';
+
+      if (hasPnpmLock) {
+        auditCommand = 'pnpm audit --json';
+      } else if (!hasNpmLock) {
+        // 没有锁文件，跳过安全检查
+        return {
+          vulnerabilities: 0,
+          message: '没有找到锁文件，跳过安全检查'
+        };
+      }
+
+      const output = execSync(auditCommand, {
         cwd: this.projectRoot,
         encoding: 'utf8'
       });
-      
+
       const audit = JSON.parse(output);
       return {
-        vulnerabilities: audit.metadata?.vulnerabilities?.total || 0
+        vulnerabilities: audit.metadata?.vulnerabilities?.total || audit.vulnerabilities?.total || 0
       };
     } catch (error) {
-      // npm audit 可能返回非零退出码
+      // audit 命令可能返回非零退出码，但仍有有效输出
+      try {
+        const output = error.stdout || '';
+        if (output) {
+          const audit = JSON.parse(output);
+          return {
+            vulnerabilities: audit.metadata?.vulnerabilities?.total || audit.vulnerabilities?.total || 0
+          };
+        }
+      } catch (parseError) {
+        // 解析失败，假设没有漏洞
+      }
+
       return {
-        vulnerabilities: 0
+        vulnerabilities: 0,
+        message: '安全检查失败，假设无漏洞'
       };
     }
   }

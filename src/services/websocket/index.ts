@@ -43,7 +43,7 @@ class WebSocketService {
       this.token = token;
       
       try {
-        this.socket = Taro.connectSocket({
+        const socketTask = Taro.connectSocket({
           url: `${this.url}?token=${token}&familyId=${familyId}`,
           success: () => {
             console.log('WebSocket connecting...');
@@ -54,7 +54,10 @@ class WebSocketService {
           }
         });
 
-        this.socket.onOpen(() => {
+        // 等待socket任务完成
+        this.socket = await socketTask;
+
+        this.socket!.onOpen(() => {
           console.log('WebSocket connected');
           this.isConnected = true;
           this.reconnectAttempts = 0;
@@ -62,11 +65,11 @@ class WebSocketService {
           resolve(true);
         });
 
-        this.socket.onMessage((res) => {
+        this.socket!.onMessage((res) => {
           this.handleMessage(res.data);
         });
 
-        this.socket.onClose((res) => {
+        this.socket!.onClose((res) => {
           console.log('WebSocket closed:', res);
           this.isConnected = false;
           this.stopHeartbeat();
@@ -77,7 +80,7 @@ class WebSocketService {
           }
         });
 
-        this.socket.onError((error) => {
+        this.socket!.onError((error) => {
           console.error('WebSocket error:', error);
           this.isConnected = false;
           reject(error);

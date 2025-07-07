@@ -1,13 +1,16 @@
 {
-  "timestamp": "2025-07-07T13:04:11.754Z",
+  "timestamp": "2025-07-07T14:23:18.966Z",
   "results": {
     "eslint": {
       "passed": false,
-      "error": "Command failed: npx eslint src --ext .ts,.vue --format json"
+      "errors": 1243,
+      "warnings": 0,
+      "files": 38
     },
     "typescript": {
       "passed": false,
-      "error": "Command failed: npx tsc --noEmit"
+      "errors": 0,
+      "details": "npm warn Unknown env config \"verify-deps-before-run\". This will stop working in the next major version of npm.\nnpm warn Unknown env config \"_jsr-registry\". This will stop working in the next major version of npm.\n"
     },
     "tests": {
       "passed": false,
@@ -22,137 +25,101 @@
       "lines": 76
     },
     "bundle": {
-      "passed": false,
-      "totalSize": 2636957,
-      "gzippedSize": 791087,
+      "passed": true,
+      "totalSize": 319931,
+      "gzippedSize": 95979,
       "chunks": [
         {
           "name": "app.js",
-          "size": 11404
+          "size": 3503
         },
         {
           "name": "common.js",
-          "size": 109582
+          "size": 35334
         },
         {
           "name": "comp.js",
-          "size": 637
+          "size": 171
         },
         {
           "name": "index.js",
-          "size": 29874
+          "size": 4617
         },
         {
           "name": "index.js",
-          "size": 18624
+          "size": 646
         },
         {
           "name": "index.js",
-          "size": 27763
+          "size": 4921
         },
         {
           "name": "index.js",
-          "size": 35552
+          "size": 6842
         },
         {
           "name": "index.js",
-          "size": 27886
+          "size": 4786
         },
         {
           "name": "index.js",
-          "size": 18924
+          "size": 658
         },
         {
           "name": "index.js",
-          "size": 47264
+          "size": 14723
         },
         {
           "name": "index.js",
-          "size": 41705
+          "size": 8822
         },
         {
           "name": "index.js",
-          "size": 38917
+          "size": 7563
         },
         {
           "name": "index.js",
-          "size": 41243
+          "size": 8313
         },
         {
           "name": "index.js",
-          "size": 29158
+          "size": 5709
         },
         {
           "name": "index.js",
-          "size": 31977
+          "size": 5687
         },
         {
           "name": "index.js",
-          "size": 18740
+          "size": 648
         },
         {
           "name": "index.js",
-          "size": 34114
+          "size": 6162
         },
         {
           "name": "index.js",
-          "size": 18786
+          "size": 652
         },
         {
           "name": "index.js",
-          "size": 34978
+          "size": 7004
         },
         {
           "name": "index.js",
-          "size": 44105
-        },
-        {
-          "name": "node_modules_taro_weapp_prebundle_tarojs_runtime_js.js",
-          "size": 18046
-        },
-        {
-          "name": "remoteEntry.js",
-          "size": 5761
-        },
-        {
-          "name": "vendors-node_modules_taro_weapp_prebundle_chunk-D2YAO5JD_js.js",
-          "size": 690873
-        },
-        {
-          "name": "vendors-node_modules_taro_weapp_prebundle_chunk-QNKD4YO6_js.js",
-          "size": 213130
-        },
-        {
-          "name": "vendors-node_modules_taro_weapp_prebundle_chunk-RGOGQPTQ_js.js",
-          "size": 53656
-        },
-        {
-          "name": "vendors-node_modules_taro_weapp_prebundle_pinia_js.js",
-          "size": 221694
-        },
-        {
-          "name": "vendors-node_modules_taro_weapp_prebundle_tarojs_plugin-framework-vue3_dist_runtime_js.js",
-          "size": 23456
-        },
-        {
-          "name": "vendors-node_modules_taro_weapp_prebundle_tarojs_plugin-platform-weapp_dist_runtime_js.js",
-          "size": 19610
-        },
-        {
-          "name": "vendors-node_modules_taro_weapp_prebundle_tarojs_taro_js.js",
-          "size": 13125
+          "size": 11077
         },
         {
           "name": "runtime.js",
-          "size": 14466
+          "size": 1649
         },
         {
           "name": "taro.js",
-          "size": 3026
+          "size": 103054
         },
         {
           "name": "vendors.js",
-          "size": 698881
+          "size": 77390
         }
       ]
     },
@@ -168,6 +135,6 @@
   },
   "summary": {
     "total": 7,
-    "passed": 2
+    "passed": 3
   }
 }

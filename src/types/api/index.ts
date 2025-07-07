@@ -1,10 +1,26 @@
 // API接口类型定义
 
-import { 
-  User, Family, AccountRecord, Category, BillImport, 
+import {
+  User, Family, AccountRecord, Category, BillImport,
   ReportData, Notification, PaginationParams, PaginationResult,
   RecordForm, CategoryForm, FamilyForm, ReportPeriod
 } from '../business';
+
+// 基础响应类型
+export interface BaseResponse {
+  code: number;
+  message: string;
+  timestamp: number;
+}
+
+export interface ApiResponse<T = any> extends BaseResponse {
+  data: T;
+}
+
+export interface ErrorResponse extends BaseResponse {
+  error?: string;
+  details?: any;
+}
 
 // 认证相关API
 export namespace AuthAPI {

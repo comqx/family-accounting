@@ -29,7 +29,9 @@ export const useUserStore = defineStore('user', () => {
     
     if (savedToken && savedUser) {
       token.value = savedToken;
-      user.value = savedUser;
+      if (savedUser && typeof savedUser === 'object' && 'id' in savedUser) {
+        user.value = savedUser as User;
+      }
       isLoggedIn.value = true;
       request.setToken(savedToken);
     }

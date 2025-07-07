@@ -341,7 +341,7 @@ class OCRService {
       if (amount > 0) {
         return {
           amount,
-          type: 'expense',
+          type: 'expense' as RecordType,
           merchant: merchant.trim(),
           description: `信用卡消费`,
           date,
@@ -371,7 +371,7 @@ class OCRService {
       if (amount > 0) {
         transactions.push({
           amount,
-          type: 'expense',
+          type: 'expense' as RecordType,
           merchant: '未知商户',
           description: '账单导入',
           date: new Date(),
@@ -408,7 +408,7 @@ class OCRService {
       if (amount > 0) {
         return {
           amount,
-          type: 'expense',
+          type: 'expense' as RecordType,
           merchant: merchant.trim(),
           description: `${platform}账单导入`,
           date,

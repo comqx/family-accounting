@@ -32,6 +32,7 @@
     "type-check": "tsc --noEmit",
     "test": "echo \"No tests specified\" && exit 0",
     "quality-check": "node scripts/quality-check.js",
+    "quality-check:simple": "node scripts/quality-check-simple.js",
     "analyze-bundle": "echo \"Bundle analysis completed\"",
     "generate-sitemap": "echo \"Sitemap generated\"",
     "security-check": "npm audit --audit-level moderate",

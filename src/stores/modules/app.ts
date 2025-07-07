@@ -42,7 +42,12 @@ export const useAppStore = defineStore('app', () => {
     // 加载保存的设置
     const savedSettings = getAppSettings();
     if (savedSettings) {
-      settings.value = { ...settings.value, ...savedSettings };
+      settings.value = {
+        ...settings.value,
+        ...savedSettings,
+        theme: savedSettings.theme as 'auto' | 'dark' | 'light',
+        language: savedSettings.language as 'zh-CN' | 'en-US'
+      };
     }
 
     // 获取系统信息

@@ -41,7 +41,9 @@ export const useFamilyStore = defineStore('family', () => {
   const initFamilyState = () => {
     const savedFamily = getFamilyInfo();
     if (savedFamily) {
-      family.value = savedFamily;
+      if (savedFamily && typeof savedFamily === 'object' && 'id' in savedFamily) {
+        family.value = savedFamily as Family;
+      }
     }
   };
 
