@@ -1,0 +1,381 @@
+// 记账页面样式
+
+.record-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding-bottom: 120rpx;
+
+  // 连接状态指示器
+  .connection-status {
+    background: rgba(255, 193, 7, 0.9);
+    color: #856404;
+    text-align: center;
+    padding: 10rpx 0;
+    font-size: 24rpx;
+
+    .status-text {
+      font-weight: 500;
+    }
+  }
+
+  // 顶部统计卡片
+  .stats-card {
+    display: flex;
+    background: rgba(255, 255, 255, 0.95);
+    margin: 40rpx 30rpx 30rpx;
+    border-radius: 20rpx;
+    padding: 40rpx 30rpx;
+    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+
+    .stats-item {
+      flex: 1;
+      text-align: center;
+
+      .stats-label {
+        display: block;
+        font-size: 28rpx;
+        color: #666;
+        margin-bottom: 10rpx;
+      }
+
+      .stats-value {
+        display: block;
+        font-size: 36rpx;
+        font-weight: bold;
+
+        &.expense {
+          color: #ff4757;
+        }
+
+        &.income {
+          color: #2ed573;
+        }
+      }
+    }
+
+    .stats-divider {
+      width: 2rpx;
+      background: #eee;
+      margin: 0 30rpx;
+    }
+  }
+
+  // 快速记账区域
+  .quick-record {
+    background: white;
+    margin: 0 30rpx;
+    border-radius: 20rpx;
+    padding: 40rpx 30rpx;
+    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+
+    // 类型切换标签
+    .record-type-tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-radius: 12rpx;
+      padding: 6rpx;
+      margin-bottom: 40rpx;
+
+      .type-tab {
+        flex: 1;
+        text-align: center;
+        padding: 16rpx 0;
+        border-radius: 8rpx;
+        font-size: 30rpx;
+        color: #666;
+        transition: all 0.3s ease;
+
+        &.active {
+          background: white;
+          color: #1296db;
+          font-weight: bold;
+          box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+
+    // 金额输入
+    .amount-input {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 40rpx;
+
+      .currency-symbol {
+        font-size: 48rpx;
+        color: #333;
+        margin-right: 10rpx;
+      }
+
+      .amount-value {
+        font-size: 60rpx;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        border: none;
+        outline: none;
+        min-width: 200rpx;
+      }
+    }
+
+    // 分类选择
+    .category-section {
+      margin-bottom: 40rpx;
+
+      .section-title {
+        font-size: 30rpx;
+        color: #333;
+        margin-bottom: 20rpx;
+        font-weight: 500;
+      }
+
+      .category-list {
+        white-space: nowrap;
+
+        .category-item {
+          display: inline-block;
+          text-align: center;
+          margin-right: 30rpx;
+          padding: 20rpx 10rpx;
+          border-radius: 12rpx;
+          transition: all 0.3s ease;
+
+          &.active {
+            background: #e3f2fd;
+
+            .category-icon {
+              background: #1296db !important;
+              color: white;
+            }
+          }
+
+          &.add-category {
+            .category-icon {
+              background: #f0f0f0;
+              border: 2rpx dashed #ccc;
+
+              .add-icon {
+                color: #999;
+                font-size: 32rpx;
+              }
+            }
+          }
+
+          .category-icon {
+            width: 80rpx;
+            height: 80rpx;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32rpx;
+            margin: 0 auto 10rpx;
+            transition: all 0.3s ease;
+          }
+
+          .category-name {
+            display: block;
+            font-size: 24rpx;
+            color: #666;
+            max-width: 80rpx;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+    }
+
+    // 备注输入
+    .remark-section {
+      margin-bottom: 40rpx;
+
+      .remark-input {
+        width: 100%;
+        padding: 20rpx 0;
+        border-bottom: 2rpx solid #eee;
+        font-size: 30rpx;
+        color: #333;
+
+        &::placeholder {
+          color: #999;
+        }
+      }
+    }
+
+    // 日期选择
+    .date-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20rpx 0;
+      border-bottom: 2rpx solid #eee;
+      margin-bottom: 40rpx;
+
+      .date-label {
+        font-size: 30rpx;
+        color: #333;
+      }
+
+      .date-value {
+        font-size: 30rpx;
+        color: #666;
+      }
+
+      .arrow {
+        font-size: 24rpx;
+        color: #ccc;
+      }
+    }
+
+    // 保存按钮
+    .save-section {
+      .save-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12rpx;
+        padding: 24rpx 0;
+        font-size: 32rpx;
+        font-weight: bold;
+
+        &.disabled {
+          background: #ccc;
+          opacity: 0.6;
+        }
+
+        &::after {
+          border: none;
+        }
+      }
+    }
+  }
+
+  // 最近记录
+  .recent-records {
+    background: white;
+    margin: 30rpx;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30rpx;
+
+      .section-title {
+        font-size: 32rpx;
+        color: #333;
+        font-weight: bold;
+      }
+
+      .more-link {
+        font-size: 26rpx;
+        color: #1296db;
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60rpx 0;
+
+      .empty-text {
+        font-size: 28rpx;
+        color: #999;
+      }
+    }
+
+    .record-list {
+      .record-item {
+        display: flex;
+        align-items: center;
+        padding: 20rpx 0;
+        border-bottom: 2rpx solid #f5f5f5;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .record-icon {
+          width: 80rpx;
+          height: 80rpx;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 32rpx;
+          margin-right: 20rpx;
+        }
+
+        .record-info {
+          flex: 1;
+
+          .record-category {
+            display: block;
+            font-size: 30rpx;
+            color: #333;
+            margin-bottom: 6rpx;
+          }
+
+          .record-desc {
+            display: block;
+            font-size: 24rpx;
+            color: #999;
+          }
+        }
+
+        .record-amount {
+          text-align: right;
+
+          .amount-text {
+            display: block;
+            font-size: 30rpx;
+            font-weight: bold;
+            margin-bottom: 6rpx;
+
+            &.expense {
+              color: #ff4757;
+            }
+
+            &.income {
+              color: #2ed573;
+            }
+          }
+
+          .record-time {
+            display: block;
+            font-size: 24rpx;
+            color: #999;
+          }
+        }
+      }
+    }
+  }
+
+  // 智能导入按钮
+  .smart-import-btn {
+    position: fixed;
+    bottom: 120rpx;
+    right: 30rpx;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    border-radius: 50rpx;
+    padding: 20rpx 30rpx;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 8rpx 32rpx rgba(255, 107, 107, 0.4);
+    z-index: 100;
+
+    .import-icon {
+      font-size: 32rpx;
+      margin-right: 10rpx;
+    }
+
+    .import-text {
+      font-size: 28rpx;
+      font-weight: bold;
+    }
+  }
+}

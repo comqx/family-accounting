@@ -1,0 +1,173 @@
+{
+  "timestamp": "2025-07-07T13:04:11.754Z",
+  "results": {
+    "eslint": {
+      "passed": false,
+      "error": "Command failed: npx eslint src --ext .ts,.vue --format json"
+    },
+    "typescript": {
+      "passed": false,
+      "error": "Command failed: npx tsc --noEmit"
+    },
+    "tests": {
+      "passed": false,
+      "message": "未找到测试文件"
+    },
+    "coverage": {
+      "passed": false,
+      "total": 75,
+      "statements": 78,
+      "branches": 72,
+      "functions": 80,
+      "lines": 76
+    },
+    "bundle": {
+      "passed": false,
+      "totalSize": 2636957,
+      "gzippedSize": 791087,
+      "chunks": [
+        {
+          "name": "app.js",
+          "size": 11404
+        },
+        {
+          "name": "common.js",
+          "size": 109582
+        },
+        {
+          "name": "comp.js",
+          "size": 637
+        },
+        {
+          "name": "index.js",
+          "size": 29874
+        },
+        {
+          "name": "index.js",
+          "size": 18624
+        },
+        {
+          "name": "index.js",
+          "size": 27763
+        },
+        {
+          "name": "index.js",
+          "size": 35552
+        },
+        {
+          "name": "index.js",
+          "size": 27886
+        },
+        {
+          "name": "index.js",
+          "size": 18924
+        },
+        {
+          "name": "index.js",
+          "size": 47264
+        },
+        {
+          "name": "index.js",
+          "size": 41705
+        },
+        {
+          "name": "index.js",
+          "size": 38917
+        },
+        {
+          "name": "index.js",
+          "size": 41243
+        },
+        {
+          "name": "index.js",
+          "size": 29158
+        },
+        {
+          "name": "index.js",
+          "size": 31977
+        },
+        {
+          "name": "index.js",
+          "size": 18740
+        },
+        {
+          "name": "index.js",
+          "size": 34114
+        },
+        {
+          "name": "index.js",
+          "size": 18786
+        },
+        {
+          "name": "index.js",
+          "size": 34978
+        },
+        {
+          "name": "index.js",
+          "size": 44105
+        },
+        {
+          "name": "node_modules_taro_weapp_prebundle_tarojs_runtime_js.js",
+          "size": 18046
+        },
+        {
+          "name": "remoteEntry.js",
+          "size": 5761
+        },
+        {
+          "name": "vendors-node_modules_taro_weapp_prebundle_chunk-D2YAO5JD_js.js",
+          "size": 690873
+        },
+        {
+          "name": "vendors-node_modules_taro_weapp_prebundle_chunk-QNKD4YO6_js.js",
+          "size": 213130
+        },
+        {
+          "name": "vendors-node_modules_taro_weapp_prebundle_chunk-RGOGQPTQ_js.js",
+          "size": 53656
+        },
+        {
+          "name": "vendors-node_modules_taro_weapp_prebundle_pinia_js.js",
+          "size": 221694
+        },
+        {
+          "name": "vendors-node_modules_taro_weapp_prebundle_tarojs_plugin-framework-vue3_dist_runtime_js.js",
+          "size": 23456
+        },
+        {
+          "name": "vendors-node_modules_taro_weapp_prebundle_tarojs_plugin-platform-weapp_dist_runtime_js.js",
+          "size": 19610
+        },
+        {
+          "name": "vendors-node_modules_taro_weapp_prebundle_tarojs_taro_js.js",
+          "size": 13125
+        },
+        {
+          "name": "runtime.js",
+          "size": 14466
+        },
+        {
+          "name": "taro.js",
+          "size": 3026
+        },
+        {
+          "name": "vendors.js",
+          "size": 698881
+        }
+      ]
+    },
+    "security": {
+      "passed": true,
+      "vulnerabilities": 0,
+      "sensitiveFiles": []
+    },
+    "performance": {
+      "passed": true,
+      "issues": []
+    }
+  },
+  "summary": {
+    "total": 7,
+    "passed": 2
+  }
+}

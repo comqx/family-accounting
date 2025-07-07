@@ -1,0 +1,15 @@
+{
+  "miniprogramRoot": "./dist",
+  "projectname": "family-accounting",
+  "description": "在现代家庭中，财务管理往往涉及多个成员、多种支付渠道（微信、支付宝、信用卡等），传统的手工记账方式效率低下，数据分散，难以实现家庭财务的透明化管理。「家账通」致力于解决这一问题，提供智能多成员协作记账+多平台账单自动导入的一站式家庭财务解决方案。",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "enhance": false,
+    "compileHotReLoad": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}
