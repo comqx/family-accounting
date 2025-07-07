@@ -6,7 +6,7 @@ import Taro from '@tarojs/taro';
 import { User, UserRole } from '../../types/business';
 import { AuthAPI, UserAPI } from '../../types/api';
 import request from '../../utils/request';
-import { setToken, getToken, clearToken, setUserInfo, getUserInfo, clearUserData } from '../../utils/storage';
+import { setToken, getToken, setUserInfo, getUserInfo, clearUserData } from '../../utils/storage';
 
 export const useUserStore = defineStore('user', () => {
   // 状态

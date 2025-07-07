@@ -251,7 +251,7 @@ export const useAppStore = defineStore('app', () => {
   const openSetting = (): Promise<boolean> => {
     return new Promise((resolve) => {
       Taro.openSetting({
-        success: (res) => {
+        success: (_res) => {
           resolve(true);
         },
         fail: () => {

@@ -1,7 +1,7 @@
 // HTTP请求工具
 
 import Taro from '@tarojs/taro';
-import { ApiResponse, ErrorResponse } from '../../types/api';
+import { ApiResponse } from '../../types/api';
 
 // 请求配置
 interface RequestConfig {

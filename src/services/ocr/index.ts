@@ -1,7 +1,7 @@
 // OCR文字识别服务
 
 import Taro from '@tarojs/taro';
-import { OCRResult, BillPlatform, ParsedBillData, ParsedTransaction, CreditCardInfo, InstallmentInfo } from '../../types/business';
+import { OCRResult, BillPlatform, ParsedBillData, ParsedTransaction, CreditCardInfo, InstallmentInfo, RecordType } from '../../types/business';
 import request from '../../utils/request';
 
 class OCRService {
@@ -56,7 +56,7 @@ class OCRService {
   }
 
   // 尝试使用微信原生OCR能力
-  private async tryNativeOCR(imagePath: string): Promise<OCRResult | null> {
+  private async tryNativeOCR(_imagePath: string): Promise<OCRResult | null> {
     try {
       // 检查是否支持微信原生OCR
       if (Taro.getSystemInfoSync().platform === 'devtools') {
@@ -127,7 +127,7 @@ class OCRService {
   // 本地解析账单数据
   private parseLocalBillData(ocrResult: OCRResult, platform?: BillPlatform): ParsedBillData {
     const text = ocrResult.text;
-    const transactions: ParsedTransaction[] = [];
+    const _transactions: ParsedTransaction[] = [];
     
     // 检测平台类型
     const detectedPlatform = platform || this.detectPlatform(text);

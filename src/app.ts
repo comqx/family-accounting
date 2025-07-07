@@ -116,7 +116,7 @@ const App = createApp({
       console.error('Error reported:', error)
 
       // 简单的错误统计
-      const errorInfo = {
+      const _errorInfo = {
         message: error.message || error,
         stack: error.stack,
         timestamp: new Date().toISOString(),

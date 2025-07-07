@@ -6,7 +6,7 @@ import Taro from '@tarojs/taro';
 import { Family, User, UserRole, FamilySettings } from '../../types/business';
 import { FamilyAPI } from '../../types/api';
 import request from '../../utils/request';
-import { setFamilyInfo, getFamilyInfo, clearFamilyInfo } from '../../utils/storage';
+import { setFamilyInfo, clearFamilyInfo } from '../../utils/storage';
 
 export const useFamilyStore = defineStore('family', () => {
   // 状态
@@ -42,7 +42,7 @@ export const useFamilyStore = defineStore('family', () => {
     const savedFamily = getFamilyInfo();
     if (savedFamily) {
       if (savedFamily && typeof savedFamily === 'object' && 'id' in savedFamily) {
-        family.value = savedFamily as Family;
+        family.value = savedFamily as any; // 临时类型断言
       }
     }
   };

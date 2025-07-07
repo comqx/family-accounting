@@ -14,7 +14,7 @@ class WebSocketService {
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private messageHandlers: Map<string, MessageHandler[]> = new Map();
   private url = '';
-  private token = '';
+  private _token = '';
 
   constructor() {
     this.init();
@@ -40,7 +40,7 @@ class WebSocketService {
         return;
       }
 
-      this.token = token;
+      this._token = token;
       
       try {
         this.socket = Taro.connectSocket({
@@ -52,7 +52,7 @@ class WebSocketService {
             console.error('WebSocket connect failed:', error);
             reject(error);
           }
-        });
+        }) as any; // 临时类型断言，避免Taro类型定义问题
 
         this.socket!.onOpen(() => {
           console.log('WebSocket connected');

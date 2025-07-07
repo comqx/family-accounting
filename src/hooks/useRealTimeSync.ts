@@ -54,7 +54,7 @@ export function useRealTimeSync() {
     wsService.on('sync_response', handleSyncResponse);
     
     // 连接状态变化
-    wsService.on('*', (message) => {
+    wsService.on('*', (_message) => {
       isConnected.value = wsService.connected;
     });
   };

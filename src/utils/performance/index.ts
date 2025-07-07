@@ -84,7 +84,7 @@ class PerformanceMonitor {
 
   // 收集页面性能指标
   private collectPageMetrics() {
-    const now = Date.now();
+    const _now = Date.now();
     
     // 模拟收集关键性能指标
     const metrics = [
@@ -186,7 +186,7 @@ class PerformanceMonitor {
       };
 
       options.fail = (err: any) => {
-        const responseTime = Date.now() - startTime;
+        const _responseTime = Date.now() - startTime;
         this.recordError({
           message: `Network request failed: ${err.errMsg}`,
           url: options.url,
