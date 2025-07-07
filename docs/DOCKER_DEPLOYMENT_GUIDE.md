@@ -270,7 +270,7 @@ spec:
 docker build --no-cache -t family-accounting:latest .
 
 # 检查依赖安装
-docker run --rm -it node:18-alpine sh
+docker run --rm -it node:24-alpine sh
 ```
 
 #### 2. 容器启动失败
