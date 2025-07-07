@@ -8,15 +8,15 @@
         <view class="type-tabs">
           <view
             class="type-tab"
-            :class="{ active: categoryForm.type === 'expense' }"
-            @tap="switchType('expense')"
+            :class="{ active: categoryForm.type === RecordType.EXPENSE }"
+            @tap="switchType(RecordType.EXPENSE)"
           >
             支出
           </view>
           <view
             class="type-tab"
-            :class="{ active: categoryForm.type === 'income' }"
-            @tap="switchType('income')"
+            :class="{ active: categoryForm.type === RecordType.INCOME }"
+            @tap="switchType(RecordType.INCOME)"
           >
             收入
           </view>
@@ -110,8 +110,13 @@ const categoryStore = useCategoryStore()
 const appStore = useAppStore()
 
 // 响应式数据
-const categoryForm = ref({
-  type: 'expense' as RecordType,
+const categoryForm = ref<{
+  type: RecordType;
+  name: string;
+  icon: string;
+  color: string;
+}>({
+  type: RecordType.EXPENSE,
   name: '',
   icon: '',
   color: '#ff6b6b'
