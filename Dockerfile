@@ -1,8 +1,8 @@
 # 家账通小程序 Dockerfile
 # 用于构建和部署小程序项目
 
-# 使用官方 Node.js 18 Alpine 镜像作为基础镜像
-FROM node:18-alpine AS base
+# 使用官方 Node.js 24 Alpine 镜像作为基础镜像
+FROM node:24-alpine AS base
 
 # 设置工作目录
 WORKDIR /app
