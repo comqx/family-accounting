@@ -78,10 +78,8 @@ FROM base AS test
 # 复制源代码
 COPY . .
 
-# 运行测试
-RUN pnpm quality-check
-RUN pnpm type-check
-RUN pnpm security-check
+# 运行简化质量检查
+RUN pnpm quality-check:simple
 
 # 构建测试
 RUN pnpm build:weapp

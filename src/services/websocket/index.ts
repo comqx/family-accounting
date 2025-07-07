@@ -43,7 +43,7 @@ class WebSocketService {
       this.token = token;
       
       try {
-        const socketTask = Taro.connectSocket({
+        this.socket = Taro.connectSocket({
           url: `${this.url}?token=${token}&familyId=${familyId}`,
           success: () => {
             console.log('WebSocket connecting...');
@@ -53,9 +53,6 @@ class WebSocketService {
             reject(error);
           }
         });
-
-        // 等待socket任务完成
-        this.socket = await socketTask;
 
         this.socket!.onOpen(() => {
           console.log('WebSocket connected');

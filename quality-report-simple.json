@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-07-07T14:26:44.212Z",
+  "results": {
+    "build": {
+      "passed": true,
+      "message": "构建成功"
+    },
+    "syntax": {
+      "passed": true,
+      "errors": []
+    },
+    "structure": {
+      "passed": true,
+      "missing": []
+    },
+    "dependencies": {
+      "passed": true,
+      "issues": []
+    }
+  },
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "score": 100
+  }
+}
