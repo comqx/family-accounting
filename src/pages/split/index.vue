@@ -152,7 +152,7 @@ const settledCount = computed(() =>
 )
 
 // 方法
-const switchFilter = (filter: SplitStatus | 'all') => {
+const switchFilter = (filter) => {
   currentFilter.value = filter
 }
 
@@ -182,7 +182,7 @@ const hasUserParticipant = (split: SplitRecord): boolean => {
   )
 }
 
-const confirmSplit = async (splitId: string) => {
+const confirmSplit = async (splitId) => {
   if (isProcessing.value) return
 
   try {
@@ -196,7 +196,7 @@ const confirmSplit = async (splitId: string) => {
     } else {
       appStore.showToast('确认失败', 'none')
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Confirm split error:', error)
     appStore.showToast(error.message || '确认失败', 'none')
   } finally {
@@ -204,7 +204,7 @@ const confirmSplit = async (splitId: string) => {
   }
 }
 
-const declineSplit = async (splitId: string) => {
+const declineSplit = async (splitId) => {
   if (isProcessing.value) return
 
   try {
@@ -224,7 +224,7 @@ const declineSplit = async (splitId: string) => {
     } else {
       appStore.showToast('操作失败', 'none')
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Decline split error:', error)
     appStore.showToast(error.message || '操作失败', 'none')
   } finally {
@@ -232,7 +232,7 @@ const declineSplit = async (splitId: string) => {
   }
 }
 
-const goToSplitDetail = (splitId: string) => {
+const goToSplitDetail = (splitId) => {
   Taro.navigateTo({
     url: `/pages/split/detail/index?id=${splitId}`
   })

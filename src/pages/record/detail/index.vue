@@ -144,7 +144,7 @@ const formatDateTime = (date: Date | string): string => {
   return `${formatDate(d, 'YYYY-MM-DD')} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
-const previewImage = (index: number) => {
+const previewImage = (index) => {
   if (record.value.images && record.value.images.length > 0) {
     appStore.previewImage(record.value.images, record.value.images[index])
   }
@@ -181,7 +181,7 @@ const handleDelete = async () => {
       Taro.navigateBack()
     }, 1000)
 
-  } catch (error: any) {
+  } catch (error) {
     appStore.hideLoading()
     appStore.showToast(error.message || '删除失败', 'none')
   }
@@ -194,7 +194,7 @@ const shareRecord = () => {
   appStore.showToast('功能开发中', 'none')
 }
 
-const loadRecordDetail = (id: string) => {
+const loadRecordDetail = (id) => {
   // 模拟加载记录详情
   console.log('Loading record detail for:', id)
 

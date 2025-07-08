@@ -122,11 +122,11 @@ const canCreate = computed(() => {
 })
 
 // 方法
-const onNameInput = (e: any) => {
+const onNameInput = (e) => {
   familyForm.value.name = e.detail.value
 }
 
-const onDescInput = (e: any) => {
+const onDescInput = (e) => {
   familyForm.value.description = e.detail.value
 }
 
@@ -147,7 +147,7 @@ const handleCreateFamily = async () => {
         url: '/pages/index/index'
       })
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create family error:', error)
     appStore.showToast(error.message || '创建失败，请重试', 'none')
   } finally {

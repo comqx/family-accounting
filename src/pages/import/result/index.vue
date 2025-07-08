@@ -240,11 +240,11 @@ const toggleSelectAll = () => {
   })
 }
 
-const toggleRecord = (index: number) => {
+const toggleRecord = (index) => {
   editableRecords.value[index].selected = !editableRecords.value[index].selected
 }
 
-const editRecord = (index: number) => {
+const editRecord = (index) => {
   editingIndex.value = index
   editingRecord.value = { ...editableRecords.value[index] }
   showEditModal.value = true
@@ -255,19 +255,19 @@ const closeEditModal = () => {
   editingIndex.value = -1
 }
 
-const onMerchantInput = (e: any) => {
+const onMerchantInput = (e) => {
   editingRecord.value.merchant = e.detail.value
 }
 
-const onAmountInput = (e: any) => {
+const onAmountInput = (e) => {
   editingRecord.value.amount = parseFloat(e.detail.value) || 0
 }
 
-const onDateChange = (e: any) => {
+const onDateChange = (e) => {
   editingRecord.value.date = new Date(e.detail.value)
 }
 
-const onDescInput = (e: any) => {
+const onDescInput = (e) => {
   editingRecord.value.description = e.detail.value
 }
 
@@ -320,7 +320,7 @@ const confirmImport = async () => {
       })
     }, 1000)
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Import error:', error)
     appStore.showToast(error.message || '导入失败', 'none')
   } finally {

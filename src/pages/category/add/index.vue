@@ -111,10 +111,10 @@ const appStore = useAppStore()
 
 // 响应式数据
 const categoryForm = ref<{
-  type: RecordType;
-  name: string;
-  icon: string;
-  color: string;
+  type: RecordType,
+  name: string,
+  icon: string,
+  color: string
 }>({
   type: RecordType.EXPENSE,
   name: '',
@@ -153,21 +153,21 @@ const canSave = computed(() => {
 })
 
 // 方法
-const switchType = (type: RecordType) => {
+const switchType = (type) => {
   categoryForm.value.type = type
   // 切换类型时重置图标
   categoryForm.value.icon = ''
 }
 
-const onNameInput = (e: any) => {
+const onNameInput = (e) => {
   categoryForm.value.name = e.detail.value
 }
 
-const selectIcon = (icon: string) => {
+const selectIcon = (icon) => {
   categoryForm.value.icon = icon
 }
 
-const selectColor = (color: string) => {
+const selectColor = (color) => {
   categoryForm.value.color = color
 }
 
@@ -187,7 +187,7 @@ const handleSave = async () => {
       Taro.navigateBack()
     }, 1000)
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Save category error:', error)
     appStore.showToast(error.message || '保存失败', 'none')
   } finally {

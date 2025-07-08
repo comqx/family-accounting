@@ -207,12 +207,12 @@ const canSave = computed(() => {
 })
 
 // 方法
-const switchType = (type: RecordType) => {
+const switchType = (type) => {
   recordForm.value.type = type
   recordForm.value.categoryId = '' // 清空分类选择
 }
 
-const onAmountInput = (e: any) => {
+const onAmountInput = (e) => {
   let value = e.detail.value
   // 限制小数点后两位
   if (value.includes('.')) {
@@ -224,11 +224,11 @@ const onAmountInput = (e: any) => {
   recordForm.value.amount = value
 }
 
-const onRemarkInput = (e: any) => {
+const onRemarkInput = (e) => {
   recordForm.value.description = e.detail.value
 }
 
-const selectCategory = (category: Category) => {
+const selectCategory = (category) => {
   recordForm.value.categoryId = category.id
 }
 
@@ -236,7 +236,7 @@ const showDatePicker = () => {
   showDatePickerModal.value = true
 }
 
-const onDateChange = (e: any) => {
+const onDateChange = (e) => {
   recordForm.value.date = e.detail.value
   showDatePickerModal.value = false
 }
@@ -275,7 +275,7 @@ const saveRecord = async () => {
 
     // 刷新数据
     loadData()
-  } catch (error: any) {
+  } catch (error) {
     Taro.showToast({
       title: error.message || '保存失败',
       icon: 'none'
@@ -307,7 +307,7 @@ const goToLedger = () => {
   })
 }
 
-const goToRecordDetail = (recordId: string) => {
+const goToRecordDetail = (recordId) => {
   Taro.navigateTo({
     url: `/pages/record/detail/index?id=${recordId}`
   })

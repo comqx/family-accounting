@@ -142,7 +142,7 @@ const handleWechatLogin = async () => {
         })
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Login error:', error)
     appStore.showToast(error.message || '登录失败，请重试', 'none')
   } finally {

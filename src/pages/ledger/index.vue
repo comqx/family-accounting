@@ -299,7 +299,7 @@ const showDatePicker = () => {
   showDatePickerModal.value = true
 }
 
-const onDateChange = (e: any) => {
+const onDateChange = (e) => {
   selectedDate.value = e.detail.value
   showDatePickerModal.value = false
   // 重新加载数据
@@ -314,7 +314,7 @@ const closeTypeModal = () => {
   showTypeModal.value = false
 }
 
-const selectTypeFilter = (value: string) => {
+const selectTypeFilter = (value) => {
   typeFilter.value = value
   categoryFilter.value = '' // 重置分类筛选
   closeTypeModal()
@@ -328,12 +328,12 @@ const closeCategoryModal = () => {
   showCategoryModal.value = false
 }
 
-const selectCategoryFilter = (value: string) => {
+const selectCategoryFilter = (value) => {
   categoryFilter.value = value
   closeCategoryModal()
 }
 
-const goToRecordDetail = (recordId: string) => {
+const goToRecordDetail = (recordId) => {
   Taro.navigateTo({
     url: `/pages/record/detail/index?id=${recordId}`
   })

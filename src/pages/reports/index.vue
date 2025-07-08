@@ -230,7 +230,7 @@ const currentTimeText = computed(() => {
 })
 
 // 方法
-const selectPeriod = (period: string) => {
+const selectPeriod = (period) => {
   selectedPeriod.value = period
   loadReportData()
 }
@@ -239,7 +239,7 @@ const showCustomPicker = () => {
   showTimePicker.value = true
 }
 
-const onCustomDateChange = (e: any) => {
+const onCustomDateChange = (e) => {
   customDate.value = e.detail.value
   showTimePicker.value = false
   loadReportData()

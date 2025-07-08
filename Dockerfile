@@ -1,5 +1,8 @@
-# 家账通小程序 Dockerfile
-FROM --platform=linux/amd64 node:18.20.8
+# 家账通小程序 Dockerfile - 多阶段构建
+# ========================================
+
+# -------- base --------
+FROM --platform=linux/amd64 node:18.20.8 AS base
 
 WORKDIR /app
 
@@ -19,18 +22,13 @@ ENV npm_config_target_platform=linux \
     npm_config_target_arch=x64 \
     npm_config_cache=/tmp/.npm \
     npm_config_build_from_source=true
-# 复制源代码
-COPY . .
-# # 复制依赖文件并安装
-# COPY package.json pnpm-lock.yaml ./
+
+# 复制依赖文件并安装
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --no-frozen-lockfile
 
-
-
-# 设置环境变量
-ENV NODE_ENV=production \
-    TARO_ENV=weapp \
-    NODE_OPTIONS="--max-old-space-size=4096"
+# 复制源代码
+COPY . .
 
 # 清理缓存并重新构建关键原生模块
 RUN rm -rf node_modules/.cache && \
@@ -38,15 +36,57 @@ RUN rm -rf node_modules/.cache && \
     pnpm rebuild && \
     pnpm install --force @swc/core @tarojs/cli
 
+# -------- test --------
+FROM base AS test
+
+# 运行质量检查和测试
+RUN echo "🧪 运行质量检查..." && \
+    if [ -f "scripts/quality-check.js" ]; then \
+        node scripts/quality-check.js; \
+    else \
+        echo "⚠️ 未找到质量检查脚本，跳过测试阶段"; \
+    fi
+
+# -------- development --------
+FROM base AS development
+
+# 设置开发环境变量
+ENV NODE_ENV=development \
+    TARO_ENV=weapp \
+    NODE_OPTIONS="--max-old-space-size=4096"
+
+# 暴露开发端口
+EXPOSE 10086
+
+# 创建开发启动脚本
+RUN echo '#!/bin/sh\n\
+echo "🚀 家账通小程序开发模式启动中..."\n\
+echo "📋 环境信息:"\n\
+echo "   NODE_ENV: $NODE_ENV"\n\
+echo "   TARO_ENV: $TARO_ENV"\n\
+echo "   端口: 10086"\n\
+echo ""\n\
+exec pnpm dev:weapp' > /start-dev.sh && chmod +x /start-dev.sh
+
+CMD ["/start-dev.sh"]
+
+# -------- production --------
+FROM base AS production
+
+# 设置生产环境变量
+ENV NODE_ENV=production \
+    TARO_ENV=weapp \
+    NODE_OPTIONS="--max-old-space-size=4096"
+
 # 构建小程序
 RUN pnpm build:weapp
 
-# 暴露开发端口（可选）
-EXPOSE 10086
+# 暴露端口
+EXPOSE 80
 
-# 创建启动脚本
+# 创建生产启动脚本
 RUN echo '#!/bin/sh\n\
-echo "🚀 家账通小程序启动中..."\n\
+echo "🚀 家账通小程序生产模式启动中..."\n\
 echo "📋 环境信息:"\n\
 echo "   NODE_ENV: $NODE_ENV"\n\
 echo "   TARO_ENV: $TARO_ENV"\n\

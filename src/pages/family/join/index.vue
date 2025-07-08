@@ -104,7 +104,7 @@ const canJoin = computed(() => {
 })
 
 // 方法
-const onInviteCodeInput = (e: any) => {
+const onInviteCodeInput = (e) => {
   // 只允许输入数字和字母
   const value = e.detail.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
   inviteCode.value = value
@@ -124,7 +124,7 @@ const handleJoinFamily = async () => {
         url: '/pages/index/index'
       })
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Join family error:', error)
     appStore.showToast(error.message || '加入失败，请检查邀请码', 'none')
   } finally {
@@ -152,7 +152,7 @@ const handleScanCode = async () => {
         appStore.showToast('无效的邀请二维码', 'none')
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Scan code error:', error)
     if (error.errMsg && error.errMsg.includes('cancel')) {
       // 用户取消扫码

@@ -324,7 +324,7 @@ const memberAnalysis = ref([
 ])
 
 // 方法
-const selectTimeRange = (range: string) => {
+const selectTimeRange = (range) => {
   selectedRange.value = range
   if (range === 'custom') {
     const now = new Date()
@@ -335,21 +335,21 @@ const selectTimeRange = (range: string) => {
   loadReportData()
 }
 
-const onStartDateChange = (e: any) => {
+const onStartDateChange = (e) => {
   customStartDate.value = e.detail.value
   loadReportData()
 }
 
-const onEndDateChange = (e: any) => {
+const onEndDateChange = (e) => {
   customEndDate.value = e.detail.value
   loadReportData()
 }
 
-const switchAnalysisView = (view: 'chart' | 'list') => {
+const switchAnalysisView = (view) => {
   analysisView.value = view
 }
 
-const switchTrendType = (type: 'daily' | 'weekly' | 'monthly') => {
+const switchTrendType = (type) => {
   trendType.value = type
   loadTrendData()
 }

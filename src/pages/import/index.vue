@@ -154,7 +154,7 @@ const chooseImage = async () => {
     if (result.tempFilePaths.length > 0) {
       await processImage(result.tempFilePaths[0]);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (!error.errMsg?.includes('cancel')) {
       appStore.showToast('拍照失败，请重试', 'none');
     }
@@ -172,7 +172,7 @@ const chooseFromAlbum = async () => {
     if (result.tempFilePaths.length > 0) {
       await processImage(result.tempFilePaths[0]);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (!error.errMsg?.includes('cancel')) {
       appStore.showToast('选择图片失败，请重试', 'none');
     }
@@ -190,14 +190,14 @@ const batchImport = async () => {
     if (result.tempFilePaths.length > 0) {
       await processBatchImages(result.tempFilePaths);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (!error.errMsg?.includes('cancel')) {
       appStore.showToast('选择图片失败，请重试', 'none');
     }
   }
 }
 
-const processImage = async (imagePath: string) => {
+const processImage = async (imagePath) => {
   try {
     isProcessing.value = true;
     processingText.value = '正在识别账单...';
@@ -223,7 +223,7 @@ const processImage = async (imagePath: string) => {
       });
     }, 500);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Process image error:', error);
     appStore.showToast(error.message || '识别失败，请重试', 'none');
   } finally {
@@ -261,7 +261,7 @@ const processBatchImages = async (imagePaths: string[]) => {
       });
     }, 500);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Process batch images error:', error);
     appStore.showToast(error.message || '批量识别失败', 'none');
   } finally {
@@ -270,7 +270,7 @@ const processBatchImages = async (imagePaths: string[]) => {
   }
 }
 
-const viewImportResult = (importId: string) => {
+const viewImportResult = (importId) => {
   Taro.navigateTo({
     url: `/pages/import/result/index?id=${importId}`
   });

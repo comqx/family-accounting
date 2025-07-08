@@ -286,7 +286,7 @@ const editProfile = () => {
   appStore.showToast('功能开发中', 'none')
 }
 
-const onThemeChange = (e: any) => {
+const onThemeChange = (e) => {
   const isDark = e.detail.value
   appStore.setTheme(isDark ? 'dark' : 'light')
 }
@@ -299,7 +299,7 @@ const closeLanguageModal = () => {
   showLanguageModal.value = false
 }
 
-const selectLanguage = (language: string) => {
+const selectLanguage = (language) => {
   currentLanguage.value = language
   appStore.setLanguage(language as 'zh-CN' | 'en-US')
   closeLanguageModal()
@@ -314,19 +314,19 @@ const closeCurrencyModal = () => {
   showCurrencyModal.value = false
 }
 
-const selectCurrency = (currency: string) => {
+const selectCurrency = (currency) => {
   currentCurrency.value = currency
   appStore.setCurrency(currency)
   closeCurrencyModal()
   appStore.showToast('货币设置已保存', 'success')
 }
 
-const onNotificationChange = (key: string, e: any) => {
+const onNotificationChange = (key: string, e) => {
   notifications.value[key] = e.detail.value
   saveSettings()
 }
 
-const onPrivacyChange = (key: string, e: any) => {
+const onPrivacyChange = (key: string, e) => {
   privacy.value[key] = e.detail.value
   saveSettings()
 }
