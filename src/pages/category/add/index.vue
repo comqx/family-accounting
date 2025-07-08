@@ -213,7 +213,7 @@ const initPage = () => {
   const options = currentPage.options || {}
 
   if (options.type) {
-    categoryForm.value.type = options.type as RecordType
+    categoryForm.value.type = options.type
   }
 }
 

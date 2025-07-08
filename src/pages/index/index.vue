@@ -181,7 +181,7 @@ const { isConnected, syncRecordChange } = useRealTimeSync()
 
 // 响应式数据
 const recordForm = ref({
-  type: 'expense' as RecordType,
+  type: 'expense',
   amount: '',
   categoryId: '',
   description: '',
