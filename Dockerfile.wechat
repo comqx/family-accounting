@@ -1,0 +1,78 @@
+# 微信云托管专用 Dockerfile
+FROM node:24-slim
+
+# 设置工作目录
+WORKDIR /app
+
+# 创建非root用户
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 安装 pnpm 和 curl（用于健康检查）
+RUN npm install -g pnpm && \
+    apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 复制 package.json 和 pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
+
+# 安装依赖
+RUN pnpm install --frozen-lockfile
+
+# 复制源代码
+COPY . .
+
+# 构建项目
+RUN pnpm build:weapp
+
+# 创建证书目录和兼容性脚本
+RUN mkdir -p /app/cert
+COPY docker/initenv.sh /app/cert/initenv.sh
+RUN chmod +x /app/cert/initenv.sh
+
+# 安装简单的HTTP服务器
+RUN npm install -g http-server
+
+# 创建启动脚本
+RUN cat > /app/start.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🚀 启动家账通小程序服务..."
+
+# 检查构建文件
+if [ ! -f "dist/app.js" ]; then
+    echo "❌ 错误: dist/app.js 文件不存在"
+    exit 1
+fi
+
+if [ ! -f "dist/app.json" ]; then
+    echo "❌ 错误: dist/app.json 文件不存在"
+    exit 1
+fi
+
+echo "✅ 构建文件检查通过"
+
+# 启动服务
+echo "🌟 启动HTTP服务器在端口8080..."
+exec http-server dist -p 8080 -c-1 --cors
+EOF
+
+RUN chmod +x /app/start.sh
+
+# 设置文件权限
+RUN chown -R appuser:appuser /app
+
+# 切换到非root用户
+USER appuser
+
+# 暴露端口（使用8080避免权限问题）
+EXPOSE 8080
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8080/ || exit 1
+
+# 启动命令
+CMD ["/app/start.sh"]
