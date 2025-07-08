@@ -47,11 +47,9 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
-# 创建兼容性初始化脚本（用于部署平台兼容）
-RUN echo '#!/bin/sh' > /app/cert/initenv.sh && \
-    echo 'echo "🔧 初始化环境脚本执行完成"' >> /app/cert/initenv.sh && \
-    echo 'exit 0' >> /app/cert/initenv.sh && \
-    chmod +x /app/cert/initenv.sh
+# 复制兼容性初始化脚本（用于部署平台兼容）
+COPY docker/initenv.sh /app/cert/initenv.sh
+RUN chmod +x /app/cert/initenv.sh
 
 # 暴露端口
 EXPOSE 80
