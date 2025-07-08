@@ -34,31 +34,8 @@ RUN chmod +x /app/cert/initenv.sh
 # 安装简单的HTTP服务器
 RUN npm install -g http-server
 
-# 创建启动脚本
-RUN cat > /app/start.sh << 'EOF'
-#!/bin/bash
-set -e
-
-echo "🚀 启动家账通小程序服务..."
-
-# 检查构建文件
-if [ ! -f "dist/app.js" ]; then
-    echo "❌ 错误: dist/app.js 文件不存在"
-    exit 1
-fi
-
-if [ ! -f "dist/app.json" ]; then
-    echo "❌ 错误: dist/app.json 文件不存在"
-    exit 1
-fi
-
-echo "✅ 构建文件检查通过"
-
-# 启动服务
-echo "🌟 启动HTTP服务器在端口8080..."
-exec http-server dist -p 8080 -c-1 --cors
-EOF
-
+# 复制启动脚本
+COPY docker/start-wechat.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # 设置文件权限
