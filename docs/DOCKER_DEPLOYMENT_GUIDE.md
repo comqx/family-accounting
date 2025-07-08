@@ -42,7 +42,7 @@ docker build --target test -t family-accounting:test .
 ### 2. 运行容器
 ```bash
 # 运行生产容器
-docker run -d -p 8080:80 --name family-accounting-app family-accounting:latest
+docker run -d -p 80:80 --name family-accounting-app family-accounting:latest
 
 # 运行开发容器
 docker run -d -p 10086:10086 -v $(pwd):/app --name family-accounting-dev family-accounting:dev
@@ -97,7 +97,7 @@ docker-compose logs -f family-accounting-app
 - Gzip压缩
 - 缓存优化
 - 健康检查
-- 端口: 8080
+- 端口: 80
 
 ### 完整环境（含后端）
 ```bash
