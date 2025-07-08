@@ -39,27 +39,48 @@
 
 ```bash
 # 在项目根目录执行
-docker build -f Dockerfile.wechat -t family-accounting:wechat .
+docker build -f Dockerfile.wechat -t family-accounting:wechat-env .
 ```
 
 ### 2. 推送到容器注册表
 
 ```bash
 # 标记镜像
-docker tag family-accounting:wechat your-registry/family-accounting:wechat
+docker tag family-accounting:wechat-env your-registry/family-accounting:wechat-env
 
 # 推送镜像
-docker push your-registry/family-accounting:wechat
+docker push your-registry/family-accounting:wechat-env
 ```
 
 ### 3. 微信云托管配置
 
 在微信云托管平台配置：
 
-- **镜像地址**: `your-registry/family-accounting:wechat`
+- **镜像地址**: `your-registry/family-accounting:wechat-env`
 - **容器端口**: `8080`
 - **生命周期钩子**: `/bin/sh /app/cert/initenv.sh`
 - **健康检查路径**: `/`
+
+#### 环境变量配置
+
+在微信云托管平台的环境变量设置中添加：
+
+```bash
+# 腾讯云COS配置
+COS_BUCKET=7072-prod-7gor2t0ucc22b08f-1322802786
+COS_REGION=ap-shanghai
+
+# MySQL数据库配置
+MYSQL_ADDRESS=10.9.108.22:3306
+MYSQL_USERNAME=root
+MYSQL_PASSWORD=MgzxbSs9
+
+# 应用配置
+NODE_ENV=production
+PORT=8080
+```
+
+**注意**：敏感信息（如数据库密码）建议使用微信云托管的密钥管理功能。
 
 ### 4. 资源配置建议
 
@@ -73,14 +94,20 @@ docker push your-registry/family-accounting:wechat
 
 ```bash
 # 1. 验证兼容性脚本
-docker run --rm family-accounting:wechat /bin/sh /app/cert/initenv.sh
+docker run --rm family-accounting:wechat-env /bin/sh /app/cert/initenv.sh
 
 # 预期输出:
 # 🔧 初始化环境脚本执行完成
 # ✅ 家账通小程序环境准备就绪
 
-# 2. 验证容器启动
-docker run --rm -p 8080:8080 family-accounting:wechat
+# 2. 验证容器启动（带环境变量）
+docker run --rm \
+  -e COS_BUCKET="7072-prod-7gor2t0ucc22b08f-1322802786" \
+  -e MYSQL_ADDRESS="10.9.108.22:3306" \
+  -e MYSQL_USERNAME="root" \
+  -e MYSQL_PASSWORD="MgzxbSs9" \
+  -p 8080:8080 \
+  family-accounting:wechat-env
 
 # 预期输出:
 # 🚀 启动家账通小程序服务...
@@ -90,6 +117,11 @@ docker run --rm -p 8080:8080 family-accounting:wechat
 #   - 工作目录: /app
 #   - 用户: appuser
 #   - 端口: 8080
+#   - 环境: production
+#   - COS区域: ap-shanghai
+#   - COS存储桶: 已配置
+#   - MySQL地址: 已配置
+#   - MySQL用户: 已配置
 # 🌟 启动HTTP服务器在端口8080...
 # Starting up http-server, serving dist
 ```

@@ -1,0 +1,45 @@
+# 微信云托管环境测试用 Docker Compose 配置
+version: '3.8'
+
+services:
+  family-accounting-wechat:
+    build:
+      context: .
+      dockerfile: Dockerfile.wechat
+    container_name: family-accounting-wechat
+    ports:
+      - "8080:8080"
+    environment:
+      # 腾讯云COS配置
+      COS_BUCKET: "7072-prod-7gor2t0ucc22b08f-1322802786"
+      COS_REGION: "ap-shanghai"
+      
+      # MySQL数据库配置
+      MYSQL_ADDRESS: "10.9.108.22:3306"
+      MYSQL_USERNAME: "root"
+      MYSQL_PASSWORD: "MgzxbSs9"
+      
+      # 应用配置
+      NODE_ENV: "production"
+      PORT: "8080"
+    
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # 重启策略
+    restart: unless-stopped
+    
+    # 资源限制（模拟微信云托管环境）
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
