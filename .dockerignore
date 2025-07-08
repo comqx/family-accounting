@@ -79,7 +79,7 @@ __tests__/
 .eslintrc*
 .prettierrc*
 jest.config.*
-babel.config.*
+# babel.config.* - 需要保留用于构建
 
 # Docker 相关
 Dockerfile*
