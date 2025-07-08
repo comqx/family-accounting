@@ -309,15 +309,15 @@ Taro.useShareAppMessage(() => {
 
   // 时间选择器
   .time-selector {
-    background: 'white'
+    background: white;
     padding: 30rpx;
-    display: 'flex'
-    align-items: 'center'
+    display: flex;
+    align-items: center;
     justify-content: space-between;
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 
     .time-tabs {
-      display: 'flex'
+      display: flex;
       background: #f8f9fa;
       border-radius: 20rpx;
       padding: 6rpx;
@@ -330,17 +330,17 @@ Taro.useShareAppMessage(() => {
         transition: all 0.3s ease;
 
         &.active {
-          background: 'white'
+          background: white;
           color: #1296db;
-          font-weight: 'bold'
+          font-weight: bold;
           box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
         }
       }
     }
 
     .custom-time {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       padding: 12rpx 20rpx;
       background: #f8f9fa;
       border-radius: 20rpx;
@@ -360,30 +360,30 @@ Taro.useShareAppMessage(() => {
 
   // 总览卡片
   .overview-card {
-    background: 'white'
+    background: white;
     margin: 30rpx;
     border-radius: 20rpx;
     padding: 40rpx 30rpx;
-    display: 'flex'
-    align-items: 'center'
+    display: flex;
+    align-items: center;
     box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 
     .overview-item {
       flex: 1;
-      text-align: 'center'
+      text-align: center;
 
       .overview-label {
-        display: 'block'
+        display: block;
         font-size: 26rpx;
         color: #666;
         margin-bottom: 10rpx;
       }
 
       .overview-value {
-        display: 'block'
+        display: block;
         font-size: 32rpx;
-        font-weight: 'bold'
-
+        font-weight: bold
+;
         &.expense {
           color: #ff4757;
         }
@@ -404,21 +404,21 @@ Taro.useShareAppMessage(() => {
 
   // 分析区域
   .analysis-section, .trend-section {
-    background: 'white'
+    background: white;
     margin: 30rpx;
     border-radius: 20rpx;
     padding: 30rpx;
     box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 
     .section-header {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       justify-content: space-between;
       margin-bottom: 30rpx;
 
       .section-title {
         font-size: 32rpx;
-        font-weight: 'bold'
+        font-weight: bold;
         color: #333;
       }
 
@@ -435,10 +435,10 @@ Taro.useShareAppMessage(() => {
         height: 200rpx;
         background: #f8f9fa;
         border-radius: 12rpx;
-        display: 'flex'
-        flex-direction: 'column'
-        align-items: 'center'
-        justify-content: 'center'
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
 
         .chart-icon, .trend-icon {
           font-size: 60rpx;
@@ -454,41 +454,41 @@ Taro.useShareAppMessage(() => {
 
     .category-stats {
       .stat-item {
-        display: 'flex'
-        align-items: 'center'
+        display: flex;
+        align-items: center;
         margin-bottom: 30rpx;
-        position: 'relative'
-
+        position: relative
+;
         &:last-child {
           margin-bottom: 0;
         }
 
         .stat-info {
-          display: 'flex'
-          align-items: 'center'
+          display: flex;
+          align-items: center;
           flex: 1;
 
           .stat-icon {
             width: 60rpx;
             height: 60rpx;
             border-radius: 50%;
-            display: 'flex'
-            align-items: 'center'
-            justify-content: 'center'
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 24rpx;
             margin-right: 20rpx;
           }
 
           .stat-details {
             .stat-name {
-              display: 'block'
+              display: block;
               font-size: 28rpx;
               color: #333;
               margin-bottom: 4rpx;
             }
 
             .stat-count {
-              display: 'block'
+              display: block;
               font-size: 22rpx;
               color: #999;
             }
@@ -496,26 +496,26 @@ Taro.useShareAppMessage(() => {
         }
 
         .stat-amount {
-          text-align: 'right'
+          text-align: right;
           margin-right: 20rpx;
 
           .amount-value {
-            display: 'block'
+            display: block;
             font-size: 28rpx;
             color: #333;
-            font-weight: 'bold'
+            font-weight: bold;
             margin-bottom: 4rpx;
           }
 
           .amount-percent {
-            display: 'block'
+            display: block;
             font-size: 22rpx;
             color: #999;
           }
         }
 
         .stat-bar {
-          position: 'absolute'
+          position: absolute;
           bottom: 0;
           left: 80rpx;
           right: 0;
@@ -533,24 +533,24 @@ Taro.useShareAppMessage(() => {
     }
 
     .trend-summary {
-      display: 'flex'
+      display: flex;
       justify-content: space-around;
 
       .summary-item {
-        text-align: 'center'
+        text-align: center;
 
         .summary-label {
-          display: 'block'
+          display: block;
           font-size: 24rpx;
           color: #666;
           margin-bottom: 8rpx;
         }
 
         .summary-value {
-          display: 'block'
+          display: block;
           font-size: 28rpx;
           color: #333;
-          font-weight: 'bold'
+          font-weight: bold;
         }
       }
     }
@@ -558,24 +558,24 @@ Taro.useShareAppMessage(() => {
 
   // 操作按钮
   .action-section {
-    display: 'flex'
+    display: flex;
     gap: 20rpx;
     padding: 0 30rpx;
 
     .action-btn {
       flex: 1;
-      background: 'white'
+      background: white;
       border: 2rpx solid #e0e0e0;
       border-radius: 50rpx;
       padding: 28rpx 0;
-      display: 'flex'
-      align-items: 'center'
-      justify-content: 'center'
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 28rpx;
       color: #333;
 
       &::after {
-        border: 'none'
+        border: none;
       }
 
       .btn-icon {

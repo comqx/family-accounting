@@ -422,8 +422,8 @@ Taro.useLoad(() => {
 
   // 结果概览
   .result-summary {
-    background: 'white'
-    text-align: 'center'
+    background: white;
+    text-align: center;
     padding: 60rpx 30rpx;
     margin-bottom: 30rpx;
 
@@ -436,15 +436,15 @@ Taro.useLoad(() => {
     }
 
     .summary-title {
-      display: 'block'
+      display: block;
       font-size: 36rpx;
-      font-weight: 'bold'
+      font-weight: bold;
       color: #333;
       margin-bottom: 15rpx;
     }
 
     .summary-desc {
-      display: 'block'
+      display: block;
       font-size: 28rpx;
       color: #666;
       line-height: 1.5;
@@ -453,7 +453,7 @@ Taro.useLoad(() => {
 
   // 平台信息
   .platform-info {
-    background: 'white'
+    background: white;
     margin: 0 30rpx 30rpx;
     border-radius: 16rpx;
     padding: 30rpx;
@@ -464,16 +464,16 @@ Taro.useLoad(() => {
     }
 
     .platform-value {
-      display: 'block'
+      display: block;
       font-size: 30rpx;
       color: #333;
-      font-weight: 'bold'
+      font-weight: bold;
       margin: 10rpx 0 20rpx;
     }
 
     .confidence-bar {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       gap: 15rpx;
 
       .confidence-label {
@@ -486,7 +486,7 @@ Taro.useLoad(() => {
         height: 8rpx;
         background: #f0f0f0;
         border-radius: 4rpx;
-        overflow: 'hidden'
+        overflow: hidden;
 
         .progress-fill {
           height: 100%;
@@ -499,7 +499,7 @@ Taro.useLoad(() => {
       .confidence-value {
         font-size: 24rpx;
         color: #333;
-        font-weight: 'bold'
+        font-weight: bold;
       }
     }
   }
@@ -509,14 +509,14 @@ Taro.useLoad(() => {
     margin: 0 30rpx 30rpx;
 
     .section-header {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       justify-content: space-between;
       margin-bottom: 20rpx;
 
       .section-title {
         font-size: 30rpx;
-        font-weight: 'bold'
+        font-weight: bold;
         color: #333;
       }
 
@@ -530,19 +530,19 @@ Taro.useLoad(() => {
     }
 
     .records-list {
-      background: 'white'
+      background: white;
       border-radius: 16rpx;
-      overflow: 'hidden'
+      overflow: hidden;
 
       .record-item {
-        display: 'flex'
-        align-items: 'center'
+        display: flex;
+        align-items: center;
         padding: 30rpx;
         border-bottom: 2rpx solid #f0f0f0;
-        position: 'relative'
-
+        position: relative
+;
         &:last-child {
-          border-bottom: 'none'
+          border-bottom: none;
         }
 
         &.selected {
@@ -565,8 +565,8 @@ Taro.useLoad(() => {
           flex: 1;
 
           .record-header {
-            display: 'flex'
-            align-items: 'center'
+            display: flex;
+            align-items: center;
             justify-content: space-between;
             margin-bottom: 10rpx;
 
@@ -579,13 +579,13 @@ Taro.useLoad(() => {
             .record-amount {
               font-size: 30rpx;
               color: #ff4757;
-              font-weight: 'bold'
+              font-weight: bold;
             }
           }
 
           .record-details {
-            display: 'flex'
-            align-items: 'center'
+            display: flex;
+            align-items: center;
             gap: 20rpx;
 
             .record-date {
@@ -600,7 +600,7 @@ Taro.useLoad(() => {
           }
 
           .review-badge {
-            position: 'absolute'
+            position: absolute;
             top: 20rpx;
             right: 80rpx;
 
@@ -653,26 +653,26 @@ Taro.useLoad(() => {
 
   // 操作按钮
   .action-buttons {
-    position: 'fixed'
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: 'white'
+    background: white;
     padding: 30rpx;
-    display: 'flex'
+    display: flex;
     gap: 20rpx;
     box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
 
     .action-btn {
       flex: 1;
-      border: 'none'
+      border: none;
       border-radius: 50rpx;
       padding: 28rpx 0;
       font-size: 32rpx;
-      font-weight: 'bold'
-
+      font-weight: bold
+;
       &::after {
-        border: 'none'
+        border: none;
       }
 
       &.secondary {
@@ -682,8 +682,8 @@ Taro.useLoad(() => {
 
       &.primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: 'white'
-
+        color: white
+;
         &:disabled {
           background: #ccc;
           opacity: 0.6;
@@ -694,34 +694,34 @@ Taro.useLoad(() => {
 
   // 编辑弹窗
   .modal-overlay {
-    position: 'fixed'
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: 'flex'
-    align-items: 'center'
-    justify-content: 'center'
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 1000;
     padding: 60rpx;
 
     .modal-content {
-      background: 'white'
+      background: white;
       border-radius: 20rpx;
       width: 100%;
       max-height: 80vh;
 
       .modal-header {
-        display: 'flex'
-        align-items: 'center'
+        display: flex;
+        align-items: center;
         justify-content: space-between;
         padding: 40rpx 40rpx 20rpx;
         border-bottom: 2rpx solid #f0f0f0;
 
         .modal-title {
           font-size: 36rpx;
-          font-weight: 'bold'
+          font-weight: bold;
           color: #333;
         }
 
@@ -730,16 +730,16 @@ Taro.useLoad(() => {
           color: #999;
           width: 60rpx;
           height: 60rpx;
-          display: 'flex'
-          align-items: 'center'
-          justify-content: 'center'
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
       }
 
       .modal-body {
         padding: 40rpx;
         max-height: 400rpx;
-        overflow-y: 'auto'
+        overflow-y: auto;
 
         .form-item {
           margin-bottom: 30rpx;
@@ -749,7 +749,7 @@ Taro.useLoad(() => {
           }
 
           .form-label {
-            display: 'block'
+            display: block;
             font-size: 28rpx;
             color: #333;
             margin-bottom: 15rpx;
@@ -780,18 +780,18 @@ Taro.useLoad(() => {
       }
 
       .modal-footer {
-        display: 'flex'
+        display: flex;
         border-top: 2rpx solid #f0f0f0;
 
         .modal-btn {
           flex: 1;
           padding: 30rpx 0;
-          border: 'none'
-          background: 'white'
+          border: none;
+          background: white;
           font-size: 32rpx;
 
           &::after {
-            border: 'none'
+            border: none;
           }
 
           &.cancel {
@@ -801,7 +801,7 @@ Taro.useLoad(() => {
 
           &.confirm {
             color: #1296db;
-            font-weight: 'bold'
+            font-weight: bold;
           }
         }
       }

@@ -294,27 +294,27 @@ Taro.useShareAppMessage(() => {
 
   // 顶部统计
   .stats-header {
-    background: 'white'
-    display: 'flex'
+    background: white;
+    display: flex;
     padding: 30rpx;
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 
     .stats-item {
       flex: 1;
-      text-align: 'center'
+      text-align: center;
 
       .stats-label {
-        display: 'block'
+        display: block;
         font-size: 24rpx;
         color: #666;
         margin-bottom: 8rpx;
       }
 
       .stats-value {
-        display: 'block'
+        display: block;
         font-size: 32rpx;
-        font-weight: 'bold'
-
+        font-weight: bold
+;
         &.pending {
           color: #ff9500;
         }
@@ -332,14 +332,14 @@ Taro.useShareAppMessage(() => {
 
   // 筛选栏
   .filter-bar {
-    background: 'white'
-    display: 'flex'
+    background: white;
+    display: flex;
     padding: 20rpx 30rpx;
     border-top: 2rpx solid #f0f0f0;
 
     .filter-item {
       flex: 1;
-      text-align: 'center'
+      text-align: center;
       padding: 16rpx 20rpx;
       background: #f8f9fa;
       border-radius: 20rpx;
@@ -350,7 +350,7 @@ Taro.useShareAppMessage(() => {
 
       &.active {
         background: #1296db;
-        color: 'white'
+        color: white;
       }
     }
   }
@@ -360,7 +360,7 @@ Taro.useShareAppMessage(() => {
     padding: 30rpx;
 
     .empty-state {
-      text-align: 'center'
+      text-align: center;
       padding: 120rpx 0;
 
       .empty-icon {
@@ -369,29 +369,29 @@ Taro.useShareAppMessage(() => {
       }
 
       .empty-text {
-        display: 'block'
+        display: block;
         font-size: 32rpx;
         color: #666;
         margin-bottom: 10rpx;
       }
 
       .empty-desc {
-        display: 'block'
+        display: block;
         font-size: 26rpx;
         color: #999;
       }
     }
 
     .split-item {
-      background: 'white'
+      background: white;
       border-radius: 16rpx;
       padding: 30rpx;
       margin-bottom: 20rpx;
       box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 
       .split-header {
-        display: 'flex'
-        align-items: 'center'
+        display: flex;
+        align-items: center;
         justify-content: space-between;
         margin-bottom: 20rpx;
 
@@ -399,7 +399,7 @@ Taro.useShareAppMessage(() => {
           flex: 1;
 
           .split-desc {
-            display: 'block'
+            display: block;
             font-size: 30rpx;
             color: #333;
             font-weight: 500;
@@ -407,20 +407,20 @@ Taro.useShareAppMessage(() => {
           }
 
           .split-time {
-            display: 'block'
+            display: block;
             font-size: 24rpx;
             color: #999;
           }
         }
 
         .split-amount {
-          text-align: 'right'
+          text-align: right;
 
           .amount-text {
-            display: 'block'
+            display: block;
             font-size: 32rpx;
             color: #333;
-            font-weight: 'bold'
+            font-weight: bold;
             margin-bottom: 8rpx;
           }
 
@@ -428,8 +428,8 @@ Taro.useShareAppMessage(() => {
             padding: 4rpx 12rpx;
             border-radius: 10rpx;
             font-size: 20rpx;
-            color: 'white'
-
+            color: white
+;
             &.pending {
               background: #ff9500;
             }
@@ -453,13 +453,13 @@ Taro.useShareAppMessage(() => {
         margin-bottom: 20rpx;
 
         .participant-item {
-          display: 'flex'
-          align-items: 'center'
+          display: flex;
+          align-items: center;
           padding: 15rpx 0;
           border-bottom: 2rpx solid #f0f0f0;
 
           &:last-child {
-            border-bottom: 'none'
+            border-bottom: none;
           }
 
           .participant-avatar {
@@ -473,14 +473,14 @@ Taro.useShareAppMessage(() => {
             flex: 1;
 
             .participant-name {
-              display: 'block'
+              display: block;
               font-size: 26rpx;
               color: #333;
               margin-bottom: 4rpx;
             }
 
             .participant-amount {
-              display: 'block'
+              display: block;
               font-size: 24rpx;
               color: #666;
             }
@@ -490,8 +490,8 @@ Taro.useShareAppMessage(() => {
             padding: 4rpx 12rpx;
             border-radius: 10rpx;
             font-size: 20rpx;
-            color: 'white'
-
+            color: white
+;
             &.pending {
               background: #ff9500;
             }
@@ -512,28 +512,28 @@ Taro.useShareAppMessage(() => {
       }
 
       .split-actions {
-        display: 'flex'
+        display: flex;
         gap: 20rpx;
 
         .action-btn {
           flex: 1;
-          border: 'none'
+          border: none;
           border-radius: 20rpx;
           padding: 20rpx 0;
           font-size: 26rpx;
 
           &::after {
-            border: 'none'
+            border: none;
           }
 
           &.confirm {
             background: #1296db;
-            color: 'white'
+            color: white;
           }
 
           &.decline {
             background: #ff4757;
-            color: 'white'
+            color: white;
           }
 
           &:disabled {
@@ -546,23 +546,23 @@ Taro.useShareAppMessage(() => {
 
   // 创建按钮
   .create-btn {
-    position: 'fixed'
+    position: fixed;
     bottom: 120rpx;
     right: 30rpx;
     width: 100rpx;
     height: 100rpx;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 50%;
-    display: 'flex'
-    align-items: 'center'
-    justify-content: 'center'
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.4);
     z-index: 100;
 
     .create-icon {
       font-size: 48rpx;
-      color: 'white'
-      font-weight: 'bold'
+      color: white;
+      font-weight: bold;
     }
   }
 }

@@ -411,12 +411,12 @@ Taro.useLoad(() => {
 
   // 时间范围选择器
   .time-range-selector {
-    background: 'white'
+    background: white;
     padding: 30rpx;
     margin-bottom: 20rpx;
 
     .range-tabs {
-      display: 'flex'
+      display: flex;
       background: #f8f9fa;
       border-radius: 20rpx;
       padding: 6rpx;
@@ -424,7 +424,7 @@ Taro.useLoad(() => {
 
       .range-tab {
         flex: 1;
-        text-align: 'center'
+        text-align: center;
         padding: 12rpx 0;
         border-radius: 16rpx;
         font-size: 26rpx;
@@ -432,17 +432,17 @@ Taro.useLoad(() => {
         transition: all 0.3s ease;
 
         &.active {
-          background: 'white'
+          background: white;
           color: #1296db;
-          font-weight: 'bold'
+          font-weight: bold;
           box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
         }
       }
     }
 
     .custom-range {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       gap: 20rpx;
 
       .date-picker {
@@ -450,7 +450,7 @@ Taro.useLoad(() => {
         padding: 20rpx;
         background: #f8f9fa;
         border-radius: 12rpx;
-        text-align: 'center'
+        text-align: center;
         font-size: 26rpx;
         color: #333;
       }
@@ -464,29 +464,29 @@ Taro.useLoad(() => {
 
   // 核心指标
   .key-metrics {
-    display: 'flex'
+    display: flex;
     gap: 20rpx;
     padding: 0 30rpx;
     margin-bottom: 30rpx;
 
     .metric-card {
       flex: 1;
-      background: 'white'
+      background: white;
       border-radius: 16rpx;
       padding: 30rpx 20rpx;
-      text-align: 'center'
+      text-align: center;
 
       .metric-label {
-        display: 'block'
+        display: block;
         font-size: 24rpx;
         color: #666;
         margin-bottom: 10rpx;
       }
 
       .metric-value {
-        display: 'block'
+        display: block;
         font-size: 28rpx;
-        font-weight: 'bold'
+        font-weight: bold;
         margin-bottom: 8rpx;
 
         &.expense {
@@ -499,7 +499,7 @@ Taro.useLoad(() => {
       }
 
       .metric-change {
-        display: 'block'
+        display: block;
         font-size: 22rpx;
 
         &.increase {
@@ -515,25 +515,25 @@ Taro.useLoad(() => {
 
   // 分析区域
   .analysis-section, .trend-section, .member-section {
-    background: 'white'
+    background: white;
     margin: 0 30rpx 30rpx;
     border-radius: 16rpx;
     padding: 30rpx;
 
     .section-header {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       justify-content: space-between;
       margin-bottom: 30rpx;
 
       .section-title {
         font-size: 32rpx;
-        font-weight: 'bold'
+        font-weight: bold;
         color: #333;
       }
 
       .view-toggle, .trend-type-selector {
-        display: 'flex'
+        display: flex;
         background: #f8f9fa;
         border-radius: 20rpx;
         padding: 4rpx;
@@ -546,9 +546,9 @@ Taro.useLoad(() => {
           transition: all 0.3s ease;
 
           &.active {
-            background: 'white'
+            background: white;
             color: #1296db;
-            font-weight: 'bold'
+            font-weight: bold;
           }
         }
       }
@@ -558,13 +558,13 @@ Taro.useLoad(() => {
       height: 300rpx;
       background: #f8f9fa;
       border-radius: 12rpx;
-      display: 'flex'
-      align-items: 'center'
-      justify-content: 'center'
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 30rpx;
 
       .chart-placeholder {
-        text-align: 'center'
+        text-align: center;
 
         .chart-icon {
           font-size: 60rpx;
@@ -585,21 +585,21 @@ Taro.useLoad(() => {
 
       &:last-child {
         margin-bottom: 0;
-        border-bottom: 'none'
+        border-bottom: none;
       }
 
       .category-header {
-        display: 'flex'
-        align-items: 'center'
+        display: flex;
+        align-items: center;
         margin-bottom: 15rpx;
 
         .category-icon {
           width: 60rpx;
           height: 60rpx;
           border-radius: 50%;
-          display: 'flex'
-          align-items: 'center'
-          justify-content: 'center'
+          display: flex;
+          align-items: center;
+          justify-content: center;
           font-size: 24rpx;
           margin-right: 20rpx;
         }
@@ -608,32 +608,32 @@ Taro.useLoad(() => {
           flex: 1;
 
           .category-name {
-            display: 'block'
+            display: block;
             font-size: 28rpx;
             color: #333;
             margin-bottom: 4rpx;
           }
 
           .category-count {
-            display: 'block'
+            display: block;
             font-size: 22rpx;
             color: #999;
           }
         }
 
         .category-amount {
-          text-align: 'right'
+          text-align: right;
 
           .amount-value {
-            display: 'block'
+            display: block;
             font-size: 28rpx;
             color: #333;
-            font-weight: 'bold'
+            font-weight: bold;
             margin-bottom: 4rpx;
           }
 
           .amount-percent {
-            display: 'block'
+            display: block;
             font-size: 22rpx;
             color: #999;
           }
@@ -641,8 +641,8 @@ Taro.useLoad(() => {
       }
 
       .category-trend {
-        display: 'flex'
-        align-items: 'center'
+        display: flex;
+        align-items: center;
         justify-content: space-between;
         margin-bottom: 15rpx;
 
@@ -653,8 +653,8 @@ Taro.useLoad(() => {
 
         .trend-value {
           font-size: 24rpx;
-          font-weight: 'bold'
-
+          font-weight: bold
+;
           &.increase {
             color: #2ed573;
           }
@@ -669,7 +669,7 @@ Taro.useLoad(() => {
         height: 8rpx;
         background: #f0f0f0;
         border-radius: 4rpx;
-        overflow: 'hidden'
+        overflow: hidden;
 
         .bar-fill {
           height: 100%;
@@ -680,37 +680,37 @@ Taro.useLoad(() => {
     }
 
     .trend-insights {
-      display: 'flex'
+      display: flex;
       justify-content: space-around;
 
       .insight-item {
-        text-align: 'center'
+        text-align: center;
 
         .insight-label {
-          display: 'block'
+          display: block;
           font-size: 24rpx;
           color: #666;
           margin-bottom: 8rpx;
         }
 
         .insight-value {
-          display: 'block'
+          display: block;
           font-size: 28rpx;
           color: #333;
-          font-weight: 'bold'
+          font-weight: bold;
         }
       }
     }
 
     .member-list {
       .member-item {
-        display: 'flex'
-        align-items: 'center'
+        display: flex;
+        align-items: center;
         padding: 20rpx 0;
         border-bottom: 2rpx solid #f0f0f0;
 
         &:last-child {
-          border-bottom: 'none'
+          border-bottom: none;
         }
 
         .member-avatar {
@@ -724,32 +724,32 @@ Taro.useLoad(() => {
           flex: 1;
 
           .member-name {
-            display: 'block'
+            display: block;
             font-size: 28rpx;
             color: #333;
             margin-bottom: 6rpx;
           }
 
           .member-records {
-            display: 'block'
+            display: block;
             font-size: 24rpx;
             color: #999;
           }
         }
 
         .member-stats {
-          text-align: 'right'
+          text-align: right;
           margin-right: 20rpx;
 
           .member-expense {
-            display: 'block'
+            display: block;
             font-size: 24rpx;
             color: #ff4757;
             margin-bottom: 4rpx;
           }
 
           .member-income {
-            display: 'block'
+            display: block;
             font-size: 24rpx;
             color: #2ed573;
           }
@@ -759,7 +759,7 @@ Taro.useLoad(() => {
           .percentage-text {
             font-size: 28rpx;
             color: #333;
-            font-weight: 'bold'
+            font-weight: bold;
           }
         }
       }
@@ -773,18 +773,18 @@ Taro.useLoad(() => {
     .export-btn {
       width: 100%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: 'white'
-      border: 'none'
+      color: white;
+      border: none;
       border-radius: 50rpx;
       padding: 28rpx 0;
       font-size: 32rpx;
-      font-weight: 'bold'
-      display: 'flex'
-      align-items: 'center'
-      justify-content: 'center'
-
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center
+;
       &::after {
-        border: 'none'
+        border: none;
       }
 
       .btn-icon {

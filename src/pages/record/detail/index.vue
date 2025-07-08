@@ -260,24 +260,24 @@ Taro.useShareAppMessage(() => {
 
   // 记录信息卡片
   .record-card {
-    background: 'white'
+    background: white;
     margin: 30rpx;
     border-radius: 20rpx;
     padding: 40rpx 30rpx;
     box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 
     .record-header {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       margin-bottom: 30rpx;
 
       .record-icon {
         width: 100rpx;
         height: 100rpx;
         border-radius: 50%;
-        display: 'flex'
-        align-items: 'center'
-        justify-content: 'center'
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 48rpx;
         margin-right: 30rpx;
       }
@@ -286,15 +286,15 @@ Taro.useShareAppMessage(() => {
         flex: 1;
 
         .record-category {
-          display: 'block'
+          display: block;
           font-size: 36rpx;
-          font-weight: 'bold'
+          font-weight: bold;
           color: #333;
           margin-bottom: 8rpx;
         }
 
         .record-date {
-          display: 'block'
+          display: block;
           font-size: 26rpx;
           color: #666;
         }
@@ -303,8 +303,8 @@ Taro.useShareAppMessage(() => {
       .record-amount {
         .amount-text {
           font-size: 42rpx;
-          font-weight: 'bold'
-
+          font-weight: bold
+;
           &.expense {
             color: #ff4757;
           }
@@ -323,7 +323,7 @@ Taro.useShareAppMessage(() => {
       border-radius: 12rpx;
 
       .desc-label {
-        display: 'block'
+        display: block;
         font-size: 26rpx;
         color: #666;
         margin-bottom: 10rpx;
@@ -340,15 +340,15 @@ Taro.useShareAppMessage(() => {
       margin-bottom: 30rpx;
 
       .tags-label {
-        display: 'block'
+        display: block;
         font-size: 26rpx;
         color: #666;
         margin-bottom: 15rpx;
       }
 
       .tags-list {
-        display: 'flex'
-        flex-wrap: 'wrap'
+        display: flex;
+        flex-wrap: wrap;
         gap: 10rpx;
 
         .tag-item {
@@ -363,14 +363,14 @@ Taro.useShareAppMessage(() => {
 
     .record-images {
       .images-label {
-        display: 'block'
+        display: block;
         font-size: 26rpx;
         color: #666;
         margin-bottom: 15rpx;
       }
 
       .images-grid {
-        display: 'grid'
+        display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 15rpx;
 
@@ -385,21 +385,21 @@ Taro.useShareAppMessage(() => {
 
   // 元信息
   .meta-info {
-    background: 'white'
+    background: white;
     margin: 30rpx;
     border-radius: 20rpx;
     padding: 30rpx;
     box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 
     .meta-item {
-      display: 'flex'
-      align-items: 'center'
+      display: flex;
+      align-items: center;
       justify-content: space-between;
       padding: 20rpx 0;
       border-bottom: 2rpx solid #f0f0f0;
 
       &:last-child {
-        border-bottom: 'none'
+        border-bottom: none;
       }
 
       .meta-label {
@@ -416,22 +416,22 @@ Taro.useShareAppMessage(() => {
 
   // 操作按钮
   .action-buttons {
-    display: 'flex'
+    display: flex;
     gap: 20rpx;
     padding: 0 30rpx;
 
     .action-btn {
       flex: 1;
-      display: 'flex'
-      flex-direction: 'column'
-      align-items: 'center'
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 30rpx 20rpx;
-      border: 'none'
+      border: none;
       border-radius: 16rpx;
       font-size: 26rpx;
 
       &::after {
-        border: 'none'
+        border: none;
       }
 
       .btn-icon {
@@ -462,38 +462,38 @@ Taro.useShareAppMessage(() => {
 
   // 删除确认弹窗
   .modal-overlay {
-    position: 'fixed'
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: 'flex'
-    align-items: 'center'
-    justify-content: 'center'
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 1000;
     padding: 60rpx;
 
     .modal-content {
-      background: 'white'
+      background: white;
       border-radius: 20rpx;
       width: 100%;
       max-width: 500rpx;
 
       .modal-header {
         padding: 40rpx 40rpx 20rpx;
-        text-align: 'center'
+        text-align: center;
 
         .modal-title {
           font-size: 36rpx;
-          font-weight: 'bold'
+          font-weight: bold;
           color: #333;
         }
       }
 
       .modal-body {
         padding: 20rpx 40rpx 40rpx;
-        text-align: 'center'
+        text-align: center;
 
         .modal-text {
           font-size: 28rpx;
@@ -503,18 +503,18 @@ Taro.useShareAppMessage(() => {
       }
 
       .modal-footer {
-        display: 'flex'
+        display: flex;
         border-top: 2rpx solid #f0f0f0;
 
         .modal-btn {
           flex: 1;
           padding: 30rpx 0;
-          border: 'none'
-          background: 'white'
+          border: none;
+          background: white;
           font-size: 32rpx;
 
           &::after {
-            border: 'none'
+            border: none;
           }
 
           &.cancel {
@@ -524,7 +524,7 @@ Taro.useShareAppMessage(() => {
 
           &.confirm {
             color: #ff4757;
-            font-weight: 'bold'
+            font-weight: bold;
           }
         }
       }

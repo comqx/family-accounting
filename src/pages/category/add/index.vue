@@ -391,23 +391,23 @@ Taro.useLoad(() => {
 
   // 操作区域
   .action-section {
-    position: 'fixed'
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: 'white'
+    background: white;
     padding: 30rpx;
     box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
 
     .save-btn {
       width: 100%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: 'white'
-      border: 'none'
+      color: white;
+      border: none;
       border-radius: 50rpx;
       padding: 28rpx 0;
       font-size: 32rpx;
-      font-weight: 'bold'
+      font-weight: bold;
 
       &.disabled {
         background: #ccc;
@@ -415,7 +415,7 @@ Taro.useLoad(() => {
       }
 
       &::after {
-        border: 'none'
+        border: none;
       }
     }
   }
