@@ -301,7 +301,7 @@ const closeLanguageModal = () => {
 
 const selectLanguage = (language) => {
   currentLanguage.value = language
-  appStore.setLanguage(language as 'zh-CN' | 'en-US')
+      appStore.setLanguage(language)
   closeLanguageModal()
   appStore.showToast('语言设置已保存', 'success')
 }
