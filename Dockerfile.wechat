@@ -26,6 +26,9 @@ COPY . .
 # 构建项目
 RUN pnpm build:weapp
 
+# 复制首页文件到构建目录
+COPY public/index.html dist/index.html
+
 # 创建证书目录和兼容性脚本
 RUN mkdir -p /app/cert
 COPY docker/initenv.sh /app/cert/initenv.sh
