@@ -1,92 +1,75 @@
 # 家账通小程序 Dockerfile
-# 用于构建和部署小程序项目
+FROM --platform=linux/amd64 node:18.20.8
 
-# 使用官方 Node.js 24 标准镜像作为基础镜像（兼容性更好）
-FROM node:24-slim AS base
-
-# 设置工作目录
 WORKDIR /app
 
+# 安装系统依赖和构建工具
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 # 安装 pnpm
-RUN npm install -g pnpm
+RUN npm install --global pnpm
 
-# 复制 package.json 和 pnpm-lock.yaml
+# 设置npm配置，强制重新构建原生模块
+ENV npm_config_target_platform=linux \
+    npm_config_target_arch=x64 \
+    npm_config_cache=/tmp/.npm \
+    npm_config_build_from_source=true
+
+# 复制依赖文件并安装
 COPY package.json pnpm-lock.yaml ./
-
-# 安装依赖
-RUN pnpm install --frozen-lockfile
-
-# 构建阶段
-FROM base AS builder
+RUN pnpm install --no-frozen-lockfile
 
 # 复制源代码
 COPY . .
 
 # 设置环境变量
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    TARO_ENV=weapp \
+    NODE_OPTIONS="--max-old-space-size=4096"
 
-# 构建项目
+# 清理缓存并重新构建关键原生模块
+RUN rm -rf node_modules/.cache && \
+    rm -rf .taro_cache && \
+    pnpm rebuild && \
+    pnpm install --force @swc/core @tarojs/cli
+
+# 构建小程序
 RUN pnpm build:weapp
 
-# 生产阶段
-FROM nginx:alpine AS production
-
-# 安装必要的工具
-RUN apk add --no-cache curl
-
-# 创建应用目录
-RUN mkdir -p /app
-
-# 复制构建产物
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# 复制 Nginx 配置
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-
-# 复制启动脚本
-COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
-
-# 暴露端口
-EXPOSE 80
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost/health || exit 1
-
-# 启动命令
-CMD ["/start.sh"]
-
-# 开发环境阶段
-FROM base AS development
-
-# 安装开发依赖
-RUN pnpm install
-
-# 复制源代码
-COPY . .
-
-# 暴露开发服务器端口
+# 暴露开发端口（可选）
 EXPOSE 10086
 
-# 启动开发服务器
-CMD ["pnpm", "dev:weapp"]
+# 创建启动脚本
+RUN echo '#!/bin/sh\n\
+echo "🚀 家账通小程序启动中..."\n\
+echo "📋 环境信息:"\n\
+echo "   NODE_ENV: $NODE_ENV"\n\
+echo "   TARO_ENV: $TARO_ENV"\n\
+echo ""\n\
+if [ "$START_MODE" = "dev" ]; then\n\
+    echo "🔧 启动开发模式..."\n\
+    exec pnpm dev:weapp\n\
+elif [ "$START_MODE" = "build" ]; then\n\
+    echo "🏗️ 重新构建..."\n\
+    pnpm build:weapp\n\
+    echo "✅ 构建完成，产物位于 dist/ 目录"\n\
+    ls -la dist/\n\
+    tail -f /dev/null\n\
+else\n\
+    echo "📦 生产模式 - 显示构建产物:"\n\
+    ls -la dist/\n\
+    echo ""\n\
+    echo "💡 启动选项:"\n\
+    echo "   开发模式: docker run -e START_MODE=dev -p 10086:10086 <image>"\n\
+    echo "   重新构建: docker run -e START_MODE=build <image>"\n\
+    echo "   生产模式: docker run <image> (当前模式)"\n\
+    tail -f /dev/null\n\
+fi' > /start.sh && chmod +x /start.sh
 
-# 测试阶段
-FROM base AS test
-
-# 复制源代码
-COPY . .
-
-# 运行简化质量检查
-RUN pnpm quality-check:simple
-
-# 构建测试
-RUN pnpm build:weapp
-
-# 验证构建产物
-RUN test -f dist/app.js || exit 1
-RUN test -f dist/app.json || exit 1
-RUN test -f dist/app.wxss || exit 1
-
-CMD ["echo", "All tests passed!"]
+# 默认启动命令
+CMD ["/start.sh"]

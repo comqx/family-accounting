@@ -4,26 +4,15 @@
 version: '3.8'
 
 services:
-  # 小程序前端服务
-  family-accounting-app:
+  # 小程序构建产物服务
+  family-accounting:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
-    container_name: family-accounting-app
-    ports:
-      - "8080:80"
+    container_name: family-accounting
     environment:
       - NODE_ENV=production
-    volumes:
-      - ./logs:/var/log/nginx
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     networks:
       - family-accounting-network
 
@@ -32,12 +21,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
     container_name: family-accounting-dev
     ports:
       - "10086:10086"
     environment:
       - NODE_ENV=development
+      - START_MODE=dev
     volumes:
       - .:/app
       - /app/node_modules
@@ -92,7 +81,7 @@ services:
       - ./docker/nginx/proxy.conf:/etc/nginx/nginx.conf
       - ./docker/ssl:/etc/nginx/ssl
     depends_on:
-      - family-accounting-app
+      - family-accounting
     restart: unless-stopped
     networks:
       - family-accounting-network

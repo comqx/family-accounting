@@ -45,9 +45,17 @@
     "deploy:prod": "NODE_ENV=production node scripts/deploy.js",
     "performance:monitor": "node -e \"require('./src/utils/performance').default.flushData()\"",
     "performance:report": "node -e \"console.log(JSON.stringify(require('./src/utils/performance').default.getPerformanceReport(), null, 2))\"",
-    "docker:build": "chmod +x scripts/docker-build.sh && ./scripts/docker-build.sh",
+    "start": "node -e \"console.log('🚀 家账通小程序'); console.log('使用以下命令启动:'); console.log('  pnpm start:weapp  - 微信小程序开发'); console.log('  pnpm start:h5     - H5预览'); console.log('  pnpm start:build  - 构建项目'); console.log('  pnpm start:preview - 预览服务器');\"",
+    "start:weapp": "npm run dev:weapp",
+    "start:h5": "npm run dev:h5",
+    "start:build": "npm run build:weapp",
+    "start:preview": "npm run build:h5 && npx http-server dist -p 3000 -o",
+    "docker:build": "docker build --platform linux/amd64 -t family-accounting:latest .",
     "docker:dev": "docker-compose --profile dev up -d",
+    "docker:dev-run": "docker run --rm -e START_MODE=dev -p 10086:10086 family-accounting:latest",
+    "docker:build-run": "docker run --rm -e START_MODE=build family-accounting:latest",
     "docker:prod": "docker-compose up -d",
+    "docker:prod-run": "docker run --rm family-accounting:latest",
     "docker:stop": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
     "docker:clean": "docker-compose down -v --rmi local"
@@ -99,6 +107,7 @@
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^5.4.5",
     "vue-loader": "^17.4.2",
-    "webpack": "5.91.0"
+    "webpack": "5.91.0",
+    "http-server": "^14.1.1"
   }
 }

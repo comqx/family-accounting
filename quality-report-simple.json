@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-07T14:42:36.119Z",
+  "timestamp": "2025-07-08T09:05:38.156Z",
   "results": {
     "build": {
       "passed": true,
@@ -10,8 +10,10 @@
       "errors": []
     },
     "structure": {
-      "passed": true,
-      "missing": []
+      "passed": false,
+      "missing": [
+        "目录: src/components"
+      ]
     },
     "dependencies": {
       "passed": true,
@@ -20,7 +22,7 @@
   },
   "summary": {
     "total": 4,
-    "passed": 4,
-    "score": 100
+    "passed": 3,
+    "score": 75
   }
 }
