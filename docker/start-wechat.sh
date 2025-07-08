@@ -25,6 +25,11 @@ echo "  - Node.js版本: $(node --version)"
 echo "  - 工作目录: $(pwd)"
 echo "  - 用户: $(whoami)"
 echo "  - 端口: 8080"
+echo "  - 环境: ${NODE_ENV:-development}"
+echo "  - COS区域: ${COS_REGION:-未设置}"
+echo "  - COS存储桶: ${COS_BUCKET:+已配置}"
+echo "  - MySQL地址: ${MYSQL_ADDRESS:+已配置}"
+echo "  - MySQL用户: ${MYSQL_USERNAME:+已配置}"
 
 # 启动服务
 echo "🌟 启动HTTP服务器在端口8080..."
