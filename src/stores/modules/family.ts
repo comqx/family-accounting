@@ -42,16 +42,13 @@ export const useFamilyStore = defineStore('family', () => {
     const savedFamily = getFamilyInfo();
     if (savedFamily) {
       if (savedFamily && typeof savedFamily === 'object' && 'id' in savedFamily) {
-        family.value = savedFamily as any; // 临时类型断言
+        family.value = savedFamily; // 临时类型断言
       }
     }
   };
 
   // 创建家庭
-  const createFamily = async (familyData: {
-    name: string;
-    description?: string;
-  }): Promise<boolean> => {
+  const createFamily = async (familyData: Partial<Family>) => {
     try {
       isLoading.value = true;
 
@@ -74,15 +71,15 @@ export const useFamilyStore = defineStore('family', () => {
           title: '创建成功',
           icon: 'success'
         });
-        
+
         return true;
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Create family error:', error);
       Taro.showToast({
-        title: error.message || '创建失败',
+        title: '创建失败',
         icon: 'none'
       });
       return false;
@@ -92,7 +89,7 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 加入家庭
-  const joinFamily = async (inviteCode: string): Promise<boolean> => {
+  const joinFamily = async (inviteCode: string) => {
     try {
       isLoading.value = true;
 
@@ -103,7 +100,7 @@ export const useFamilyStore = defineStore('family', () => {
       if (response.data?.family) {
         family.value = response.data.family;
         setFamilyInfo(response.data.family);
-        
+
         // 更新用户信息
         const { useUserStore } = require('./user');
         const userStore = useUserStore();
@@ -117,15 +114,15 @@ export const useFamilyStore = defineStore('family', () => {
           title: '加入成功',
           icon: 'success'
         });
-        
+
         return true;
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Join family error:', error);
       Taro.showToast({
-        title: error.message || '加入失败',
+        title: '加入失败',
         icon: 'none'
       });
       return false;
@@ -135,7 +132,7 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 获取家庭信息
-  const getFamilyInfo = async (): Promise<boolean> => {
+  const getFamilyInfo = async () => {
     try {
       const response = await request.get<FamilyAPI.GetFamilyResponse>('/families/current');
 
@@ -146,18 +143,14 @@ export const useFamilyStore = defineStore('family', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get family info error:', error);
       return false;
     }
   };
 
   // 更新家庭信息
-  const updateFamily = async (familyData: {
-    name?: string;
-    description?: string;
-    settings?: Partial<FamilySettings>;
-  }): Promise<boolean> => {
+  const updateFamily = async (familyData: Partial<Family>) => {
     try {
       isLoading.value = true;
 
@@ -171,15 +164,15 @@ export const useFamilyStore = defineStore('family', () => {
           title: '更新成功',
           icon: 'success'
         });
-        
+
         return true;
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update family error:', error);
       Taro.showToast({
-        title: error.message || '更新失败',
+        title: '更新失败',
         icon: 'none'
       });
       return false;
@@ -189,7 +182,7 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 获取家庭成员
-  const loadMembers = async (): Promise<boolean> => {
+  const loadMembers = async () => {
     try {
       const response = await request.get<FamilyAPI.GetMembersResponse>('/families/members');
 
@@ -199,14 +192,14 @@ export const useFamilyStore = defineStore('family', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Load members error:', error);
       return false;
     }
   };
 
   // 邀请成员
-  const inviteMember = async (userId: string, role: UserRole = UserRole.MEMBER): Promise<{
+  const inviteMember = async (email: string, role = UserRole.MEMBER): Promise<{
     inviteCode: string;
     expireTime: Date;
   } | null> => {
@@ -214,7 +207,7 @@ export const useFamilyStore = defineStore('family', () => {
       isLoading.value = true;
 
       const response = await request.post<FamilyAPI.InviteMemberResponse>('/families/invite', {
-        userId,
+        email,
         role
       });
 
@@ -226,10 +219,10 @@ export const useFamilyStore = defineStore('family', () => {
       }
 
       return null;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Invite member error:', error);
       Taro.showToast({
-        title: error.message || '邀请失败',
+        title: '邀请失败',
         icon: 'none'
       });
       return null;
@@ -238,8 +231,9 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
+
   // 移除成员
-  const removeMember = async (userId: string): Promise<boolean> => {
+  const removeMember = async (userId: string) => {
     try {
       isLoading.value = true;
 
@@ -257,12 +251,12 @@ export const useFamilyStore = defineStore('family', () => {
         title: '移除成功',
         icon: 'success'
       });
-      
+
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Remove member error:', error);
       Taro.showToast({
-        title: error.message || '移除失败',
+        title: '移除失败',
         icon: 'none'
       });
       return false;
@@ -272,7 +266,7 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 更新成员角色
-  const updateMemberRole = async (userId: string, role: UserRole): Promise<boolean> => {
+  const updateMemberRole = async (userId: string, role: UserRole) => {
     try {
       isLoading.value = true;
 
@@ -291,12 +285,12 @@ export const useFamilyStore = defineStore('family', () => {
         title: '更新成功',
         icon: 'success'
       });
-      
+
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update member role error:', error);
       Taro.showToast({
-        title: error.message || '更新失败',
+        title: '更新失败',
         icon: 'none'
       });
       return false;
@@ -306,7 +300,7 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 离开家庭
-  const leaveFamily = async (): Promise<boolean> => {
+  const leaveFamily = async () => {
     try {
       isLoading.value = true;
 
@@ -327,15 +321,15 @@ export const useFamilyStore = defineStore('family', () => {
       }
 
       Taro.showToast({
-        title: '已离开家庭',
+        title: '离开成功',
         icon: 'success'
       });
-      
+
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Leave family error:', error);
       Taro.showToast({
-        title: error.message || '操作失败',
+        title: '离开失败',
         icon: 'none'
       });
       return false;
@@ -345,7 +339,7 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 解散家庭（仅管理员）
-  const dissolveFamily = async (): Promise<boolean> => {
+  const dissolveFamily = async () => {
     try {
       isLoading.value = true;
 
@@ -366,15 +360,15 @@ export const useFamilyStore = defineStore('family', () => {
       }
 
       Taro.showToast({
-        title: '家庭已解散',
+        title: '解散成功',
         icon: 'success'
       });
-      
+
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Dissolve family error:', error);
       Taro.showToast({
-        title: error.message || '操作失败',
+        title: '解散失败',
         icon: 'none'
       });
       return false;
@@ -384,13 +378,15 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 设置家庭信息（用于其他store调用）
-  const setFamily = (familyInfo: Family) => {
+  const setFamily = (familyInfo: Family | null) => {
     family.value = familyInfo;
-    setFamilyInfo(familyInfo);
+    if (familyInfo) {
+      setFamilyInfo(familyInfo);
+    }
   };
 
   // 检查成员权限
-  const checkMemberPermission = (userId: string, permission: string): boolean => {
+  const checkMemberPermission = (userId: string, permission: string) => {
     const member = members.value.find(m => m.id === userId);
     if (!member || !family.value) {
       return false;

@@ -9,18 +9,12 @@ import { getAppSettings, setAppSettings } from '../../utils/storage';
 export const useAppStore = defineStore('app', () => {
   // 状态
   const settings = ref<AppSettings>({
-    theme: 'light',
+    theme: 'auto',
     language: 'zh-CN',
-    currency: 'CNY',
-    notifications: {
-      recordChanges: true,
-      budgetAlerts: true,
-      memberActivities: true
-    },
-    privacy: {
-      showAmountInList: true,
-      requirePasswordForReports: false
-    }
+    autoBackup: true,
+    notificationEnabled: true,
+    soundEnabled: true,
+    vibrationEnabled: true
   });
 
   const systemInfo = ref<Taro.getSystemInfoSync.Result | null>(null);
@@ -44,9 +38,7 @@ export const useAppStore = defineStore('app', () => {
     if (savedSettings) {
       settings.value = {
         ...settings.value,
-        ...savedSettings,
-        theme: savedSettings.theme as 'auto' | 'dark' | 'light',
-        language: savedSettings.language as 'zh-CN' | 'en-US'
+        ...savedSettings
       };
     }
 
@@ -111,9 +103,9 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 设置主题
-  const setTheme = (theme: 'light' | 'dark' | 'auto') => {
+  const setTheme = (theme: string) => {
     let actualTheme = theme;
-    
+
     if (theme === 'auto') {
       // 根据系统主题自动设置
       actualTheme = systemInfo.value?.theme === 'dark' ? 'dark' : 'light';
@@ -123,7 +115,7 @@ export const useAppStore = defineStore('app', () => {
     if (actualTheme === 'dark') {
       Taro.setNavigationBarColor({
         frontColor: '#ffffff',
-        backgroundColor: '#1f1f1f'
+        backgroundColor: '#000000'
       });
     } else {
       Taro.setNavigationBarColor({
@@ -139,9 +131,9 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 设置语言
-  const setLanguage = (language: 'zh-CN' | 'en-US') => {
+  const setLanguage = (language: string) => {
     updateSettings({ language });
-    
+
     // 这里可以集成国际化库
     // i18n.locale = language;
   };
@@ -152,7 +144,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 显示加载状态
-  const showLoading = (title: string = '加载中...') => {
+  const showLoading = (title = '加载中...') => {
     loading.value = true;
     Taro.showLoading({ title });
   };
@@ -164,7 +156,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 显示提示
-  const showToast = (title: string, icon: 'success' | 'error' | 'loading' | 'none' = 'none', duration: number = 2000) => {
+  const showToast = (title: string, icon: any = 'none', duration = 2000) => {
     Taro.showToast({
       title,
       icon,
@@ -173,17 +165,11 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 显示模态框
-  const showModal = (options: {
-    title?: string;
-    content: string;
-    showCancel?: boolean;
-    cancelText?: string;
-    confirmText?: string;
-  }): Promise<boolean> => {
+  const showModal = (options: any) => {
     return new Promise((resolve) => {
       Taro.showModal({
         title: options.title || '提示',
-        content: options.content,
+        content: options.content || '',
         showCancel: options.showCancel !== false,
         cancelText: options.cancelText || '取消',
         confirmText: options.confirmText || '确定',
@@ -198,7 +184,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 显示操作菜单
-  const showActionSheet = (itemList: string[]): Promise<number> => {
+  const showActionSheet = (itemList: string[]) => {
     return new Promise((resolve, reject) => {
       Taro.showActionSheet({
         itemList,
@@ -226,7 +212,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 检查权限
-  const checkPermission = async (scope: string): Promise<boolean> => {
+  const checkPermission = async (scope: string) => {
     try {
       const result = await Taro.getSetting();
       return result.authSetting[scope] === true;
@@ -237,7 +223,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 请求权限
-  const requestPermission = async (scope: string): Promise<boolean> => {
+  const requestPermission = async (scope: string) => {
     try {
       await Taro.authorize({ scope });
       return true;
@@ -248,10 +234,10 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 打开设置页面
-  const openSetting = (): Promise<boolean> => {
+  const openSetting = () => {
     return new Promise((resolve) => {
       Taro.openSetting({
-        success: (_res) => {
+        success: () => {
           resolve(true);
         },
         fail: () => {
@@ -262,7 +248,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 复制到剪贴板
-  const copyToClipboard = async (text: string): Promise<boolean> => {
+  const copyToClipboard = async (text: string) => {
     try {
       await Taro.setClipboardData({ data: text });
       showToast('已复制到剪贴板', 'success');
@@ -275,17 +261,13 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 分享
-  const share = (options: {
-    title?: string;
-    path?: string;
-    imageUrl?: string;
-  }) => {
+  const share = (options: any) => {
     // 这个方法主要用于设置分享信息
     // 实际分享由页面的onShareAppMessage处理
     return {
-      title: options.title || '家账通 - 智能家庭记账',
+      title: options.title || '家账通',
       path: options.path || '/pages/index/index',
-      imageUrl: options.imageUrl || '/assets/images/share.png'
+      imageUrl: options.imageUrl || ''
     };
   };
 
@@ -293,12 +275,12 @@ export const useAppStore = defineStore('app', () => {
   const previewImage = (urls: string[], current?: string) => {
     Taro.previewImage({
       urls,
-      current: current || urls[0]
+      current
     });
   };
 
   // 保存图片到相册
-  const saveImageToPhotosAlbum = async (filePath: string): Promise<boolean> => {
+  const saveImageToPhotosAlbum = async (filePath: string) => {
     try {
       // 检查权限
       const hasPermission = await checkPermission('scope.writePhotosAlbum');
@@ -307,9 +289,9 @@ export const useAppStore = defineStore('app', () => {
         const granted = await requestPermission('scope.writePhotosAlbum');
         if (!granted) {
           const openSettings = await showModal({
-            content: '需要相册权限才能保存图片，是否去设置？'
+            content: '需要相册权限才能保存图片，是否前往设置开启？'
           });
-          
+
           if (openSettings) {
             await openSetting();
           }

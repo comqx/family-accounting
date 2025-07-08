@@ -42,7 +42,7 @@ export interface FamilySettings {
   currency: string;           // 货币单位
   budgetAlert: boolean;       // 预算预警
   autoSync: boolean;          // 自动同步
-  memberPermissions: {        // 成员权限
+  memberPermissions: {
     canAddRecord: boolean;
     canEditRecord: boolean;
     canDeleteRecord: boolean;
@@ -89,6 +89,7 @@ export interface Category {
   sort: number;
   isActive: boolean;
   createTime: Date;
+  updateTime: Date;
 }
 
 // 账单导入相关类型
@@ -110,43 +111,32 @@ export enum BillPlatform {
   ALIPAY = 'alipay',
   WECHAT = 'wechat',
   BANK_CARD = 'bank_card',
-  CREDIT_CARD = 'credit_card',
-  JD_BAITIAO = 'jd_baitiao'
+  CREDIT_CARD = 'credit_card'
 }
 
 export enum ImportStatus {
-  UPLOADING = 'uploading',
+  PENDING = 'pending',
   PROCESSING = 'processing',
   SUCCESS = 'success',
-  FAILED = 'failed',
-  MANUAL_REVIEW = 'manual_review'
+  FAILED = 'failed'
 }
 
+// OCR相关类型
 export interface OCRResult {
   text: string;
   confidence: number;
   words: OCRWord[];
-  regions: OCRRegion[];
 }
 
 export interface OCRWord {
   text: string;
   confidence: number;
-  boundingBox: BoundingBox;
-}
-
-export interface OCRRegion {
-  text: string;
-  confidence: number;
-  boundingBox: BoundingBox;
-  words: OCRWord[];
-}
-
-export interface BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  boundingBox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface ParsedBillData {
@@ -160,97 +150,95 @@ export interface ParsedBillData {
       end: Date;
     };
   };
-  confidence: number;
 }
 
 export interface ParsedTransaction {
   amount: number;
   type: RecordType;
   merchant: string;
-  category?: string;
-  description: string;
   date: Date;
-  confidence: number;
-  needsReview: boolean;
-  // 信用卡特有字段
-  creditCard?: CreditCardInfo;
+  platform: BillPlatform;
+  cardInfo?: CreditCardInfo;
   installment?: InstallmentInfo;
 }
 
-// 信用卡信息
 export interface CreditCardInfo {
-  cardNumber: string;      // 卡号后四位
-  bankName: string;        // 银行名称
-  cardType: string;        // 卡片类型
-  billingDate?: Date;      // 账单日
-  dueDate?: Date;          // 还款日
-  creditLimit?: number;    // 信用额度
-  availableCredit?: number; // 可用额度
+  cardNumber: string;
+  bankName: string;
+  cardType: string;
+  billingDate?: number;
+  dueDate?: number;
+  creditLimit?: number;
+  availableCredit?: number;
 }
 
-// 分期信息
 export interface InstallmentInfo {
-  totalPeriods: number;    // 总期数
-  currentPeriod: number;   // 当前期数
-  monthlyAmount: number;   // 每期金额
-  remainingAmount: number; // 剩余金额
-  interestRate: number;    // 利率
-  feeAmount?: number;      // 手续费
+  currentPeriod: number;
+  totalPeriods: number;
+  monthlyAmount: number;
+  remainingAmount: number;
+}
+
+// 预算相关类型
+export interface Budget {
+  id: string;
+  familyId: string;
+  name: string;
+  amount: number;
+  period: BudgetPeriod;
+  categoryIds: string[];
+  startDate: Date;
+  endDate: Date;
+  isActive: boolean;
+  createTime: Date;
+  updateTime: Date;
+}
+
+export enum BudgetPeriod {
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  YEARLY = 'yearly'
 }
 
 // 报表相关类型
-export interface ReportData {
+export interface Report {
+  id: string;
+  familyId: string;
+  type: ReportType;
   period: ReportPeriod;
-  summary: ReportSummary;
-  categoryStats: CategoryStat[];
-  trends: TrendData[];
-  comparisons?: ComparisonData[];
+  data: ReportData;
+  createTime: Date;
+}
+
+export enum ReportType {
+  EXPENSE_CATEGORY = 'expense_category',
+  INCOME_TREND = 'income_trend',
+  EXPENSE_TREND = 'expense_trend',
+  MEMBER_COMPARISON = 'member_comparison'
 }
 
 export enum ReportPeriod {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
-  YEARLY = 'yearly',
-  CUSTOM = 'custom'
+  YEARLY = 'yearly'
 }
 
-export interface ReportSummary {
-  totalIncome: number;
-  totalExpense: number;
-  balance: number;
-  transactionCount: number;
-  avgDailyExpense: number;
-}
-
-export interface CategoryStat {
-  categoryId: string;
-  categoryName: string;
-  amount: number;
-  percentage: number;
-  transactionCount: number;
-  trend: number; // 相比上期的变化百分比
-}
-
-export interface TrendData {
-  date: string;
-  income: number;
-  expense: number;
-  balance: number;
-}
-
-export interface ComparisonData {
-  period: string;
-  income: number;
-  expense: number;
-  change: number;
+export interface ReportData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor?: string[];
+    borderColor?: string;
+  }[];
 }
 
 // 通知相关类型
 export interface Notification {
   id: string;
+  userId: string;
   familyId: string;
-  userId?: string; // 如果为空则是全家庭通知
   type: NotificationType;
   title: string;
   content: string;
@@ -273,7 +261,7 @@ export enum NotificationType {
 export interface ApiResponse<T = any> {
   code: number;
   message: string;
-  data: T;
+  data?: T;
   timestamp: number;
 }
 
@@ -293,7 +281,7 @@ export interface PaginationResult<T> {
 // 表单相关类型
 export interface RecordForm {
   type: RecordType;
-  amount: string;
+  amount: number;
   categoryId: string;
   description: string;
   date: Date;
@@ -314,80 +302,16 @@ export interface FamilyForm {
   description: string;
 }
 
-// 自动分摊相关类型
-export interface SplitRecord {
-  id: string;
-  originalRecordId: string;
-  familyId: string;
-  totalAmount: number;
-  splitType: SplitType;
-  participants: SplitParticipant[];
-  description?: string;
-  status: SplitStatus;
-  createTime: Date;
-  updateTime: Date;
-  createdBy: string;
-}
-
-export enum SplitType {
-  EQUAL = 'equal',           // 平均分摊
-  PERCENTAGE = 'percentage', // 按比例分摊
-  AMOUNT = 'amount',         // 按金额分摊
-  CUSTOM = 'custom'          // 自定义分摊
-}
-
-export enum SplitStatus {
-  PENDING = 'pending',       // 待确认
-  CONFIRMED = 'confirmed',   // 已确认
-  SETTLED = 'settled',       // 已结算
-  CANCELLED = 'cancelled'    // 已取消
-}
-
-export interface SplitParticipant {
-  userId: string;
-  nickName: string;
-  avatarUrl: string;
-  amount: number;
-  percentage?: number;
-  status: ParticipantStatus;
-  confirmTime?: Date;
-  settleTime?: Date;
-}
-
-export enum ParticipantStatus {
-  PENDING = 'pending',       // 待确认
-  CONFIRMED = 'confirmed',   // 已确认
-  SETTLED = 'settled',       // 已结算
-  DECLINED = 'declined'      // 已拒绝
-}
-
-// 分摊模板
-export interface SplitTemplate {
-  id: string;
-  name: string;
-  familyId: string;
-  splitType: SplitType;
-  participants: {
-    userId: string;
-    percentage?: number;
-    isDefault: boolean;
-  }[];
-  isActive: boolean;
-  createTime: Date;
-}
-
 // 设置相关类型
 export interface AppSettings {
   theme: 'light' | 'dark' | 'auto';
-  language: 'zh-CN' | 'en-US';
+  language: string;
   currency: string;
   notifications: {
-    recordChanges: boolean;
     budgetAlerts: boolean;
     memberActivities: boolean;
   };
   privacy: {
-    showAmountInList: boolean;
     requirePasswordForReports: boolean;
   };
 }

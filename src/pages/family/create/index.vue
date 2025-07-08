@@ -98,7 +98,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
@@ -122,11 +122,11 @@ const canCreate = computed(() => {
 })
 
 // 方法
-const onNameInput = (e: any) => {
+const onNameInput = (e) => {
   familyForm.value.name = e.detail.value
 }
 
-const onDescInput = (e: any) => {
+const onDescInput = (e) => {
   familyForm.value.description = e.detail.value
 }
 
@@ -147,7 +147,7 @@ const handleCreateFamily = async () => {
         url: '/pages/index/index'
       })
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create family error:', error)
     appStore.showToast(error.message || '创建失败，请重试', 'none')
   } finally {
@@ -206,14 +206,14 @@ Taro.useShareAppMessage(() => {
 
   // 顶部导航
   .nav-header {
-    background: white;
+    background: 'white'
     padding: 20rpx 0;
-    text-align: center;
+    text-align: 'center'
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 
     .nav-title {
       font-size: 36rpx;
-      font-weight: bold;
+      font-weight: 'bold'
       color: #333;
     }
   }
@@ -224,7 +224,7 @@ Taro.useShareAppMessage(() => {
 
     // 欢迎区域
     .welcome-section {
-      text-align: center;
+      text-align: 'center'
       margin-bottom: 60rpx;
 
       .welcome-icon {
@@ -233,15 +233,15 @@ Taro.useShareAppMessage(() => {
       }
 
       .welcome-title {
-        display: block;
+        display: 'block'
         font-size: 42rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         color: #333;
         margin-bottom: 20rpx;
       }
 
       .welcome-desc {
-        display: block;
+        display: 'block'
         font-size: 28rpx;
         color: #666;
         line-height: 1.5;
@@ -250,7 +250,7 @@ Taro.useShareAppMessage(() => {
 
     // 表单区域
     .form-section {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       padding: 40rpx 30rpx;
       margin-bottom: 40rpx;
@@ -258,14 +258,14 @@ Taro.useShareAppMessage(() => {
 
       .form-item {
         margin-bottom: 40rpx;
-        position: relative;
+        position: 'relative'
 
         &:last-child {
           margin-bottom: 0;
         }
 
         .form-label {
-          display: block;
+          display: 'block'
           font-size: 30rpx;
           color: #333;
           margin-bottom: 20rpx;
@@ -283,7 +283,7 @@ Taro.useShareAppMessage(() => {
 
           &:focus {
             border-color: #1296db;
-            background: white;
+            background: 'white'
           }
 
           &::placeholder {
@@ -300,11 +300,11 @@ Taro.useShareAppMessage(() => {
           font-size: 30rpx;
           color: #333;
           background: #fafafa;
-          resize: none;
+          resize: 'none'
 
           &:focus {
             border-color: #1296db;
-            background: white;
+            background: 'white'
           }
 
           &::placeholder {
@@ -313,7 +313,7 @@ Taro.useShareAppMessage(() => {
         }
 
         .char-count {
-          position: absolute;
+          position: 'absolute'
           right: 20rpx;
           bottom: 20rpx;
           font-size: 24rpx;
@@ -327,18 +327,18 @@ Taro.useShareAppMessage(() => {
       margin-bottom: 60rpx;
 
       .section-title {
-        display: block;
+        display: 'block'
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         color: #333;
         margin-bottom: 30rpx;
       }
 
       .feature-list {
         .feature-item {
-          display: flex;
-          align-items: center;
-          background: white;
+          display: 'flex'
+          align-items: 'center'
+          background: 'white'
           padding: 30rpx;
           border-radius: 16rpx;
           margin-bottom: 20rpx;
@@ -357,7 +357,7 @@ Taro.useShareAppMessage(() => {
             flex: 1;
 
             .feature-name {
-              display: block;
+              display: 'block'
               font-size: 30rpx;
               font-weight: 500;
               color: #333;
@@ -365,7 +365,7 @@ Taro.useShareAppMessage(() => {
             }
 
             .feature-desc {
-              display: block;
+              display: 'block'
               font-size: 26rpx;
               color: #666;
               line-height: 1.4;
@@ -380,28 +380,28 @@ Taro.useShareAppMessage(() => {
       .create-btn {
         width: 100%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
+        color: 'white'
+        border: 'none'
         border-radius: 50rpx;
         padding: 28rpx 0;
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         margin-bottom: 40rpx;
         box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.3);
 
         &.disabled {
           background: #ccc;
-          box-shadow: none;
+          box-shadow: 'none'
         }
 
         &::after {
-          border: none;
+          border: 'none'
         }
       }
 
       .or-divider {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         margin-bottom: 40rpx;
 
         .divider-line {
@@ -419,16 +419,16 @@ Taro.useShareAppMessage(() => {
 
       .join-btn {
         width: 100%;
-        background: white;
+        background: 'white'
         color: #1296db;
         border: 2rpx solid #1296db;
         border-radius: 50rpx;
         padding: 28rpx 0;
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
 
         &::after {
-          border: none;
+          border: 'none'
         }
       }
     }

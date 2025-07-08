@@ -105,7 +105,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../stores'
@@ -119,16 +119,16 @@ const familyStore = useFamilyStore()
 const appStore = useAppStore()
 
 // 响应式数据
-const splitRecords = ref<SplitRecord[]>([])
-const currentFilter = ref<SplitStatus | 'all'>('all')
+const splitRecords = ref([])
+const currentFilter = ref('all')
 const isProcessing = ref(false)
 
 // 状态筛选选项
 const statusFilters = [
   { label: '全部', value: 'all' },
-  { label: '待确认', value: SplitStatus.PENDING },
-  { label: '已确认', value: SplitStatus.CONFIRMED },
-  { label: '已结算', value: SplitStatus.SETTLED }
+  { label: '待确认', value.PENDING },
+  { label: '已确认', value.CONFIRMED },
+  { label: '已结算', value.SETTLED }
 ]
 
 // 计算属性
@@ -152,11 +152,11 @@ const settledCount = computed(() =>
 )
 
 // 方法
-const switchFilter = (filter: SplitStatus | 'all') => {
+const switchFilter = (filter) => {
   currentFilter.value = filter
 }
 
-const getStatusText = (status: SplitStatus): string => {
+const getStatusText = (status) => {
   const statusMap = {
     [SplitStatus.PENDING]: '待确认',
     [SplitStatus.CONFIRMED]: '已确认',
@@ -166,7 +166,7 @@ const getStatusText = (status: SplitStatus): string => {
   return statusMap[status] || status
 }
 
-const getParticipantStatusText = (status: ParticipantStatus): string => {
+const getParticipantStatusText = (status) => {
   const statusMap = {
     [ParticipantStatus.PENDING]: '待确认',
     [ParticipantStatus.CONFIRMED]: '已确认',
@@ -176,13 +176,13 @@ const getParticipantStatusText = (status: ParticipantStatus): string => {
   return statusMap[status] || status
 }
 
-const hasUserParticipant = (split: SplitRecord): boolean => {
+const hasUserParticipant = (split) => {
   return split.participants.some(p => 
     p.userId === userStore.user?.id && p.status === ParticipantStatus.PENDING
   )
 }
 
-const confirmSplit = async (splitId: string) => {
+const confirmSplit = async (splitId) => {
   if (isProcessing.value) return
 
   try {
@@ -196,7 +196,7 @@ const confirmSplit = async (splitId: string) => {
     } else {
       appStore.showToast('确认失败', 'none')
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Confirm split error:', error)
     appStore.showToast(error.message || '确认失败', 'none')
   } finally {
@@ -204,7 +204,7 @@ const confirmSplit = async (splitId: string) => {
   }
 }
 
-const declineSplit = async (splitId: string) => {
+const declineSplit = async (splitId) => {
   if (isProcessing.value) return
 
   try {
@@ -224,7 +224,7 @@ const declineSplit = async (splitId: string) => {
     } else {
       appStore.showToast('操作失败', 'none')
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Decline split error:', error)
     appStore.showToast(error.message || '操作失败', 'none')
   } finally {
@@ -232,7 +232,7 @@ const declineSplit = async (splitId: string) => {
   }
 }
 
-const goToSplitDetail = (splitId: string) => {
+const goToSplitDetail = (splitId) => {
   Taro.navigateTo({
     url: `/pages/split/detail/index?id=${splitId}`
   })
@@ -294,26 +294,26 @@ Taro.useShareAppMessage(() => {
 
   // 顶部统计
   .stats-header {
-    background: white;
-    display: flex;
+    background: 'white'
+    display: 'flex'
     padding: 30rpx;
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 
     .stats-item {
       flex: 1;
-      text-align: center;
+      text-align: 'center'
 
       .stats-label {
-        display: block;
+        display: 'block'
         font-size: 24rpx;
         color: #666;
         margin-bottom: 8rpx;
       }
 
       .stats-value {
-        display: block;
+        display: 'block'
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
 
         &.pending {
           color: #ff9500;
@@ -332,14 +332,14 @@ Taro.useShareAppMessage(() => {
 
   // 筛选栏
   .filter-bar {
-    background: white;
-    display: flex;
+    background: 'white'
+    display: 'flex'
     padding: 20rpx 30rpx;
     border-top: 2rpx solid #f0f0f0;
 
     .filter-item {
       flex: 1;
-      text-align: center;
+      text-align: 'center'
       padding: 16rpx 20rpx;
       background: #f8f9fa;
       border-radius: 20rpx;
@@ -350,7 +350,7 @@ Taro.useShareAppMessage(() => {
 
       &.active {
         background: #1296db;
-        color: white;
+        color: 'white'
       }
     }
   }
@@ -360,7 +360,7 @@ Taro.useShareAppMessage(() => {
     padding: 30rpx;
 
     .empty-state {
-      text-align: center;
+      text-align: 'center'
       padding: 120rpx 0;
 
       .empty-icon {
@@ -369,29 +369,29 @@ Taro.useShareAppMessage(() => {
       }
 
       .empty-text {
-        display: block;
+        display: 'block'
         font-size: 32rpx;
         color: #666;
         margin-bottom: 10rpx;
       }
 
       .empty-desc {
-        display: block;
+        display: 'block'
         font-size: 26rpx;
         color: #999;
       }
     }
 
     .split-item {
-      background: white;
+      background: 'white'
       border-radius: 16rpx;
       padding: 30rpx;
       margin-bottom: 20rpx;
       box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 
       .split-header {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         justify-content: space-between;
         margin-bottom: 20rpx;
 
@@ -399,7 +399,7 @@ Taro.useShareAppMessage(() => {
           flex: 1;
 
           .split-desc {
-            display: block;
+            display: 'block'
             font-size: 30rpx;
             color: #333;
             font-weight: 500;
@@ -407,20 +407,20 @@ Taro.useShareAppMessage(() => {
           }
 
           .split-time {
-            display: block;
+            display: 'block'
             font-size: 24rpx;
             color: #999;
           }
         }
 
         .split-amount {
-          text-align: right;
+          text-align: 'right'
 
           .amount-text {
-            display: block;
+            display: 'block'
             font-size: 32rpx;
             color: #333;
-            font-weight: bold;
+            font-weight: 'bold'
             margin-bottom: 8rpx;
           }
 
@@ -428,7 +428,7 @@ Taro.useShareAppMessage(() => {
             padding: 4rpx 12rpx;
             border-radius: 10rpx;
             font-size: 20rpx;
-            color: white;
+            color: 'white'
 
             &.pending {
               background: #ff9500;
@@ -453,13 +453,13 @@ Taro.useShareAppMessage(() => {
         margin-bottom: 20rpx;
 
         .participant-item {
-          display: flex;
-          align-items: center;
+          display: 'flex'
+          align-items: 'center'
           padding: 15rpx 0;
           border-bottom: 2rpx solid #f0f0f0;
 
           &:last-child {
-            border-bottom: none;
+            border-bottom: 'none'
           }
 
           .participant-avatar {
@@ -473,14 +473,14 @@ Taro.useShareAppMessage(() => {
             flex: 1;
 
             .participant-name {
-              display: block;
+              display: 'block'
               font-size: 26rpx;
               color: #333;
               margin-bottom: 4rpx;
             }
 
             .participant-amount {
-              display: block;
+              display: 'block'
               font-size: 24rpx;
               color: #666;
             }
@@ -490,7 +490,7 @@ Taro.useShareAppMessage(() => {
             padding: 4rpx 12rpx;
             border-radius: 10rpx;
             font-size: 20rpx;
-            color: white;
+            color: 'white'
 
             &.pending {
               background: #ff9500;
@@ -512,28 +512,28 @@ Taro.useShareAppMessage(() => {
       }
 
       .split-actions {
-        display: flex;
+        display: 'flex'
         gap: 20rpx;
 
         .action-btn {
           flex: 1;
-          border: none;
+          border: 'none'
           border-radius: 20rpx;
           padding: 20rpx 0;
           font-size: 26rpx;
 
           &::after {
-            border: none;
+            border: 'none'
           }
 
           &.confirm {
             background: #1296db;
-            color: white;
+            color: 'white'
           }
 
           &.decline {
             background: #ff4757;
-            color: white;
+            color: 'white'
           }
 
           &:disabled {
@@ -546,23 +546,23 @@ Taro.useShareAppMessage(() => {
 
   // 创建按钮
   .create-btn {
-    position: fixed;
+    position: 'fixed'
     bottom: 120rpx;
     right: 30rpx;
     width: 100rpx;
     height: 100rpx;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: 'flex'
+    align-items: 'center'
+    justify-content: 'center'
     box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.4);
     z-index: 100;
 
     .create-icon {
       font-size: 48rpx;
-      color: white;
-      font-weight: bold;
+      color: 'white'
+      font-weight: 'bold'
     }
   }
 }

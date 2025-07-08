@@ -107,7 +107,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
@@ -154,7 +154,7 @@ const chooseImage = async () => {
     if (result.tempFilePaths.length > 0) {
       await processImage(result.tempFilePaths[0]);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (!error.errMsg?.includes('cancel')) {
       appStore.showToast('拍照失败，请重试', 'none');
     }
@@ -172,7 +172,7 @@ const chooseFromAlbum = async () => {
     if (result.tempFilePaths.length > 0) {
       await processImage(result.tempFilePaths[0]);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (!error.errMsg?.includes('cancel')) {
       appStore.showToast('选择图片失败，请重试', 'none');
     }
@@ -190,14 +190,14 @@ const batchImport = async () => {
     if (result.tempFilePaths.length > 0) {
       await processBatchImages(result.tempFilePaths);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (!error.errMsg?.includes('cancel')) {
       appStore.showToast('选择图片失败，请重试', 'none');
     }
   }
 }
 
-const processImage = async (imagePath: string) => {
+const processImage = async (imagePath) => {
   try {
     isProcessing.value = true;
     processingText.value = '正在识别账单...';
@@ -223,7 +223,7 @@ const processImage = async (imagePath: string) => {
       });
     }, 500);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Process image error:', error);
     appStore.showToast(error.message || '识别失败，请重试', 'none');
   } finally {
@@ -232,7 +232,7 @@ const processImage = async (imagePath: string) => {
   }
 }
 
-const processBatchImages = async (imagePaths: string[]) => {
+const processBatchImages = async (imagePaths) => {
   try {
     isProcessing.value = true;
     processingText.value = `正在批量识别 ${imagePaths.length} 张图片...`;
@@ -261,7 +261,7 @@ const processBatchImages = async (imagePaths: string[]) => {
       });
     }, 500);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Process batch images error:', error);
     appStore.showToast(error.message || '批量识别失败', 'none');
   } finally {
@@ -270,7 +270,7 @@ const processBatchImages = async (imagePaths: string[]) => {
   }
 }
 
-const viewImportResult = (importId: string) => {
+const viewImportResult = (importId) => {
   Taro.navigateTo({
     url: `/pages/import/result/index?id=${importId}`
   });
@@ -319,11 +319,11 @@ Taro.useShareAppMessage(() => {
     margin-bottom: 40rpx;
 
     .method-card {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       padding: 40rpx 30rpx;
       margin-bottom: 20rpx;
-      text-align: center;
+      text-align: 'center'
       box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
       transition: transform 0.2s ease;
 
@@ -337,15 +337,15 @@ Taro.useShareAppMessage(() => {
       }
 
       .method-title {
-        display: block;
+        display: 'block'
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         color: #333;
         margin-bottom: 10rpx;
       }
 
       .method-desc {
-        display: block;
+        display: 'block'
         font-size: 26rpx;
         color: #666;
         line-height: 1.4;
@@ -358,23 +358,23 @@ Taro.useShareAppMessage(() => {
     margin-bottom: 40rpx;
 
     .section-title {
-      display: block;
+      display: 'block'
       font-size: 30rpx;
-      font-weight: bold;
+      font-weight: 'bold'
       color: #333;
       margin-bottom: 20rpx;
     }
 
     .platform-list {
-      display: grid;
+      display: 'grid'
       grid-template-columns: repeat(2, 1fr);
       gap: 20rpx;
 
       .platform-item {
-        background: white;
+        background: 'white'
         border-radius: 16rpx;
         padding: 30rpx 20rpx;
-        text-align: center;
+        text-align: 'center'
         box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 
         .platform-icon {
@@ -403,7 +403,7 @@ Taro.useShareAppMessage(() => {
         }
 
         .platform-name {
-          display: block;
+          display: 'block'
           font-size: 26rpx;
           color: #333;
         }
@@ -416,21 +416,21 @@ Taro.useShareAppMessage(() => {
     margin-bottom: 40rpx;
 
     .section-title {
-      display: block;
+      display: 'block'
       font-size: 30rpx;
-      font-weight: bold;
+      font-weight: 'bold'
       color: #333;
       margin-bottom: 20rpx;
     }
 
     .tips-list {
-      background: white;
+      background: 'white'
       border-radius: 16rpx;
       padding: 30rpx;
       box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 
       .tip-item {
-        display: flex;
+        display: 'flex'
         align-items: flex-start;
         margin-bottom: 20rpx;
 
@@ -442,13 +442,13 @@ Taro.useShareAppMessage(() => {
           width: 40rpx;
           height: 40rpx;
           background: #1296db;
-          color: white;
+          color: 'white'
           border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: 'flex'
+          align-items: 'center'
+          justify-content: 'center'
           font-size: 22rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           margin-right: 20rpx;
           flex-shrink: 0;
         }
@@ -467,62 +467,62 @@ Taro.useShareAppMessage(() => {
   // 最近导入
   .recent-imports {
     .section-title {
-      display: block;
+      display: 'block'
       font-size: 30rpx;
-      font-weight: bold;
+      font-weight: 'bold'
       color: #333;
       margin-bottom: 20rpx;
     }
 
     .import-list {
-      background: white;
+      background: 'white'
       border-radius: 16rpx;
-      overflow: hidden;
+      overflow: 'hidden'
       box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 
       .import-item {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         padding: 30rpx;
         border-bottom: 2rpx solid #f0f0f0;
 
         &:last-child {
-          border-bottom: none;
+          border-bottom: 'none'
         }
 
         .import-info {
           flex: 1;
 
           .import-platform {
-            display: block;
+            display: 'block'
             font-size: 28rpx;
             color: #333;
             margin-bottom: 6rpx;
           }
 
           .import-time {
-            display: block;
+            display: 'block'
             font-size: 24rpx;
             color: #999;
           }
         }
 
         .import-stats {
-          text-align: right;
+          text-align: 'right'
           margin-right: 20rpx;
 
           .import-count {
-            display: block;
+            display: 'block'
             font-size: 24rpx;
             color: #666;
             margin-bottom: 6rpx;
           }
 
           .import-amount {
-            display: block;
+            display: 'block'
             font-size: 28rpx;
             color: #333;
-            font-weight: bold;
+            font-weight: 'bold'
           }
         }
 
@@ -536,22 +536,22 @@ Taro.useShareAppMessage(() => {
 
   // 处理状态覆盖层
   .processing-overlay {
-    position: fixed;
+    position: 'fixed'
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: 'flex'
+    align-items: 'center'
+    justify-content: 'center'
     z-index: 1000;
 
     .processing-content {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       padding: 60rpx 40rpx;
-      text-align: center;
+      text-align: 'center'
       min-width: 400rpx;
 
       .processing-icon {
@@ -560,7 +560,7 @@ Taro.useShareAppMessage(() => {
       }
 
       .processing-text {
-        display: block;
+        display: 'block'
         font-size: 28rpx;
         color: #333;
         margin-bottom: 30rpx;
@@ -571,7 +571,7 @@ Taro.useShareAppMessage(() => {
         height: 8rpx;
         background: #f0f0f0;
         border-radius: 4rpx;
-        overflow: hidden;
+        overflow: 'hidden'
 
         .progress-bar {
           height: 100%;

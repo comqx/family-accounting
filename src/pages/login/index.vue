@@ -104,7 +104,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
@@ -142,7 +142,7 @@ const handleWechatLogin = async () => {
         })
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Login error:', error)
     appStore.showToast(error.message || '登录失败，请重试', 'none')
   } finally {
@@ -194,14 +194,14 @@ Taro.useShareAppMessage(() => {
 .login-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  position: 'relative'
+  overflow: 'hidden'
+  display: 'flex'
+  flex-direction: 'column'
 
   // 背景装饰
   .bg-decoration {
-    position: absolute;
+    position: 'absolute'
     top: 0;
     left: 0;
     right: 0;
@@ -209,7 +209,7 @@ Taro.useShareAppMessage(() => {
     z-index: 0;
 
     .circle {
-      position: absolute;
+      position: 'absolute'
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.1);
 
@@ -239,16 +239,16 @@ Taro.useShareAppMessage(() => {
   // 主要内容
   .main-content {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: 'flex'
+    flex-direction: 'column'
+    justify-content: 'center'
     padding: 80rpx 60rpx;
-    position: relative;
+    position: 'relative'
     z-index: 1;
 
     // 头部
     .header {
-      text-align: center;
+      text-align: 'center'
       margin-bottom: 120rpx;
 
       .logo {
@@ -256,20 +256,20 @@ Taro.useShareAppMessage(() => {
 
         .logo-icon {
           font-size: 120rpx;
-          display: block;
+          display: 'block'
         }
       }
 
       .app-name {
-        display: block;
+        display: 'block'
         font-size: 48rpx;
-        font-weight: bold;
-        color: white;
+        font-weight: 'bold'
+        color: 'white'
         margin-bottom: 20rpx;
       }
 
       .app-desc {
-        display: block;
+        display: 'block'
         font-size: 28rpx;
         color: rgba(255, 255, 255, 0.8);
       }
@@ -280,8 +280,8 @@ Taro.useShareAppMessage(() => {
       margin-bottom: 120rpx;
 
       .feature-item {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         margin-bottom: 40rpx;
         padding: 0 20rpx;
 
@@ -292,7 +292,7 @@ Taro.useShareAppMessage(() => {
 
         .feature-text {
           font-size: 32rpx;
-          color: white;
+          color: 'white'
           font-weight: 500;
         }
       }
@@ -302,21 +302,21 @@ Taro.useShareAppMessage(() => {
     .login-section {
       .login-btn {
         width: 100%;
-        background: white;
-        border: none;
+        background: 'white'
+        border: 'none'
         border-radius: 50rpx;
         padding: 0;
         margin-bottom: 40rpx;
         box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
 
         &::after {
-          border: none;
+          border: 'none'
         }
 
         .btn-content {
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: 'flex'
+          align-items: 'center'
+          justify-content: 'center'
           padding: 28rpx 0;
 
           .wechat-icon {
@@ -327,7 +327,7 @@ Taro.useShareAppMessage(() => {
           .btn-text {
             font-size: 32rpx;
             color: #333;
-            font-weight: bold;
+            font-weight: 'bold'
           }
         }
 
@@ -337,13 +337,13 @@ Taro.useShareAppMessage(() => {
       }
 
       .login-tips {
-        text-align: center;
+        text-align: 'center'
         font-size: 24rpx;
         color: rgba(255, 255, 255, 0.8);
 
         .link-text {
           color: #ffd700;
-          text-decoration: underline;
+          text-decoration: 'underline'
         }
       }
     }
@@ -351,9 +351,9 @@ Taro.useShareAppMessage(() => {
 
   // 底部
   .footer {
-    text-align: center;
+    text-align: 'center'
     padding: 40rpx;
-    position: relative;
+    position: 'relative'
     z-index: 1;
 
     .footer-text {
@@ -364,36 +364,36 @@ Taro.useShareAppMessage(() => {
 
   // 弹窗样式
   .modal-overlay {
-    position: fixed;
+    position: 'fixed'
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: 'flex'
+    align-items: 'center'
+    justify-content: 'center'
     z-index: 1000;
     padding: 60rpx;
 
     .modal-content {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       width: 100%;
       max-height: 80vh;
-      display: flex;
-      flex-direction: column;
+      display: 'flex'
+      flex-direction: 'column'
 
       .modal-header {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         justify-content: space-between;
         padding: 40rpx 40rpx 20rpx;
         border-bottom: 2rpx solid #f0f0f0;
 
         .modal-title {
           font-size: 36rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           color: #333;
         }
 
@@ -402,9 +402,9 @@ Taro.useShareAppMessage(() => {
           color: #999;
           width: 60rpx;
           height: 60rpx;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: 'flex'
+          align-items: 'center'
+          justify-content: 'center'
         }
       }
 
@@ -425,14 +425,14 @@ Taro.useShareAppMessage(() => {
         .modal-btn {
           width: 100%;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
+          color: 'white'
+          border: 'none'
           border-radius: 12rpx;
           padding: 24rpx 0;
           font-size: 32rpx;
 
           &::after {
-            border: none;
+            border: 'none'
           }
         }
       }

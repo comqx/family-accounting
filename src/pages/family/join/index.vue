@@ -84,7 +84,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
@@ -104,7 +104,7 @@ const canJoin = computed(() => {
 })
 
 // 方法
-const onInviteCodeInput = (e: any) => {
+const onInviteCodeInput = (e) => {
   // 只允许输入数字和字母
   const value = e.detail.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
   inviteCode.value = value
@@ -124,7 +124,7 @@ const handleJoinFamily = async () => {
         url: '/pages/index/index'
       })
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Join family error:', error)
     appStore.showToast(error.message || '加入失败，请检查邀请码', 'none')
   } finally {
@@ -152,7 +152,7 @@ const handleScanCode = async () => {
         appStore.showToast('无效的邀请二维码', 'none')
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Scan code error:', error)
     if (error.errMsg && error.errMsg.includes('cancel')) {
       // 用户取消扫码
@@ -211,7 +211,7 @@ Taro.useShareAppMessage(() => {
 
     // 头部区域
     .header-section {
-      text-align: center;
+      text-align: 'center'
       margin-bottom: 80rpx;
 
       .header-icon {
@@ -220,15 +220,15 @@ Taro.useShareAppMessage(() => {
       }
 
       .header-title {
-        display: block;
+        display: 'block'
         font-size: 42rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         color: #333;
         margin-bottom: 20rpx;
       }
 
       .header-desc {
-        display: block;
+        display: 'block'
         font-size: 28rpx;
         color: #666;
         line-height: 1.5;
@@ -237,7 +237,7 @@ Taro.useShareAppMessage(() => {
 
     // 输入区域
     .input-section {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       padding: 40rpx 30rpx;
       margin-bottom: 40rpx;
@@ -245,7 +245,7 @@ Taro.useShareAppMessage(() => {
 
       .input-item {
         .input-label {
-          display: block;
+          display: 'block'
           font-size: 30rpx;
           color: #333;
           margin-bottom: 20rpx;
@@ -260,19 +260,19 @@ Taro.useShareAppMessage(() => {
           font-size: 36rpx;
           color: #333;
           background: #fafafa;
-          text-align: center;
+          text-align: 'center'
           letter-spacing: 8rpx;
-          font-weight: bold;
+          font-weight: 'bold'
 
           &:focus {
             border-color: #1296db;
-            background: white;
+            background: 'white'
           }
 
           &::placeholder {
             color: #999;
-            letter-spacing: normal;
-            font-weight: normal;
+            letter-spacing: 'normal'
+            font-weight: 'normal'
           }
         }
       }
@@ -295,27 +295,27 @@ Taro.useShareAppMessage(() => {
       .join-btn {
         width: 100%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
+        color: 'white'
+        border: 'none'
         border-radius: 50rpx;
         padding: 28rpx 0;
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         margin-bottom: 30rpx;
         box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.3);
 
         &.disabled {
           background: #ccc;
-          box-shadow: none;
+          box-shadow: 'none'
         }
 
         &::after {
-          border: none;
+          border: 'none'
         }
       }
 
       .back-section {
-        text-align: center;
+        text-align: 'center'
 
         .back-text {
           font-size: 28rpx;
@@ -332,23 +332,23 @@ Taro.useShareAppMessage(() => {
 
     // 帮助区域
     .help-section {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       padding: 40rpx 30rpx;
       margin-bottom: 40rpx;
       box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 
       .help-title {
-        display: block;
+        display: 'block'
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         color: #333;
         margin-bottom: 30rpx;
       }
 
       .help-steps {
         .help-step {
-          display: flex;
+          display: 'flex'
           align-items: flex-start;
           margin-bottom: 24rpx;
 
@@ -360,13 +360,13 @@ Taro.useShareAppMessage(() => {
             width: 48rpx;
             height: 48rpx;
             background: #1296db;
-            color: white;
+            color: 'white'
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: 'flex'
+            align-items: 'center'
+            justify-content: 'center'
             font-size: 24rpx;
-            font-weight: bold;
+            font-weight: 'bold'
             margin-right: 20rpx;
             flex-shrink: 0;
           }
@@ -385,8 +385,8 @@ Taro.useShareAppMessage(() => {
     // 扫码区域
     .scan-section {
       .scan-divider {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         margin-bottom: 30rpx;
 
         .divider-line {
@@ -404,7 +404,7 @@ Taro.useShareAppMessage(() => {
 
       .scan-btn {
         width: 100%;
-        background: white;
+        background: 'white'
         color: #333;
         border: 2rpx solid #e0e0e0;
         border-radius: 50rpx;
@@ -412,13 +412,13 @@ Taro.useShareAppMessage(() => {
         font-size: 32rpx;
 
         &::after {
-          border: none;
+          border: 'none'
         }
 
         .scan-content {
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: 'flex'
+          align-items: 'center'
+          justify-content: 'center'
 
           .scan-icon {
             font-size: 36rpx;

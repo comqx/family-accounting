@@ -223,7 +223,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
@@ -286,7 +286,7 @@ const editProfile = () => {
   appStore.showToast('功能开发中', 'none')
 }
 
-const onThemeChange = (e: any) => {
+const onThemeChange = (e) => {
   const isDark = e.detail.value
   appStore.setTheme(isDark ? 'dark' : 'light')
 }
@@ -299,9 +299,9 @@ const closeLanguageModal = () => {
   showLanguageModal.value = false
 }
 
-const selectLanguage = (language: string) => {
+const selectLanguage = (language) => {
   currentLanguage.value = language
-  appStore.setLanguage(language as 'zh-CN' | 'en-US')
+  appStore.setLanguage(language)
   closeLanguageModal()
   appStore.showToast('语言设置已保存', 'success')
 }
@@ -314,19 +314,19 @@ const closeCurrencyModal = () => {
   showCurrencyModal.value = false
 }
 
-const selectCurrency = (currency: string) => {
+const selectCurrency = (currency) => {
   currentCurrency.value = currency
   appStore.setCurrency(currency)
   closeCurrencyModal()
   appStore.showToast('货币设置已保存', 'success')
 }
 
-const onNotificationChange = (key: string, e: any) => {
+const onNotificationChange = (key, e) => {
   notifications.value[key] = e.detail.value
   saveSettings()
 }
 
-const onPrivacyChange = (key: string, e: any) => {
+const onPrivacyChange = (key, e) => {
   privacy.value[key] = e.detail.value
   saveSettings()
 }
@@ -452,7 +452,7 @@ Taro.useLoad(() => {
     margin-bottom: 40rpx;
 
     .section-title {
-      display: block;
+      display: 'block'
       font-size: 28rpx;
       color: #666;
       margin: 30rpx 30rpx 20rpx;
@@ -460,33 +460,33 @@ Taro.useLoad(() => {
     }
 
     .settings-group {
-      background: white;
+      background: 'white'
       margin: 0 30rpx;
       border-radius: 16rpx;
-      overflow: hidden;
+      overflow: 'hidden'
 
       .setting-item {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         padding: 30rpx;
         border-bottom: 2rpx solid #f0f0f0;
 
         &:last-child {
-          border-bottom: none;
+          border-bottom: 'none'
         }
 
         .setting-info {
           flex: 1;
 
           .setting-label {
-            display: block;
+            display: 'block'
             font-size: 30rpx;
             color: #333;
             margin-bottom: 6rpx;
           }
 
           .setting-desc {
-            display: block;
+            display: 'block'
             font-size: 24rpx;
             color: #999;
           }
@@ -503,47 +503,47 @@ Taro.useLoad(() => {
 
   // 弹窗样式
   .modal-overlay {
-    position: fixed;
+    position: 'fixed'
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: flex;
+    display: 'flex'
     align-items: flex-end;
     z-index: 1000;
 
     .modal-content {
-      background: white;
+      background: 'white'
       border-radius: 20rpx 20rpx 0 0;
       width: 100%;
       max-height: 60vh;
 
       .modal-header {
         padding: 40rpx;
-        text-align: center;
+        text-align: 'center'
         border-bottom: 2rpx solid #f0f0f0;
 
         .modal-title {
           font-size: 32rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           color: #333;
         }
       }
 
       .modal-body {
         max-height: 400rpx;
-        overflow-y: auto;
+        overflow-y: 'auto'
 
         .option-item {
-          display: flex;
-          align-items: center;
+          display: 'flex'
+          align-items: 'center'
           justify-content: space-between;
           padding: 30rpx 40rpx;
           border-bottom: 2rpx solid #f0f0f0;
 
           &:last-child {
-            border-bottom: none;
+            border-bottom: 'none'
           }
 
           &.active {
@@ -558,7 +558,7 @@ Taro.useLoad(() => {
           .check-icon {
             font-size: 32rpx;
             color: #1296db;
-            font-weight: bold;
+            font-weight: 'bold'
           }
         }
       }

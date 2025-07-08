@@ -30,13 +30,13 @@ export const useCategoryStore = defineStore('category', () => {
   );
 
   // 获取分类列表
-  const loadCategories = async (familyId?: string): Promise<boolean> => {
+  const loadCategories = async (familyId: string, includeDefault = true) => {
     try {
       isLoading.value = true;
 
       const response = await request.get<CategoryAPI.GetCategoriesResponse>('/categories', {
         familyId,
-        includeDefault: true
+        includeDefault
       });
 
       if (response.data?.categories) {
@@ -45,7 +45,7 @@ export const useCategoryStore = defineStore('category', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Load categories error:', error);
       return false;
     } finally {
@@ -54,13 +54,7 @@ export const useCategoryStore = defineStore('category', () => {
   };
 
   // 创建分类
-  const createCategory = async (categoryData: {
-    name: string;
-    icon: string;
-    color: string;
-    type: RecordType;
-    parentId?: string;
-  }): Promise<boolean> => {
+  const createCategory = async (categoryData: Partial<Category>) => {
     try {
       isLoading.value = true;
 
@@ -69,20 +63,20 @@ export const useCategoryStore = defineStore('category', () => {
       if (response.data?.category) {
         categories.value.push(response.data.category);
         sortCategories();
-        
+
         Taro.showToast({
           title: '创建成功',
           icon: 'success'
         });
-        
+
         return true;
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Create category error:', error);
       Taro.showToast({
-        title: error.message || '创建失败',
+        title: '创建失败',
         icon: 'none'
       });
       return false;
@@ -92,13 +86,7 @@ export const useCategoryStore = defineStore('category', () => {
   };
 
   // 更新分类
-  const updateCategory = async (id: string, categoryData: Partial<{
-    name: string;
-    icon: string;
-    color: string;
-    type: RecordType;
-    parentId?: string;
-  }>): Promise<boolean> => {
+  const updateCategory = async (id: string, categoryData: Partial<Category>) => {
     try {
       isLoading.value = true;
 
@@ -109,20 +97,20 @@ export const useCategoryStore = defineStore('category', () => {
         if (index !== -1) {
           categories.value[index] = response.data.category;
         }
-        
+
         Taro.showToast({
           title: '更新成功',
           icon: 'success'
         });
-        
+
         return true;
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update category error:', error);
       Taro.showToast({
-        title: error.message || '更新失败',
+        title: '更新失败',
         icon: 'none'
       });
       return false;
@@ -132,7 +120,7 @@ export const useCategoryStore = defineStore('category', () => {
   };
 
   // 删除分类
-  const deleteCategory = async (id: string): Promise<boolean> => {
+  const deleteCategory = async (id: string) => {
     try {
       isLoading.value = true;
 
@@ -142,17 +130,17 @@ export const useCategoryStore = defineStore('category', () => {
       if (index !== -1) {
         categories.value.splice(index, 1);
       }
-      
+
       Taro.showToast({
         title: '删除成功',
         icon: 'success'
       });
-      
+
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Delete category error:', error);
       Taro.showToast({
-        title: error.message || '删除失败',
+        title: '删除失败',
         icon: 'none'
       });
       return false;
@@ -167,19 +155,19 @@ export const useCategoryStore = defineStore('category', () => {
       // 默认分类排在前面
       if (a.isDefault && !b.isDefault) return -1;
       if (!a.isDefault && b.isDefault) return 1;
-      
+
       // 按类型排序
       if (a.type !== b.type) {
         return a.type === RecordType.EXPENSE ? -1 : 1;
       }
-      
+
       // 按排序字段排序
       return a.sort - b.sort;
     });
   };
 
   // 更新分类排序
-  const updateCategoriesSort = async (categoryIds: string[]): Promise<boolean> => {
+  const updateCategoriesSort = async (categoryIds: string[]) => {
     try {
       const response = await request.put<CategoryAPI.SortCategoriesResponse>('/categories/sort', {
         categoryIds
@@ -191,29 +179,29 @@ export const useCategoryStore = defineStore('category', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update categories sort error:', error);
       return false;
     }
   };
 
   // 根据ID获取分类
-  const getCategoryById = (id: string): Category | undefined => {
+  const getCategoryById = (id: string) => {
     return categories.value.find(cat => cat.id === id);
   };
 
   // 根据类型获取分类
-  const getCategoriesByType = (type: RecordType): Category[] => {
+  const getCategoriesByType = (type: RecordType) => {
     return categories.value.filter(cat => cat.type === type && cat.isActive);
   };
 
   // 搜索分类
-  const searchCategories = (keyword: string): Category[] => {
+  const searchCategories = (keyword: string) => {
     if (!keyword.trim()) {
       return categories.value;
     }
-    
-    return categories.value.filter(cat => 
+
+    return categories.value.filter(cat =>
       cat.name.toLowerCase().includes(keyword.toLowerCase()) && cat.isActive
     );
   };
@@ -221,24 +209,22 @@ export const useCategoryStore = defineStore('category', () => {
   // 初始化默认分类
   const initDefaultCategories = () => {
     const defaultExpenseCategories = [
-      { name: '餐饮', icon: '🍽️', color: '#ff6b6b' },
-      { name: '交通', icon: '🚗', color: '#4ecdc4' },
-      { name: '购物', icon: '🛍️', color: '#45b7d1' },
-      { name: '娱乐', icon: '🎮', color: '#96ceb4' },
-      { name: '医疗', icon: '🏥', color: '#feca57' },
-      { name: '教育', icon: '📚', color: '#ff9ff3' },
-      { name: '住房', icon: '🏠', color: '#54a0ff' },
-      { name: '通讯', icon: '📱', color: '#5f27cd' },
-      { name: '其他', icon: '💰', color: '#999999' }
+      { name: '餐饮', icon: '🍽️' },
+      { name: '交通', icon: '🚗' },
+      { name: '购物', icon: '🛍️' },
+      { name: '娱乐', icon: '🎮' },
+      { name: '医疗', icon: '🏥' },
+      { name: '教育', icon: '📚' },
+      { name: '住房', icon: '🏠' },
+      { name: '其他', icon: '📝' }
     ];
 
     const defaultIncomeCategories = [
-      { name: '工资', icon: '💼', color: '#00d2d3' },
-      { name: '奖金', icon: '🎁', color: '#ff9f43' },
-      { name: '投资', icon: '📈', color: '#10ac84' },
-      { name: '兼职', icon: '💻', color: '#ee5a24' },
-      { name: '红包', icon: '🧧', color: '#ff3838' },
-      { name: '其他', icon: '💰', color: '#999999' }
+      { name: '工资', icon: '💰' },
+      { name: '奖金', icon: '🎁' },
+      { name: '投资', icon: '📈' },
+      { name: '兼职', icon: '💼' },
+      { name: '其他', icon: '📝' }
     ];
 
     // 支出分类
@@ -247,12 +233,13 @@ export const useCategoryStore = defineStore('category', () => {
         id: `expense_${index}`,
         name: cat.name,
         icon: cat.icon,
-        color: cat.color,
         type: RecordType.EXPENSE,
         isDefault: true,
-        sort: index,
         isActive: true,
-        createTime: new Date()
+        sort: index,
+        familyId: '',
+        createTime: new Date(),
+        updateTime: new Date()
       });
     });
 
@@ -262,12 +249,13 @@ export const useCategoryStore = defineStore('category', () => {
         id: `income_${index}`,
         name: cat.name,
         icon: cat.icon,
-        color: cat.color,
         type: RecordType.INCOME,
         isDefault: true,
-        sort: index,
         isActive: true,
-        createTime: new Date()
+        sort: index,
+        familyId: '',
+        createTime: new Date(),
+        updateTime: new Date()
       });
     });
   };

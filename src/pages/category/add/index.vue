@@ -98,7 +98,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useCategoryStore, useAppStore } from '../../../stores'
@@ -110,13 +110,8 @@ const categoryStore = useCategoryStore()
 const appStore = useAppStore()
 
 // 响应式数据
-const categoryForm = ref<{
-  type: RecordType;
-  name: string;
-  icon: string;
-  color: string;
-}>({
-  type: RecordType.EXPENSE,
+const categoryForm = ref({
+  type: 'EXPENSE',
   name: '',
   icon: '',
   color: '#ff6b6b'
@@ -153,21 +148,21 @@ const canSave = computed(() => {
 })
 
 // 方法
-const switchType = (type: RecordType) => {
+const switchType = (type) => {
   categoryForm.value.type = type
   // 切换类型时重置图标
   categoryForm.value.icon = ''
 }
 
-const onNameInput = (e: any) => {
+const onNameInput = (e) => {
   categoryForm.value.name = e.detail.value
 }
 
-const selectIcon = (icon: string) => {
+const selectIcon = (icon) => {
   categoryForm.value.icon = icon
 }
 
-const selectColor = (color: string) => {
+const selectColor = (color) => {
   categoryForm.value.color = color
 }
 
@@ -187,7 +182,7 @@ const handleSave = async () => {
       Taro.navigateBack()
     }, 1000)
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Save category error:', error)
     appStore.showToast(error.message || '保存失败', 'none')
   } finally {
@@ -213,7 +208,7 @@ const initPage = () => {
   const options = currentPage.options || {}
 
   if (options.type) {
-    categoryForm.value.type = options.type as RecordType
+    categoryForm.value.type = options.type
   }
 }
 
@@ -396,23 +391,23 @@ Taro.useLoad(() => {
 
   // 操作区域
   .action-section {
-    position: fixed;
+    position: 'fixed'
     bottom: 0;
     left: 0;
     right: 0;
-    background: white;
+    background: 'white'
     padding: 30rpx;
     box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
 
     .save-btn {
       width: 100%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
+      color: 'white'
+      border: 'none'
       border-radius: 50rpx;
       padding: 28rpx 0;
       font-size: 32rpx;
-      font-weight: bold;
+      font-weight: 'bold'
 
       &.disabled {
         background: #ccc;
@@ -420,7 +415,7 @@ Taro.useLoad(() => {
       }
 
       &::after {
-        border: none;
+        border: 'none'
       }
     }
   }

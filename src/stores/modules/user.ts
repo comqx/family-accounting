@@ -30,7 +30,7 @@ export const useUserStore = defineStore('user', () => {
     if (savedToken && savedUser) {
       token.value = savedToken;
       if (savedUser && typeof savedUser === 'object' && 'id' in savedUser) {
-        user.value = savedUser as User;
+        user.value = savedUser;
       }
       isLoggedIn.value = true;
       request.setToken(savedToken);
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 微信登录
-  const login = async (): Promise<boolean> => {
+  const login = async () => {
     try {
       isLoading.value = true;
 
@@ -50,11 +50,11 @@ export const useUserStore = defineStore('user', () => {
 
       // 调用登录接口
       const response = await request.post<AuthAPI.LoginResponse>('/auth/login', {
-        code: loginResult.code
+        code
       });
 
       if (response.data) {
-        const { token: newToken, user: userInfo, family } = response.data;
+        const { token: newToken, user: userInfo } = response.data;
         
         // 保存token和用户信息
         token.value = newToken;
@@ -76,10 +76,10 @@ export const useUserStore = defineStore('user', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Login error:', error);
       Taro.showToast({
-        title: error.message || '登录失败',
+        title: '登录失败',
         icon: 'none'
       });
       return false;
@@ -89,7 +89,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 获取用户信息
-  const getUserProfile = async (): Promise<boolean> => {
+  const getUserProfile = async () => {
     try {
       const response = await request.get<UserAPI.GetProfileResponse>('/user/profile');
       
@@ -100,17 +100,14 @@ export const useUserStore = defineStore('user', () => {
       }
       
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get user profile error:', error);
       return false;
     }
   };
 
   // 更新用户信息
-  const updateProfile = async (profileData: {
-    nickName?: string;
-    avatarUrl?: string;
-  }): Promise<boolean> => {
+  const updateProfile = async (profileData: Partial<User>) => {
     try {
       isLoading.value = true;
 
@@ -124,15 +121,15 @@ export const useUserStore = defineStore('user', () => {
           title: '更新成功',
           icon: 'success'
         });
-        
+
         return true;
       }
       
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update profile error:', error);
       Taro.showToast({
-        title: error.message || '更新失败',
+        title: '更新失败',
         icon: 'none'
       });
       return false;
@@ -156,22 +153,22 @@ export const useUserStore = defineStore('user', () => {
         nickName: userInfo.userInfo.nickName,
         avatarUrl: userInfo.userInfo.avatarUrl
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get wechat user info error:', error);
-      
+
       if (error.errMsg && error.errMsg.includes('auth deny')) {
         Taro.showToast({
-          title: '需要授权才能使用',
+          title: '用户取消授权',
           icon: 'none'
         });
       }
-      
+
       return null;
     }
   };
 
   // 刷新token
-  const refreshToken = async (): Promise<boolean> => {
+  const refreshToken = async () => {
     try {
       const currentToken = getToken();
       if (!currentToken) {
@@ -191,7 +188,7 @@ export const useUserStore = defineStore('user', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Refresh token error:', error);
       // token刷新失败，清除登录状态
       logout();
@@ -200,7 +197,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 检查登录状态
-  const checkLoginStatus = async (): Promise<boolean> => {
+  const checkLoginStatus = async () => {
     if (!isLoggedIn.value || !token.value) {
       return false;
     }
@@ -250,7 +247,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 检查权限
-  const hasPermission = (permission: string): boolean => {
+  const hasPermission = (permission: string) => {
     if (!user.value || !hasFamily.value) {
       return false;
     }
@@ -279,9 +276,11 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 设置用户信息（用于其他store调用）
-  const setUser = (userInfo: User) => {
+  const setUser = (userInfo: User | null) => {
     user.value = userInfo;
-    setUserInfo(userInfo);
+    if (userInfo) {
+      setUserInfo(userInfo);
+    }
   };
 
   return {

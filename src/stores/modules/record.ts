@@ -37,15 +37,7 @@ export const useRecordStore = defineStore('record', () => {
   );
 
   // 创建记录
-  const createRecord = async (recordData: {
-    type: RecordType;
-    amount: number;
-    categoryId: string;
-    description?: string;
-    date: Date;
-    tags?: string[];
-    images?: string[];
-  }): Promise<boolean> => {
+  const createRecord = async (recordData: Partial<AccountRecord>) => {
     try {
       isLoading.value = true;
 
@@ -57,7 +49,7 @@ export const useRecordStore = defineStore('record', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Create record error:', error);
       throw error;
     } finally {
@@ -66,15 +58,7 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 更新记录
-  const updateRecord = async (id: string, recordData: Partial<{
-    type: RecordType;
-    amount: number;
-    categoryId: string;
-    description?: string;
-    date: Date;
-    tags?: string[];
-    images?: string[];
-  }>): Promise<boolean> => {
+  const updateRecord = async (id: string, recordData: Partial<AccountRecord>) => {
     try {
       isLoading.value = true;
 
@@ -98,7 +82,7 @@ export const useRecordStore = defineStore('record', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update record error:', error);
       throw error;
     } finally {
@@ -107,7 +91,7 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 删除记录
-  const deleteRecord = async (id: string): Promise<boolean> => {
+  const deleteRecord = async (id: string) => {
     try {
       isLoading.value = true;
 
@@ -124,7 +108,7 @@ export const useRecordStore = defineStore('record', () => {
       }
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Delete record error:', error);
       throw error;
     } finally {
@@ -133,7 +117,7 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 批量删除记录
-  const batchDeleteRecords = async (ids: string[]): Promise<boolean> => {
+  const batchDeleteRecords = async (ids: string[]) => {
     try {
       isLoading.value = true;
 
@@ -146,15 +130,15 @@ export const useRecordStore = defineStore('record', () => {
         records.value = records.value.filter(record => !ids.includes(record.id));
         
         Taro.showToast({
-          title: `已删除${response.data.deletedCount}条记录`,
+          title: '删除成功',
           icon: 'success'
         });
-        
+
         return true;
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Batch delete records error:', error);
       throw error;
     } finally {
@@ -163,27 +147,16 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 获取记录列表
-  const loadRecords = async (params?: {
-    familyId?: string;
-    startDate?: Date;
-    endDate?: Date;
-    type?: RecordType;
-    categoryId?: string;
-    userId?: string;
-    keyword?: string;
-    page?: number;
-    pageSize?: number;
-    refresh?: boolean;
-  }): Promise<boolean> => {
+  const loadRecords = async (params?: any) => {
     try {
       isLoading.value = true;
 
       const page = params?.refresh ? 1 : (params?.page || currentPage.value);
-      
+
       const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
         ...params,
         page,
-        pageSize: params?.pageSize || 20
+        pageSize: 20
       });
 
       if (response.data) {
@@ -200,7 +173,7 @@ export const useRecordStore = defineStore('record', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Load records error:', error);
       return false;
     } finally {
@@ -209,7 +182,7 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 获取记录详情
-  const getRecordDetail = async (id: string): Promise<boolean> => {
+  const getRecordDetail = async (id: string) => {
     try {
       isLoading.value = true;
 
@@ -221,7 +194,7 @@ export const useRecordStore = defineStore('record', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get record detail error:', error);
       return false;
     } finally {
@@ -230,7 +203,7 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 获取最近记录
-  const getRecentRecords = async (limit: number = 10): Promise<AccountRecord[]> => {
+  const getRecentRecords = async (limit = 10) => {
     try {
       const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
         page: 1,
@@ -242,7 +215,7 @@ export const useRecordStore = defineStore('record', () => {
       }
 
       return [];
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get recent records error:', error);
       return [];
     }
@@ -260,7 +233,7 @@ export const useRecordStore = defineStore('record', () => {
         startDate,
         endDate,
         page: 1,
-        pageSize: 1000 // 获取所有记录用于统计
+        pageSize: 1000
       });
 
       if (response.data?.list) {
@@ -287,7 +260,7 @@ export const useRecordStore = defineStore('record', () => {
         balance: 0,
         recordCount: 0
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get stats by date range error:', error);
       return {
         totalIncome: 0,
@@ -299,7 +272,7 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 按分类统计
-  const getStatsByCategory = async (startDate?: Date, endDate?: Date): Promise<{
+  const getStatsByCategory = async (startDate: Date, endDate: Date): Promise<{
     categoryId: string;
     categoryName: string;
     amount: number;
@@ -316,7 +289,7 @@ export const useRecordStore = defineStore('record', () => {
 
       if (response.data?.list) {
         const records = response.data.list;
-        const categoryStats = new Map<string, { amount: number; count: number }>();
+        const categoryStats = new Map<string, { amount: number; count: number; }>();
         let totalAmount = 0;
 
         records.forEach(record => {
@@ -330,7 +303,7 @@ export const useRecordStore = defineStore('record', () => {
 
         return Array.from(categoryStats.entries()).map(([categoryId, stats]) => ({
           categoryId,
-          categoryName: '', // 需要从分类store获取
+          categoryName: '', // 这里需要从分类store获取名称
           amount: stats.amount,
           count: stats.count,
           percentage: totalAmount > 0 ? (stats.amount / totalAmount) * 100 : 0
@@ -338,19 +311,19 @@ export const useRecordStore = defineStore('record', () => {
       }
 
       return [];
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get stats by category error:', error);
       return [];
     }
   };
 
   // 搜索记录
-  const searchRecords = async (keyword: string): Promise<AccountRecord[]> => {
+  const searchRecords = async (keyword: string) => {
     try {
       const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
         keyword,
         page: 1,
-        pageSize: 100
+        pageSize: 50
       });
 
       if (response.data?.list) {
@@ -358,14 +331,14 @@ export const useRecordStore = defineStore('record', () => {
       }
 
       return [];
-    } catch (error: any) {
+    } catch (error) {
       console.error('Search records error:', error);
       return [];
     }
   };
 
   // 加载更多记录
-  const loadMoreRecords = async (): Promise<boolean> => {
+  const loadMoreRecords = async () => {
     if (!hasMore.value || isLoading.value) {
       return false;
     }
@@ -376,7 +349,7 @@ export const useRecordStore = defineStore('record', () => {
   };
 
   // 刷新记录列表
-  const refreshRecords = async (): Promise<boolean> => {
+  const refreshRecords = async () => {
     return await loadRecords({
       refresh: true
     });

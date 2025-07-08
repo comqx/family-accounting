@@ -100,7 +100,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
@@ -236,11 +236,11 @@ Taro.useShareAppMessage(() => {
     margin: 30rpx;
     border-radius: 20rpx;
     padding: 40rpx 30rpx;
-    color: white;
+    color: 'white'
 
     .user-info {
-      display: flex;
-      align-items: center;
+      display: 'flex'
+      align-items: 'center'
       margin-bottom: 40rpx;
 
       .user-avatar {
@@ -248,14 +248,14 @@ Taro.useShareAppMessage(() => {
         height: 100rpx;
         background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: 'flex'
+        align-items: 'center'
+        justify-content: 'center'
         margin-right: 30rpx;
 
         .avatar-text {
           font-size: 48rpx;
-          font-weight: bold;
+          font-weight: 'bold'
         }
       }
 
@@ -263,14 +263,14 @@ Taro.useShareAppMessage(() => {
         flex: 1;
 
         .user-name {
-          display: block;
+          display: 'block'
           font-size: 36rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           margin-bottom: 10rpx;
         }
 
         .user-role {
-          display: block;
+          display: 'block'
           font-size: 26rpx;
           opacity: 0.8;
         }
@@ -286,22 +286,22 @@ Taro.useShareAppMessage(() => {
     }
 
     .user-stats {
-      display: flex;
-      align-items: center;
+      display: 'flex'
+      align-items: 'center'
 
       .stat-item {
         flex: 1;
-        text-align: center;
+        text-align: 'center'
 
         .stat-value {
-          display: block;
+          display: 'block'
           font-size: 36rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           margin-bottom: 8rpx;
         }
 
         .stat-label {
-          display: block;
+          display: 'block'
           font-size: 24rpx;
           opacity: 0.8;
         }
@@ -314,19 +314,19 @@ Taro.useShareAppMessage(() => {
     margin: 30rpx;
 
     .menu-group {
-      background: white;
+      background: 'white'
       border-radius: 16rpx;
       margin-bottom: 20rpx;
-      overflow: hidden;
+      overflow: 'hidden'
 
       .menu-item {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         padding: 30rpx;
         border-bottom: 2rpx solid #f0f0f0;
 
         &:last-child {
-          border-bottom: none;
+          border-bottom: 'none'
         }
 
         &.danger {
@@ -356,18 +356,18 @@ Taro.useShareAppMessage(() => {
 
   // 版本信息
   .version-info {
-    text-align: center;
+    text-align: 'center'
     padding: 40rpx;
 
     .version-text {
-      display: block;
+      display: 'block'
       font-size: 26rpx;
       color: #999;
       margin-bottom: 10rpx;
     }
 
     .copyright-text {
-      display: block;
+      display: 'block'
       font-size: 24rpx;
       color: #ccc;
     }
@@ -375,38 +375,38 @@ Taro.useShareAppMessage(() => {
 
   // 确认弹窗
   .modal-overlay {
-    position: fixed;
+    position: 'fixed'
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: 'flex'
+    align-items: 'center'
+    justify-content: 'center'
     z-index: 1000;
     padding: 60rpx;
 
     .modal-content {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       width: 100%;
       max-width: 500rpx;
 
       .modal-header {
         padding: 40rpx 40rpx 20rpx;
-        text-align: center;
+        text-align: 'center'
 
         .modal-title {
           font-size: 36rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           color: #333;
         }
       }
 
       .modal-body {
         padding: 20rpx 40rpx 40rpx;
-        text-align: center;
+        text-align: 'center'
 
         .modal-text {
           font-size: 28rpx;
@@ -416,18 +416,18 @@ Taro.useShareAppMessage(() => {
       }
 
       .modal-footer {
-        display: flex;
+        display: 'flex'
         border-top: 2rpx solid #f0f0f0;
 
         .modal-btn {
           flex: 1;
           padding: 30rpx 0;
-          border: none;
-          background: white;
+          border: 'none'
+          background: 'white'
           font-size: 32rpx;
 
           &::after {
-            border: none;
+            border: 'none'
           }
 
           &.cancel {
@@ -437,7 +437,7 @@ Taro.useShareAppMessage(() => {
 
           &.confirm {
             color: #ff4757;
-            font-weight: bold;
+            font-weight: 'bold'
           }
         }
       }

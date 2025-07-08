@@ -8,55 +8,55 @@ import {
 
 // 基础响应类型
 export interface BaseResponse {
-  code: number;
-  message: string;
-  timestamp: number;
+  code;
+  message: '操作完成'
+  timestamp;
 }
 
 export interface ApiResponse<T = any> extends BaseResponse {
-  data: T;
+  data;
 }
 
 export interface ErrorResponse extends BaseResponse {
-  error?: string;
-  details?: any;
+  error?: 'string'
+  details?: 'any'
 }
 
 // 认证相关API
 export namespace AuthAPI {
   export interface LoginRequest {
-    code: string; // 微信登录code
+    code; // 微信登录code
   }
 
   export interface LoginResponse {
-    token: string;
-    user: User;
-    family?: Family;
+    token;
+    user;
+    family?: 'Family'
   }
 
   export interface RefreshTokenRequest {
-    refreshToken: string;
+    refreshToken;
   }
 
   export interface RefreshTokenResponse {
-    token: string;
-    refreshToken: string;
+    token;
+    refreshToken;
   }
 }
 
 // 用户相关API
 export namespace UserAPI {
   export interface GetProfileResponse {
-    user: User;
+    user;
   }
 
   export interface UpdateProfileRequest {
-    nickName?: string;
-    avatarUrl?: string;
+    nickName?: 'string'
+    avatarUrl?: 'string'
   }
 
   export interface UpdateProfileResponse {
-    user: User;
+    user;
   }
 }
 
@@ -65,48 +65,48 @@ export namespace FamilyAPI {
   export interface CreateFamilyRequest extends FamilyForm {}
 
   export interface CreateFamilyResponse {
-    family: Family;
+    family;
   }
 
   export interface JoinFamilyRequest {
-    inviteCode: string;
+    inviteCode;
   }
 
   export interface JoinFamilyResponse {
-    family: Family;
+    family;
   }
 
   export interface GetFamilyResponse {
-    family: Family;
+    family;
   }
 
   export interface UpdateFamilyRequest extends Partial<FamilyForm> {}
 
   export interface UpdateFamilyResponse {
-    family: Family;
+    family;
   }
 
   export interface InviteMemberRequest {
-    userId: string;
-    role: string;
+    userId;
+    role;
   }
 
   export interface InviteMemberResponse {
-    inviteCode: string;
-    expireTime: Date;
+    inviteCode;
+    expireTime;
   }
 
   export interface RemoveMemberRequest {
-    userId: string;
+    userId;
   }
 
   export interface UpdateMemberRoleRequest {
-    userId: string;
-    role: string;
+    userId;
+    role;
   }
 
   export interface GetMembersResponse {
-    members: User[];
+    members;
   }
 }
 
@@ -115,47 +115,47 @@ export namespace RecordAPI {
   export interface CreateRecordRequest extends RecordForm {}
 
   export interface CreateRecordResponse {
-    record: AccountRecord;
+    record;
   }
 
   export interface UpdateRecordRequest extends Partial<RecordForm> {
-    id: string;
+    id;
   }
 
   export interface UpdateRecordResponse {
-    record: AccountRecord;
+    record;
   }
 
   export interface DeleteRecordRequest {
-    id: string;
+    id;
   }
 
   export interface GetRecordsRequest extends PaginationParams {
-    familyId: string;
-    startDate?: Date;
-    endDate?: Date;
-    type?: string;
-    categoryId?: string;
-    userId?: string;
-    keyword?: string;
+    familyId;
+    startDate?: 'Date'
+    endDate?: 'Date'
+    type?: 'string'
+    categoryId?: 'string'
+    userId?: 'string'
+    keyword?: 'string'
   }
 
   export interface GetRecordsResponse extends PaginationResult<AccountRecord> {}
 
   export interface GetRecordDetailRequest {
-    id: string;
+    id;
   }
 
   export interface GetRecordDetailResponse {
-    record: AccountRecord;
+    record;
   }
 
   export interface BatchDeleteRequest {
-    ids: string[];
+    ids;
   }
 
   export interface BatchDeleteResponse {
-    deletedCount: number;
+    deletedCount;
   }
 }
 
@@ -164,86 +164,85 @@ export namespace CategoryAPI {
   export interface CreateCategoryRequest extends CategoryForm {}
 
   export interface CreateCategoryResponse {
-    category: Category;
+    category;
   }
 
   export interface UpdateCategoryRequest extends Partial<CategoryForm> {
-    id: string;
+    id;
   }
 
   export interface UpdateCategoryResponse {
-    category: Category;
+    category;
   }
 
   export interface DeleteCategoryRequest {
-    id: string;
+    id;
   }
 
   export interface GetCategoriesRequest {
-    familyId?: string;
-    type?: string;
-    includeDefault?: boolean;
+    familyId?: 'string'
+    type?: 'string'
+    includeDefault?: 'boolean'
   }
 
   export interface GetCategoriesResponse {
-    categories: Category[];
+    categories;
   }
 
   export interface SortCategoriesRequest {
-    categoryIds: string[];
+    categoryIds;
   }
 
   export interface SortCategoriesResponse {
-    categories: Category[];
+    categories;
   }
 }
 
 // 账单导入相关API
 export namespace BillImportAPI {
   export interface UploadImagesRequest {
-    images: File[];
-    platform?: string;
+    images;
+    platform?: 'string'
   }
 
   export interface UploadImagesResponse {
-    uploadId: string;
-    imageUrls: string[];
+    uploadId;
+    imageUrls;
   }
 
   export interface ProcessBillRequest {
-    uploadId: string;
-    platform: string;
+    uploadId;
+    platform;
   }
 
   export interface ProcessBillResponse {
-    importId: string;
-    status: string;
+    importId;
+    status;
   }
 
   export interface GetImportStatusRequest {
-    importId: string;
+    importId;
   }
 
   export interface GetImportStatusResponse {
-    import: BillImport;
+    import;
   }
 
   export interface ConfirmImportRequest {
-    importId: string;
-    confirmedTransactions: {
-      index: number;
-      data: RecordForm;
+    importId;
+    confirmedTransactions;
+      data;
     }[];
   }
 
   export interface ConfirmImportResponse {
-    records: AccountRecord[];
+    records;
   }
 
   export interface GetImportHistoryRequest extends PaginationParams {
-    familyId: string;
-    status?: string;
-    platform?: string;
+    familyId;
+    status?: 'string'
+    platform?: 'string'
   }
 
   export interface GetImportHistoryResponse extends PaginationResult<BillImport> {}
@@ -252,122 +251,118 @@ export namespace BillImportAPI {
 // 报表相关API
 export namespace ReportAPI {
   export interface GetReportRequest {
-    familyId: string;
-    period: ReportPeriod;
-    startDate?: Date;
-    endDate?: Date;
+    familyId;
+    period;
+    startDate?: 'Date'
+    endDate?: 'Date'
     categoryIds?: string[];
     userIds?: string[];
   }
 
   export interface GetReportResponse {
-    report: ReportData;
+    report;
   }
 
   export interface ExportReportRequest {
-    familyId: string;
-    period: ReportPeriod;
-    startDate?: Date;
-    endDate?: Date;
-    format: 'excel' | 'pdf' | 'csv';
+    familyId;
+    period;
+    startDate?: 'Date'
+    endDate?: 'Date'
+    format;
   }
 
   export interface ExportReportResponse {
-    downloadUrl: string;
-    fileName: string;
+    downloadUrl;
+    fileName;
   }
 }
 
 // 通知相关API
 export namespace NotificationAPI {
   export interface GetNotificationsRequest extends PaginationParams {
-    familyId: string;
-    isRead?: boolean;
-    type?: string;
+    familyId;
+    isRead?: 'boolean'
+    type?: 'string'
   }
 
   export interface GetNotificationsResponse extends PaginationResult<Notification> {}
 
   export interface MarkAsReadRequest {
-    notificationIds: string[];
+    notificationIds;
   }
 
   export interface MarkAsReadResponse {
-    updatedCount: number;
+    updatedCount;
   }
 
   export interface GetUnreadCountRequest {
-    familyId: string;
+    familyId;
   }
 
   export interface GetUnreadCountResponse {
-    count: number;
+    count;
   }
 }
 
 // 文件上传相关API
 export namespace UploadAPI {
   export interface UploadFileRequest {
-    file: File;
-    type: 'avatar' | 'record_image' | 'bill_image';
+    file;
+    type;
   }
 
   export interface UploadFileResponse {
-    url: string;
-    fileName: string;
-    size: number;
+    url;
+    fileName;
+    size;
   }
 
   export interface BatchUploadRequest {
-    files: File[];
-    type: 'avatar' | 'record_image' | 'bill_image';
+    files;
+    type;
   }
 
   export interface BatchUploadResponse {
-    results: UploadFileResponse[];
+    results;
   }
 }
 
 // 统计相关API
 export namespace StatAPI {
   export interface GetDashboardRequest {
-    familyId: string;
-    period?: ReportPeriod;
+    familyId;
+    period?: 'ReportPeriod'
   }
 
   export interface GetDashboardResponse {
-    summary: {
-      todayExpense: number;
-      monthExpense: number;
-      monthIncome: number;
-      monthBalance: number;
+    summary;
+      monthExpense;
+      monthIncome;
+      monthBalance;
     };
-    recentRecords: AccountRecord[];
-    topCategories: {
-      categoryId: string;
-      categoryName: string;
-      amount: number;
-      percentage: number;
+    recentRecords;
+    topCategories;
+      categoryName;
+      amount;
+      percentage;
     }[];
-    trends: {
-      date: string;
-      amount: number;
+    trends;
+      amount;
     }[];
   }
 
   export interface GetBudgetStatusRequest {
-    familyId: string;
-    month?: string;
+    familyId;
+    month?: 'string'
   }
 
   export interface GetBudgetStatusResponse {
-    budgets: {
-      categoryId: string;
-      categoryName: string;
-      budgetAmount: number;
-      usedAmount: number;
-      percentage: number;
-      isOverBudget: boolean;
+    budgets;
+      categoryName;
+      budgetAmount;
+      usedAmount;
+      percentage;
+      isOverBudget;
     }[];
   }
 }
@@ -375,56 +370,55 @@ export namespace StatAPI {
 // WebSocket消息类型
 export namespace WSMessage {
   export interface BaseMessage {
-    type: string;
-    familyId: string;
-    userId: string;
-    timestamp: number;
+    type;
+    familyId;
+    userId;
+    timestamp;
   }
 
   export interface RecordChangedMessage extends BaseMessage {
-    type: 'record_changed';
-    action: 'create' | 'update' | 'delete';
-    record: AccountRecord;
+    type;
+    action;
+    record;
   }
 
   export interface MemberChangedMessage extends BaseMessage {
-    type: 'member_changed';
-    action: 'join' | 'leave' | 'role_updated';
-    member: User;
+    type;
+    action;
+    member;
   }
 
   export interface NotificationMessage extends BaseMessage {
-    type: 'notification';
-    notification: Notification;
+    type;
+    notification;
   }
 
   export interface SyncRequestMessage extends BaseMessage {
-    type: 'sync_request';
-    lastSyncTime: number;
+    type;
+    lastSyncTime;
   }
 
   export interface SyncResponseMessage extends BaseMessage {
-    type: 'sync_response';
-    changes: {
-      records: AccountRecord[];
-      categories: Category[];
-      members: User[];
+    type;
+    changes;
+      categories;
+      members;
     };
   }
 }
 
 // 错误响应类型
 export interface ErrorResponse {
-  code: number;
-  message: string;
-  details?: any;
-  timestamp: number;
+  code;
+  message: '操作完成'
+  details?: 'any'
+  timestamp;
 }
 
 // 通用请求配置
 export interface RequestConfig {
-  timeout?: number;
-  retries?: number;
-  cache?: boolean;
-  loading?: boolean;
+  timeout?: 'number'
+  retries?: 'number'
+  cache?: 'boolean'
+  loading?: 'boolean'
 }

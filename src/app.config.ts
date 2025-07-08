@@ -1,4 +1,4 @@
-export default defineAppConfig({
+export default {
   pages: [
     'pages/index/index',
     'pages/ledger/index',
@@ -72,4 +72,4 @@ export default defineAppConfig({
     }
   },
   requiredBackgroundModes: ['audio']
-})
+};

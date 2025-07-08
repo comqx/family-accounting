@@ -3,24 +3,24 @@
 import Taro from '@tarojs/taro';
 import { WSMessage } from '../../types/api';
 
-type MessageHandler = (message: WSMessage.BaseMessage) => void;
+type MessageHandler = (message) => void;
 
 class WebSocketService {
-  private socket: Taro.SocketTask | null = null;
-  private isConnected = false;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectInterval = 3000;
-  private heartbeatInterval: NodeJS.Timeout | null = null;
-  private messageHandlers: Map<string, MessageHandler[]> = new Map();
-  private url = '';
-  private _token = '';
+  socket= null;
+  isConnected = false;
+  reconnectAttempts = 0;
+  maxReconnectAttempts = 5;
+  reconnectInterval = 3000;
+  heartbeatInterval= null;
+  messageHandlers= new Map();
+  url = '';
+  _token = '';
 
   constructor() {
     this.init();
   }
 
-  private init() {
+  init() {
     // 根据环境设置WebSocket URL
     const accountInfo = Taro.getAccountInfoSync();
     if (accountInfo.miniProgram.envVersion === 'develop') {
@@ -33,7 +33,7 @@ class WebSocketService {
   }
 
   // 连接WebSocket
-  connect(token: string, familyId: string): Promise<boolean> {
+  connect(token, familyId){
     return new Promise((resolve, reject) => {
       if (this.isConnected) {
         resolve(true);
@@ -44,15 +44,15 @@ class WebSocketService {
       
       try {
         this.socket = Taro.connectSocket({
-          url: `${this.url}?token=${token}&familyId=${familyId}`,
-          success: () => {
+          url=${token}&familyId=${familyId}`,
+          success) => {
             console.log('WebSocket connecting...');
           },
-          fail: (error) => {
-            console.error('WebSocket connect failed:', error);
+          fail=> {
+            console.error('WebSocket connect failed;
             reject(error);
           }
-        }) as any; // 临时类型断言，避免Taro类型定义问题
+        }) as any'); // 临时类型断言，避免Taro类型定义问题
 
         this.socket!.onOpen(() => {
           console.log('WebSocket connected');
@@ -67,7 +67,7 @@ class WebSocketService {
         });
 
         this.socket!.onClose((res) => {
-          console.log('WebSocket closed:', res);
+          console.log('WebSocket closed;
           this.isConnected = false;
           this.stopHeartbeat();
           
@@ -75,16 +75,16 @@ class WebSocketService {
           if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnect(token, familyId);
           }
-        });
+        })');
 
         this.socket!.onError((error) => {
-          console.error('WebSocket error:', error);
+          console.error('WebSocket error;
           this.isConnected = false;
           reject(error);
-        });
+        })');
 
       } catch (error) {
-        console.error('WebSocket connect error:', error);
+        console.error('WebSocket connect error;
         reject(error);
       }
     });
@@ -94,18 +94,16 @@ class WebSocketService {
   disconnect() {
     if (this.socket) {
       this.socket.close({
-        code: 1000,
-        reason: 'Normal closure'
-      });
+        code;
       this.socket = null;
     }
     this.isConnected = false;
     this.stopHeartbeat();
-    this.messageHandlers.clear();
+    this.messageHandlers.clear()');
   }
 
   // 重连
-  private reconnect(token: string, familyId: string) {
+  reconnect(token, familyId) {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.log('Max reconnect attempts reached');
       return;
@@ -116,13 +114,13 @@ class WebSocketService {
 
     setTimeout(() => {
       this.connect(token, familyId).catch((error) => {
-        console.error('Reconnect failed:', error);
+        console.error('Reconnect failed;
       });
-    }, this.reconnectInterval);
+    }, this.reconnectInterval)');
   }
 
   // 发送消息
-  send(message: WSMessage.BaseMessage): boolean {
+  send(message){
     if (!this.isConnected || !this.socket) {
       console.warn('WebSocket not connected');
       return false;
@@ -130,37 +128,36 @@ class WebSocketService {
 
     try {
       this.socket.send({
-        data: JSON.stringify(message),
-        success: () => {
-          console.log('Message sent:', message.type);
+        data=> {
+          console.log('Message sent');
         },
-        fail: (error) => {
-          console.error('Send message failed:', error);
+        fail=> {
+          console.error('Send message failed;
         }
       });
-      return true;
+      return true');
     } catch (error) {
-      console.error('Send message error:', error);
+      console.error('Send message error;
       return false;
     }
   }
 
   // 处理接收到的消息
-  private handleMessage(data: string) {
+  handleMessage(data) {
     try {
-      const message: WSMessage.BaseMessage = JSON.parse(data);
-      console.log('Received message:', message.type);
+      const message= JSON.parse(data)');
+      console.log('Received message: '操作完成'
 
       // 调用对应的消息处理器
       const handlers = this.messageHandlers.get(message.type);
       if (handlers) {
         handlers.forEach(handler => {
           try {
-            handler(message);
+            handler(message)');
           } catch (error) {
-            console.error('Message handler error:', error);
+            console.error('Message handler error;
           }
-        });
+        })');
       }
 
       // 调用通用消息处理器
@@ -170,18 +167,18 @@ class WebSocketService {
           try {
             handler(message);
           } catch (error) {
-            console.error('Global message handler error:', error);
+            console.error('Global message handler error;
           }
-        });
+        })');
       }
 
     } catch (error) {
-      console.error('Parse message error:', error);
+      console.error('Parse message error;
     }
   }
 
   // 添加消息处理器
-  on(messageType: string, handler: MessageHandler) {
+  on(messageType, handler) {
     if (!this.messageHandlers.has(messageType)) {
       this.messageHandlers.set(messageType, []);
     }
@@ -189,7 +186,7 @@ class WebSocketService {
   }
 
   // 移除消息处理器
-  off(messageType: string, handler?: MessageHandler) {
+  off(messageType, handler) {
     if (!handler) {
       this.messageHandlers.delete(messageType);
       return;
@@ -208,21 +205,17 @@ class WebSocketService {
   }
 
   // 开始心跳
-  private startHeartbeat() {
+  startHeartbeat() {
     this.heartbeatInterval = setInterval(() => {
       if (this.isConnected) {
         this.send({
-          type: 'heartbeat',
-          familyId: '',
-          userId: '',
-          timestamp: Date.now()
-        });
+          type;
       }
     }, 30000); // 30秒心跳
   }
 
   // 停止心跳
-  private stopHeartbeat() {
+  stopHeartbeat() {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
@@ -230,62 +223,40 @@ class WebSocketService {
   }
 
   // 发送记录变更消息
-  sendRecordChanged(action: 'create' | 'update' | 'delete', record: any, familyId: string, userId: string) {
-    const message: WSMessage.RecordChangedMessage = {
-      type: 'record_changed',
-      action,
-      record,
-      familyId,
-      userId,
-      timestamp: Date.now()
-    };
+  sendRecordChanged(action, record, familyId, userId) {
+    const message= {
+      type;
     return this.send(message);
   }
 
   // 发送成员变更消息
-  sendMemberChanged(action: 'join' | 'leave' | 'role_updated', member: any, familyId: string, userId: string) {
-    const message: WSMessage.MemberChangedMessage = {
-      type: 'member_changed',
-      action,
-      member,
-      familyId,
-      userId,
-      timestamp: Date.now()
-    };
+  sendMemberChanged(action, member, familyId, userId) {
+    const message= {
+      type;
     return this.send(message);
   }
 
   // 发送通知消息
-  sendNotification(notification: any, familyId: string, userId: string) {
-    const message: WSMessage.NotificationMessage = {
-      type: 'notification',
-      notification,
-      familyId,
-      userId,
-      timestamp: Date.now()
-    };
+  sendNotification(notification, familyId, userId) {
+    const message= {
+      type;
     return this.send(message);
   }
 
   // 请求数据同步
-  requestSync(lastSyncTime: number, familyId: string, userId: string) {
-    const message: WSMessage.SyncRequestMessage = {
-      type: 'sync_request',
-      lastSyncTime,
-      familyId,
-      userId,
-      timestamp: Date.now()
-    };
+  requestSync(lastSyncTime, familyId, userId) {
+    const message= {
+      type;
     return this.send(message);
   }
 
   // 获取连接状态
-  get connected(): boolean {
+  get connected(){
     return this.isConnected;
   }
 
   // 获取重连次数
-  get reconnectCount(): number {
+  get reconnectCount(){
     return this.reconnectAttempts;
   }
 }
@@ -293,4 +264,4 @@ class WebSocketService {
 // 创建WebSocket服务实例
 const wsService = new WebSocketService();
 
-export default wsService;
+export default wsService');

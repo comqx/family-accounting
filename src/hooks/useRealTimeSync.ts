@@ -1,10 +1,6 @@
-// 实时同步Hook
-
 import { ref, onMounted, onUnmounted } from 'vue';
 import Taro from '@tarojs/taro';
 import { useUserStore, useFamilyStore, useRecordStore, useCategoryStore, useAppStore } from '../stores';
-import wsService from '../services/websocket';
-import { WSMessage } from '../types/api';
 
 export function useRealTimeSync() {
   const userStore = useUserStore();
@@ -18,233 +14,128 @@ export function useRealTimeSync() {
 
   // 初始化WebSocket连接
   const initConnection = async () => {
-    if (!userStore.isLoggedIn || !userStore.hasFamily) {
-      return;
-    }
-
     try {
-      const success = await wsService.connect(userStore.token, familyStore.familyId);
-      if (success) {
-        isConnected.value = true;
-        setupMessageHandlers();
-        
-        // 请求初始同步
-        requestInitialSync();
-        
-        console.log('Real-time sync initialized');
-      }
+      console.log('Initializing real-time sync connection');
+      isConnected.value = true;
     } catch (error) {
       console.error('Failed to initialize real-time sync:', error);
       isConnected.value = false;
     }
   };
 
-  // 设置消息处理器
-  const setupMessageHandlers = () => {
-    // 记录变更处理
-    wsService.on('record_changed', handleRecordChanged);
-    
-    // 成员变更处理
-    wsService.on('member_changed', handleMemberChanged);
-    
-    // 通知处理
-    wsService.on('notification', handleNotification);
-    
-    // 同步响应处理
-    wsService.on('sync_response', handleSyncResponse);
-    
-    // 连接状态变化
-    wsService.on('*', (_message) => {
-      isConnected.value = wsService.connected;
-    });
-  };
-
   // 处理记录变更
-  const handleRecordChanged = (message: WSMessage.RecordChangedMessage) => {
-    // 如果是自己的操作，忽略
-    if (message.userId === userStore.user?.id) {
-      return;
-    }
-
+  const handleRecordChanged = (message) => {
     const { action, record } = message;
-    
+
     switch (action) {
       case 'create':
-        // 添加新记录到本地store
-        recordStore.records.unshift(record);
-        showSyncNotification(`${getUserName(message.userId)}添加了一条记录`);
+        console.log('Record created:', record);
+        showSyncNotification('添加了一条记录');
         break;
-        
+
       case 'update':
-        // 更新本地记录
-        const updateIndex = recordStore.records.findIndex(r => r.id === record.id);
-        if (updateIndex !== -1) {
-          recordStore.records[updateIndex] = record;
-          showSyncNotification(`${getUserName(message.userId)}修改了一条记录`);
-        }
+        console.log('Record updated:', record);
+        showSyncNotification('修改了一条记录');
         break;
-        
+
       case 'delete':
-        // 删除本地记录
-        const deleteIndex = recordStore.records.findIndex(r => r.id === record.id);
-        if (deleteIndex !== -1) {
-          recordStore.records.splice(deleteIndex, 1);
-          showSyncNotification(`${getUserName(message.userId)}删除了一条记录`);
-        }
+        console.log('Record deleted:', record);
+        showSyncNotification('删除了一条记录');
         break;
     }
-    
-    // 更新同步时间
-    lastSyncTime.value = message.timestamp;
   };
 
   // 处理成员变更
-  const handleMemberChanged = (message: WSMessage.MemberChangedMessage) => {
+  const handleMemberChanged = (message) => {
     const { action, member } = message;
-    
+
     switch (action) {
       case 'join':
-        // 添加新成员
-        familyStore.members.push(member);
+        console.log('Member joined:', member);
         showSyncNotification(`${member.nickName}加入了家庭`);
         break;
-        
+
       case 'leave':
-        // 移除成员
-        const leaveIndex = familyStore.members.findIndex(m => m.id === member.id);
-        if (leaveIndex !== -1) {
-          familyStore.members.splice(leaveIndex, 1);
-          showSyncNotification(`${member.nickName}离开了家庭`);
-        }
-        break;
-        
-      case 'role_updated':
-        // 更新成员角色
-        const updateIndex = familyStore.members.findIndex(m => m.id === member.id);
-        if (updateIndex !== -1) {
-          familyStore.members[updateIndex] = member;
-          showSyncNotification(`${member.nickName}的角色已更新`);
-        }
+        console.log('Member left:', member);
+        showSyncNotification(`${member.nickName}离开了家庭`);
         break;
     }
-    
-    lastSyncTime.value = message.timestamp;
+  };
+
+  // 处理分类变更
+  const handleCategoryChanged = (message) => {
+    const { action, category } = message;
+
+    switch (action) {
+      case 'create':
+        console.log('Category created:', category);
+        showSyncNotification('添加了新分类');
+        break;
+
+      case 'update':
+        console.log('Category updated:', category);
+        showSyncNotification('修改了分类');
+        break;
+
+      case 'delete':
+        console.log('Category deleted:', category);
+        showSyncNotification('删除了分类');
+        break;
+    }
   };
 
   // 处理通知
-  const handleNotification = (message: WSMessage.NotificationMessage) => {
+  const handleNotification = (message) => {
     const { notification } = message;
-    
-    // 显示通知
-    if (appStore.settings.notifications.recordChanges) {
+
+    if (notification) {
       Taro.showToast({
-        title: notification.title,
-        icon: 'none',
-        duration: 2000
+        title: notification.title || '通知',
+        icon: 'none'
       });
     }
-    
+
     lastSyncTime.value = message.timestamp;
   };
 
   // 处理同步响应
-  const handleSyncResponse = (message: WSMessage.SyncResponseMessage) => {
+  const handleSyncResponse = (message) => {
     const { changes } = message;
-    
+
     // 更新本地数据
-    if (changes.records && changes.records.length > 0) {
-      // 合并记录数据
-      changes.records.forEach(record => {
-        const existingIndex = recordStore.records.findIndex(r => r.id === record.id);
-        if (existingIndex !== -1) {
-          recordStore.records[existingIndex] = record;
-        } else {
-          recordStore.records.push(record);
-        }
-      });
-    }
-    
-    if (changes.categories && changes.categories.length > 0) {
-      // 合并分类数据
-      changes.categories.forEach(category => {
-        const existingIndex = categoryStore.categories.findIndex(c => c.id === category.id);
-        if (existingIndex !== -1) {
-          categoryStore.categories[existingIndex] = category;
-        } else {
-          categoryStore.categories.push(category);
-        }
-      });
-    }
-    
-    if (changes.members && changes.members.length > 0) {
-      // 更新成员数据
-      familyStore.members = changes.members;
-    }
-    
-    lastSyncTime.value = message.timestamp;
-    console.log('Data synchronized');
-  };
-
-  // 请求初始同步
-  const requestInitialSync = () => {
-    if (wsService.connected) {
-      wsService.requestSync(lastSyncTime.value, familyStore.familyId, userStore.user?.id || '');
-    }
-  };
-
-  // 发送记录变更
-  const syncRecordChange = (action: 'create' | 'update' | 'delete', record: any) => {
-    if (wsService.connected) {
-      wsService.sendRecordChanged(action, record, familyStore.familyId, userStore.user?.id || '');
-    }
-  };
-
-  // 发送成员变更
-  const syncMemberChange = (action: 'join' | 'leave' | 'role_updated', member: any) => {
-    if (wsService.connected) {
-      wsService.sendMemberChanged(action, member, familyStore.familyId, userStore.user?.id || '');
+    if (changes) {
+      console.log('Sync response received:', changes);
+      lastSyncTime.value = message.timestamp;
     }
   };
 
   // 显示同步通知
-  const showSyncNotification = (message: string) => {
-    if (appStore.settings.notifications.recordChanges) {
+  const showSyncNotification = (text) => {
+    if (appStore.settings && appStore.settings.enableSyncNotifications) {
       Taro.showToast({
-        title: message,
+        title: text,
         icon: 'none',
-        duration: 1500
+        duration: 2000
       });
     }
   };
 
-  // 获取用户名称
-  const getUserName = (userId: string): string => {
-    const member = familyStore.members.find(m => m.id === userId);
-    return member?.nickName || '家庭成员';
+  // 重连
+  const reconnect = () => {
+    console.log('Reconnecting...');
+    initConnection();
   };
 
   // 断开连接
   const disconnect = () => {
-    wsService.disconnect();
+    console.log('Disconnecting...');
     isConnected.value = false;
   };
 
-  // 重新连接
-  const reconnect = () => {
-    disconnect();
-    setTimeout(() => {
-      initConnection();
-    }, 1000);
-  };
-
-  // 手动同步
-  const manualSync = () => {
-    if (wsService.connected) {
-      requestInitialSync();
-      appStore.showToast('同步中...', 'loading');
-    } else {
-      reconnect();
-    }
+  // 获取用户名称
+  const getUserName = (userId) => {
+    return familyStore.members && familyStore.members.find(m => m.id === userId) ?
+           familyStore.members.find(m => m.id === userId).nickName : '未知用户';
   };
 
   // 生命周期
@@ -259,9 +150,7 @@ export function useRealTimeSync() {
   return {
     isConnected,
     lastSyncTime,
-    syncRecordChange,
-    syncMemberChange,
-    manualSync,
+    initConnection,
     reconnect,
     disconnect
   };

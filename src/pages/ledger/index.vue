@@ -158,7 +158,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useCategoryStore, useAppStore } from '../../stores'
@@ -268,7 +268,7 @@ const filteredRecords = computed(() => {
 })
 
 const groupedRecords = computed(() => {
-  const groups: { [key: string]: any } = {}
+  const groups = {}
 
   filteredRecords.value.forEach(record => {
     const dateKey = formatDate(record.date, 'MM-DD')
@@ -299,7 +299,7 @@ const showDatePicker = () => {
   showDatePickerModal.value = true
 }
 
-const onDateChange = (e: any) => {
+const onDateChange = (e) => {
   selectedDate.value = e.detail.value
   showDatePickerModal.value = false
   // 重新加载数据
@@ -314,7 +314,7 @@ const closeTypeModal = () => {
   showTypeModal.value = false
 }
 
-const selectTypeFilter = (value: string) => {
+const selectTypeFilter = (value) => {
   typeFilter.value = value
   categoryFilter.value = '' // 重置分类筛选
   closeTypeModal()
@@ -328,12 +328,12 @@ const closeCategoryModal = () => {
   showCategoryModal.value = false
 }
 
-const selectCategoryFilter = (value: string) => {
+const selectCategoryFilter = (value) => {
   categoryFilter.value = value
   closeCategoryModal()
 }
 
-const goToRecordDetail = (recordId: string) => {
+const goToRecordDetail = (recordId) => {
   Taro.navigateTo({
     url: `/pages/record/detail/index?id=${recordId}`
   })
@@ -392,26 +392,26 @@ Taro.useShareAppMessage(() => {
 
   // 顶部统计
   .stats-header {
-    background: white;
-    display: flex;
+    background: 'white'
+    display: 'flex'
     padding: 30rpx;
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 
     .stats-item {
       flex: 1;
-      text-align: center;
+      text-align: 'center'
 
       .stats-label {
-        display: block;
+        display: 'block'
         font-size: 24rpx;
         color: #666;
         margin-bottom: 8rpx;
       }
 
       .stats-value {
-        display: block;
+        display: 'block'
         font-size: 28rpx;
-        font-weight: bold;
+        font-weight: 'bold'
 
         &.expense {
           color: #ff4757;
@@ -426,16 +426,16 @@ Taro.useShareAppMessage(() => {
 
   // 筛选栏
   .filter-bar {
-    background: white;
-    display: flex;
+    background: 'white'
+    display: 'flex'
     padding: 20rpx 30rpx;
     border-top: 2rpx solid #f0f0f0;
 
     .filter-item {
       flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: 'flex'
+      align-items: 'center'
+      justify-content: 'center'
       padding: 16rpx 20rpx;
       background: #f8f9fa;
       border-radius: 20rpx;
@@ -459,7 +459,7 @@ Taro.useShareAppMessage(() => {
     padding: 20rpx 30rpx;
 
     .empty-state {
-      text-align: center;
+      text-align: 'center'
       padding: 120rpx 0;
 
       .empty-icon {
@@ -468,14 +468,14 @@ Taro.useShareAppMessage(() => {
       }
 
       .empty-text {
-        display: block;
+        display: 'block'
         font-size: 32rpx;
         color: #666;
         margin-bottom: 10rpx;
       }
 
       .empty-desc {
-        display: block;
+        display: 'block'
         font-size: 26rpx;
         color: #999;
       }
@@ -486,8 +486,8 @@ Taro.useShareAppMessage(() => {
         margin-bottom: 30rpx;
 
         .group-header {
-          display: flex;
-          align-items: center;
+          display: 'flex'
+          align-items: 'center'
           justify-content: space-between;
           margin-bottom: 20rpx;
 
@@ -498,7 +498,7 @@ Taro.useShareAppMessage(() => {
           }
 
           .group-stats {
-            display: flex;
+            display: 'flex'
             gap: 20rpx;
 
             .group-expense {
@@ -514,27 +514,27 @@ Taro.useShareAppMessage(() => {
         }
 
         .group-records {
-          background: white;
+          background: 'white'
           border-radius: 16rpx;
-          overflow: hidden;
+          overflow: 'hidden'
 
           .record-item {
-            display: flex;
-            align-items: center;
+            display: 'flex'
+            align-items: 'center'
             padding: 30rpx;
             border-bottom: 2rpx solid #f0f0f0;
 
             &:last-child {
-              border-bottom: none;
+              border-bottom: 'none'
             }
 
             .record-icon {
               width: 80rpx;
               height: 80rpx;
               border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
+              display: 'flex'
+              align-items: 'center'
+              justify-content: 'center'
               font-size: 32rpx;
               margin-right: 20rpx;
             }
@@ -543,14 +543,14 @@ Taro.useShareAppMessage(() => {
               flex: 1;
 
               .record-category {
-                display: block;
+                display: 'block'
                 font-size: 30rpx;
                 color: #333;
                 margin-bottom: 6rpx;
               }
 
               .record-desc {
-                display: block;
+                display: 'block'
                 font-size: 24rpx;
                 color: #999;
               }
@@ -559,7 +559,7 @@ Taro.useShareAppMessage(() => {
             .record-amount {
               .amount-text {
                 font-size: 30rpx;
-                font-weight: bold;
+                font-weight: 'bold'
 
                 &.expense {
                   color: #ff4757;
@@ -578,68 +578,68 @@ Taro.useShareAppMessage(() => {
 
   // 添加按钮
   .add-btn {
-    position: fixed;
+    position: 'fixed'
     bottom: 120rpx;
     right: 30rpx;
     width: 100rpx;
     height: 100rpx;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: 'flex'
+    align-items: 'center'
+    justify-content: 'center'
     box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.4);
     z-index: 100;
 
     .add-icon {
       font-size: 48rpx;
-      color: white;
-      font-weight: bold;
+      color: 'white'
+      font-weight: 'bold'
     }
   }
 
   // 弹窗样式
   .modal-overlay {
-    position: fixed;
+    position: 'fixed'
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: flex;
+    display: 'flex'
     align-items: flex-end;
     z-index: 1000;
 
     .modal-content {
-      background: white;
+      background: 'white'
       border-radius: 20rpx 20rpx 0 0;
       width: 100%;
       max-height: 60vh;
 
       .modal-header {
         padding: 40rpx;
-        text-align: center;
+        text-align: 'center'
         border-bottom: 2rpx solid #f0f0f0;
 
         .modal-title {
           font-size: 32rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           color: #333;
         }
       }
 
       .modal-body {
         max-height: 400rpx;
-        overflow-y: auto;
+        overflow-y: 'auto'
 
         .option-item {
-          display: flex;
-          align-items: center;
+          display: 'flex'
+          align-items: 'center'
           padding: 30rpx 40rpx;
           border-bottom: 2rpx solid #f0f0f0;
 
           &:last-child {
-            border-bottom: none;
+            border-bottom: 'none'
           }
 
           &.active {
@@ -650,9 +650,9 @@ Taro.useShareAppMessage(() => {
             width: 60rpx;
             height: 60rpx;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: 'flex'
+            align-items: 'center'
+            justify-content: 'center'
             font-size: 24rpx;
             margin-right: 20rpx;
           }
@@ -666,7 +666,7 @@ Taro.useShareAppMessage(() => {
           .check-icon {
             font-size: 32rpx;
             color: #1296db;
-            font-weight: bold;
+            font-weight: 'bold'
           }
         }
       }

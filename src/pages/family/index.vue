@@ -117,7 +117,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../stores'
@@ -140,19 +140,19 @@ const mockMembers = ref([
   {
     id: '1',
     nickName: '张爸爸',
-    role: UserRole.ADMIN,
+    role: 'ADMIN',
     isOnline: true
   },
   {
     id: '2',
     nickName: '李妈妈',
-    role: UserRole.MEMBER,
+    role: 'MEMBER',
     isOnline: true
   },
   {
     id: '3',
     nickName: '小明',
-    role: UserRole.OBSERVER,
+    role: 'OBSERVER',
     isOnline: false
   }
 ])
@@ -162,7 +162,7 @@ const familyName = computed(() => familyStore.familyName || '我的家庭')
 const memberCount = computed(() => mockMembers.value.length)
 
 // 方法
-const getRoleText = (role: UserRole): string => {
+const getRoleText = (role) => {
   switch (role) {
     case UserRole.ADMIN:
       return '管理员'
@@ -186,7 +186,7 @@ const handleInviteMember = async () => {
   showInviteModal.value = true
 }
 
-const generateInviteCode = (): string => {
+const generateInviteCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''
   for (let i = 0; i < 6; i++) {
@@ -290,11 +290,11 @@ Taro.useShareAppMessage(() => {
     margin: 30rpx;
     border-radius: 20rpx;
     padding: 40rpx 30rpx;
-    color: white;
+    color: 'white'
 
     .family-header {
-      display: flex;
-      align-items: center;
+      display: 'flex'
+      align-items: 'center'
       margin-bottom: 40rpx;
 
       .family-avatar {
@@ -302,9 +302,9 @@ Taro.useShareAppMessage(() => {
         height: 80rpx;
         background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: 'flex'
+        align-items: 'center'
+        justify-content: 'center'
         font-size: 40rpx;
         margin-right: 20rpx;
       }
@@ -313,14 +313,14 @@ Taro.useShareAppMessage(() => {
         flex: 1;
 
         .family-name {
-          display: block;
+          display: 'block'
           font-size: 36rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           margin-bottom: 8rpx;
         }
 
         .family-desc {
-          display: block;
+          display: 'block'
           font-size: 26rpx;
           opacity: 0.8;
         }
@@ -335,22 +335,22 @@ Taro.useShareAppMessage(() => {
     }
 
     .family-stats {
-      display: flex;
-      align-items: center;
+      display: 'flex'
+      align-items: 'center'
 
       .stat-item {
         flex: 1;
-        text-align: center;
+        text-align: 'center'
 
         .stat-value {
-          display: block;
+          display: 'block'
           font-size: 32rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           margin-bottom: 8rpx;
         }
 
         .stat-label {
-          display: block;
+          display: 'block'
           font-size: 24rpx;
           opacity: 0.8;
         }
@@ -370,14 +370,14 @@ Taro.useShareAppMessage(() => {
     margin: 30rpx;
 
     .section-header {
-      display: flex;
-      align-items: center;
+      display: 'flex'
+      align-items: 'center'
       justify-content: space-between;
       margin-bottom: 20rpx;
 
       .section-title {
         font-size: 32rpx;
-        font-weight: bold;
+        font-weight: 'bold'
         color: #333;
       }
 
@@ -391,18 +391,18 @@ Taro.useShareAppMessage(() => {
     }
 
     .members-list {
-      background: white;
+      background: 'white'
       border-radius: 16rpx;
-      overflow: hidden;
+      overflow: 'hidden'
 
       .member-item {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         padding: 30rpx;
         border-bottom: 2rpx solid #f0f0f0;
 
         &:last-child {
-          border-bottom: none;
+          border-bottom: 'none'
         }
 
         .member-avatar {
@@ -410,15 +410,15 @@ Taro.useShareAppMessage(() => {
           height: 80rpx;
           background: #1296db;
           border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: 'flex'
+          align-items: 'center'
+          justify-content: 'center'
           margin-right: 20rpx;
 
           .avatar-text {
-            color: white;
+            color: 'white'
             font-size: 32rpx;
-            font-weight: bold;
+            font-weight: 'bold'
           }
         }
 
@@ -426,22 +426,22 @@ Taro.useShareAppMessage(() => {
           flex: 1;
 
           .member-name {
-            display: block;
+            display: 'block'
             font-size: 30rpx;
             color: #333;
             margin-bottom: 8rpx;
           }
 
           .member-role {
-            display: block;
+            display: 'block'
             font-size: 24rpx;
             color: #666;
           }
         }
 
         .member-status {
-          display: flex;
-          align-items: center;
+          display: 'flex'
+          align-items: 'center'
 
           .status-dot {
             width: 16rpx;
@@ -466,19 +466,19 @@ Taro.useShareAppMessage(() => {
 
   // 功能菜单
   .menu-section {
-    background: white;
+    background: 'white'
     margin: 30rpx;
     border-radius: 16rpx;
-    overflow: hidden;
+    overflow: 'hidden'
 
     .menu-item {
-      display: flex;
-      align-items: center;
+      display: 'flex'
+      align-items: 'center'
       padding: 30rpx;
       border-bottom: 2rpx solid #f0f0f0;
 
       &:last-child {
-        border-bottom: none;
+        border-bottom: 'none'
       }
 
       .menu-icon {
@@ -501,34 +501,34 @@ Taro.useShareAppMessage(() => {
 
   // 邀请弹窗
   .modal-overlay {
-    position: fixed;
+    position: 'fixed'
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: 'flex'
+    align-items: 'center'
+    justify-content: 'center'
     z-index: 1000;
     padding: 60rpx;
 
     .modal-content {
-      background: white;
+      background: 'white'
       border-radius: 20rpx;
       width: 100%;
       max-height: 80vh;
 
       .modal-header {
-        display: flex;
-        align-items: center;
+        display: 'flex'
+        align-items: 'center'
         justify-content: space-between;
         padding: 40rpx 40rpx 20rpx;
         border-bottom: 2rpx solid #f0f0f0;
 
         .modal-title {
           font-size: 36rpx;
-          font-weight: bold;
+          font-weight: 'bold'
           color: #333;
         }
 
@@ -537,9 +537,9 @@ Taro.useShareAppMessage(() => {
           color: #999;
           width: 60rpx;
           height: 60rpx;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: 'flex'
+          align-items: 'center'
+          justify-content: 'center'
         }
       }
 
@@ -550,15 +550,15 @@ Taro.useShareAppMessage(() => {
           margin-bottom: 40rpx;
 
           .invite-label {
-            display: block;
+            display: 'block'
             font-size: 28rpx;
             color: #666;
             margin-bottom: 20rpx;
           }
 
           .invite-code-display {
-            display: flex;
-            align-items: center;
+            display: 'flex'
+            align-items: 'center'
             background: #f8f9fa;
             border-radius: 12rpx;
             padding: 20rpx;
@@ -567,7 +567,7 @@ Taro.useShareAppMessage(() => {
             .invite-code {
               flex: 1;
               font-size: 36rpx;
-              font-weight: bold;
+              font-weight: 'bold'
               color: #333;
               letter-spacing: 4rpx;
             }
@@ -590,28 +590,28 @@ Taro.useShareAppMessage(() => {
 
         .share-section {
           .share-label {
-            display: block;
+            display: 'block'
             font-size: 28rpx;
             color: #666;
             margin-bottom: 20rpx;
           }
 
           .share-buttons {
-            display: flex;
+            display: 'flex'
             gap: 20rpx;
 
             .share-btn {
               flex: 1;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
+              display: 'flex'
+              flex-direction: 'column'
+              align-items: 'center'
               padding: 30rpx 20rpx;
               border: 2rpx solid #e0e0e0;
               border-radius: 12rpx;
-              background: white;
+              background: 'white'
 
               &::after {
-                border: none;
+                border: 'none'
               }
 
               .share-icon {

@@ -5,13 +5,13 @@ import { ApiResponse } from '../../types/api';
 
 // 请求配置
 interface RequestConfig {
-  url: string;
+  url;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  data?: any;
+  data?: 'any'
   header?: Record<string, string>;
-  timeout?: number;
-  loading?: boolean;
-  cache?: boolean;
+  timeout?: 'number'
+  loading?: 'boolean'
+  cache?: 'boolean'
 }
 
 // 响应拦截器类型
@@ -19,17 +19,17 @@ type ResponseInterceptor = (response: any) => any;
 type ErrorInterceptor = (error: any) => any;
 
 class RequestManager {
-  private baseURL = '';
-  private defaultTimeout = 10000;
-  private token = '';
-  private responseInterceptors: ResponseInterceptor[] = [];
-  private errorInterceptors: ErrorInterceptor[] = [];
+  baseURL = '';
+  defaultTimeout = 10000;
+  token = '';
+  responseInterceptors= [];
+  errorInterceptors= [];
 
   constructor() {
     this.init();
   }
 
-  private init() {
+  init() {
     // 从存储中获取token
     this.token = Taro.getStorageSync('token') || '';
     
@@ -45,7 +45,7 @@ class RequestManager {
   }
 
   // 设置token
-  setToken(token: string) {
+  setToken(token) {
     this.token = token;
     Taro.setStorageSync('token', token);
   }
@@ -57,17 +57,17 @@ class RequestManager {
   }
 
   // 添加响应拦截器
-  addResponseInterceptor(interceptor: ResponseInterceptor) {
+  addResponseInterceptor(interceptor) {
     this.responseInterceptors.push(interceptor);
   }
 
   // 添加错误拦截器
-  addErrorInterceptor(interceptor: ErrorInterceptor) {
+  addErrorInterceptor(interceptor) {
     this.errorInterceptors.push(interceptor);
   }
 
   // 通用请求方法
-  async request<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
+  async request<T = any>(config) {
     const {
       url,
       method = 'GET',
@@ -84,7 +84,7 @@ class RequestManager {
     }
 
     // 检查缓存
-    const cacheKey = `${method}:${url}:${JSON.stringify(data)}`;
+    const cacheKey = `${method}:${url}${JSON.stringify(data || {})}`;
     if (cache && method === 'GET') {
       const cachedData = Taro.getStorageSync(cacheKey);
       if (cachedData && Date.now() - cachedData.timestamp < 5 * 60 * 1000) {
@@ -106,11 +106,11 @@ class RequestManager {
 
       // 发起请求
       const response = await Taro.request({
-        url: this.baseURL + url,
-        method,
+        url: fullUrl,
+        method: method as any,
         data,
-        header: requestHeader,
-        timeout
+        header,
+        timeout: this.defaultTimeout
       });
 
       if (loading) {
@@ -118,7 +118,7 @@ class RequestManager {
       }
 
       // 处理响应
-      let result = response.data as ApiResponse<T>;
+      let result = response.data;
 
       // 应用响应拦截器
       for (const interceptor of this.responseInterceptors) {
@@ -140,7 +140,7 @@ class RequestManager {
 
       return result;
 
-    } catch (error: any) {
+    } catch (error) {
       if (loading) {
         Taro.hideLoading();
       }
@@ -164,7 +164,10 @@ class RequestManager {
         switch (error.statusCode) {
           case 401:
             this.clearToken();
-            Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+            Taro.showToast({
+              title: '登录已过期，请重新登录',
+              icon: 'none'
+            });
             // 跳转到登录页
             Taro.reLaunch({ url: '/pages/login/index' });
             break;
@@ -175,7 +178,7 @@ class RequestManager {
           case 500:
             throw new Error('服务器内部错误');
           default:
-            throw new Error(`请求失败 (${error.statusCode})`);
+            throw new Error(result.message || '请求失败');
         }
       }
 
@@ -184,10 +187,10 @@ class RequestManager {
   }
 
   // GET请求
-  get<T = any>(url: string, params?: any, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
+  get<T = any>(url: string, params?: any, config?: RequestConfig) {
     const queryString = params ? this.buildQueryString(params) : '';
     const fullUrl = queryString ? `${url}?${queryString}` : url;
-    
+
     return this.request<T>({
       url: fullUrl,
       method: 'GET',
@@ -196,7 +199,7 @@ class RequestManager {
   }
 
   // POST请求
-  post<T = any>(url: string, data?: any, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
+  post<T = any>(url: string, data?: any, config?: RequestConfig) {
     return this.request<T>({
       url,
       method: 'POST',
@@ -206,7 +209,7 @@ class RequestManager {
   }
 
   // PUT请求
-  put<T = any>(url: string, data?: any, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
+  put<T = any>(url: string, data?: any, config?: RequestConfig) {
     return this.request<T>({
       url,
       method: 'PUT',
@@ -216,7 +219,7 @@ class RequestManager {
   }
 
   // DELETE请求
-  delete<T = any>(url: string, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
+  delete<T = any>(url: string, config?: RequestConfig) {
     return this.request<T>({
       url,
       method: 'DELETE',
@@ -225,15 +228,15 @@ class RequestManager {
   }
 
   // 构建查询字符串
-  private buildQueryString(params: Record<string, any>): string {
+  buildQueryString(params: Record<string, any>) {
     const pairs: string[] = [];
-    
+
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null && value !== '') {
         pairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
       }
     }
-    
+
     return pairs.join('&');
   }
 
@@ -244,7 +247,7 @@ class RequestManager {
     name: string;
     formData?: Record<string, any>;
     header?: Record<string, string>;
-  }): Promise<any> {
+  }) {
     const { url, filePath, name, formData, header = {} } = config;
 
     if (this.token) {
@@ -253,7 +256,7 @@ class RequestManager {
 
     return new Promise((resolve, reject) => {
       const uploadTask = Taro.uploadFile({
-        url: this.baseURL + url,
+        url,
         filePath,
         name,
         formData,
@@ -281,10 +284,10 @@ class RequestManager {
   }
 
   // 下载文件
-  async downloadFile(url: string, fileName?: string): Promise<string> {
+  async downloadFile(url: string, fileName?: string) {
     return new Promise((resolve, reject) => {
       Taro.downloadFile({
-        url: this.baseURL + url,
+        url,
         success: (res) => {
           if (res.statusCode === 200) {
             // 保存到本地
@@ -294,7 +297,9 @@ class RequestManager {
                 success: (saveRes) => {
                   resolve(saveRes.savedFilePath);
                 },
-                fail: reject
+                fail: (err) => {
+                  reject(err);
+                }
               });
             } else {
               resolve(res.tempFilePath);
@@ -303,7 +308,9 @@ class RequestManager {
             reject(new Error('下载失败'));
           }
         },
-        fail: reject
+        fail: (err) => {
+          reject(err);
+        }
       });
     });
   }
