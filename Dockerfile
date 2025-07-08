@@ -19,13 +19,13 @@ ENV npm_config_target_platform=linux \
     npm_config_target_arch=x64 \
     npm_config_cache=/tmp/.npm \
     npm_config_build_from_source=true
-
-# 复制依赖文件并安装
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --no-frozen-lockfile
-
 # 复制源代码
 COPY . .
+# # 复制依赖文件并安装
+# COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --no-frozen-lockfile
+
+
 
 # 设置环境变量
 ENV NODE_ENV=production \

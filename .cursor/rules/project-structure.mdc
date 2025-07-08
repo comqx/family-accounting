@@ -1,0 +1,38 @@
+# Family Accounting 项目结构指南
+
+本项目基于 Taro + Vue3 + TypeScript 构建，核心代码位于 `src/` 目录下。
+
+## 入口文件
+- [src/app.ts](mdc:src/app.ts)：应用入口，注册全局配置和初始化逻辑。
+- [src/app.config.ts](mdc:src/app.config.ts)：小程序/多端打包的通用配置。
+
+## 页面 (Pages)
+所有业务页面均位于 [src/pages](mdc:src/pages) 目录，按照业务域分子目录。
+每个页面入口为 `index.vue`，同级可能包含 `index.config.ts`（页面配置）与样式文件。
+示例：
+- 主页：[src/pages/index/index.vue](mdc:src/pages/index/index.vue)
+- 记账记录详情：[src/pages/record/detail/index.vue](mdc:src/pages/record/detail/index.vue)
+
+## Store (Pinia)
+全局状态管理使用 Pinia，模块化存放于 [src/stores/modules](mdc:src/stores/modules)。
+- 示例模块：[src/stores/modules/user.ts](mdc:src/stores/modules/user.ts) 处理用户登录状态。
+
+## 服务层 (Services)
+业务请求／工具位于 [src/services](mdc:src/services)。常见分层：
+- 请求封装：[src/utils/request/index.ts](mdc:src/utils/request/index.ts)
+- WebSocket 实时同步：[src/services/websocket/index.ts](mdc:src/services/websocket/index.ts)
+
+## 类型定义 (Types)
+项目业务与接口类型声明集中在 [src/types](mdc:src/types)。
+- 接口响应：[src/types/api/index.ts](mdc:src/types/api/index.ts)
+- 业务模型：[src/types/business/index.ts](mdc:src/types/business/index.ts)
+
+## 工具函数 (Utils)
+公用工具函数位于 [src/utils](mdc:src/utils)。例如：
+- 数据格式化：[src/utils/format/index.ts](mdc:src/utils/format/index.ts)
+- 本地缓存封装：[src/utils/storage/index.ts](mdc:src/utils/storage/index.ts)
+
+## 配置 (Config)
+多环境配置文件存放于 [config/](mdc:config) 目录，以 `dev.ts`、`prod.ts` 区分。
+
+该规则帮助 AI 快速定位项目关键文件与目录，提高代码导航效率。
