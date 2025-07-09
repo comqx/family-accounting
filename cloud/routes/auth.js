@@ -27,9 +27,13 @@ router.post('/wechat-login', [
       unionid: userInfo.unionId || null
     };
 
+    // 生成用户ID
+    const userId = `user_${Date.now()}`;
+
     // 生成JWT token
     const token = jwt.sign(
       { 
+        userId: userId,
         openid: mockWxResponse.openid,
         unionid: mockWxResponse.unionid 
       },
@@ -41,10 +45,14 @@ router.post('/wechat-login', [
       success: true,
       data: {
         token,
-        userInfo: {
+        user: {
+          id: userId,
           openid: mockWxResponse.openid,
           unionid: mockWxResponse.unionid,
-          ...userInfo
+          nickName: userInfo.nickName,
+          avatarUrl: userInfo.avatarUrl,
+          familyId: null,
+          role: 'MEMBER'
         }
       }
     });

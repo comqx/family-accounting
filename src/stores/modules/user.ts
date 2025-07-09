@@ -49,7 +49,7 @@ export const useUserStore = defineStore('user', () => {
       }
 
       // 调用登录接口
-      const response = await request.post('/auth/wechat-login', {
+      const response = await request.post('/api/auth/wechat-login', {
         code: loginResult.code,
         userInfo: userInfo
       });
@@ -93,7 +93,7 @@ export const useUserStore = defineStore('user', () => {
   // 获取用户信息
   const getUserProfile = async () => {
     try {
-      const response = await request.get('/user/profile');
+      const response = await request.get('/api/user/profile');
       
       if (response.data?.user) {
         user.value = response.data.user;
@@ -113,17 +113,11 @@ export const useUserStore = defineStore('user', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.put('/user/profile', profileData);
+      const response = await request.put('/api/user/profile', profileData);
       
       if (response.data?.user) {
         user.value = response.data.user;
         Taro.setStorageSync('userInfo', response.data.user);
-        
-        Taro.showToast({
-          title: '更新成功',
-          icon: 'success'
-        });
-        
         return true;
       }
       
@@ -174,7 +168,7 @@ export const useUserStore = defineStore('user', () => {
         return false;
       }
 
-      const response = await request.post('/auth/refresh', {
+      const response = await request.post('/api/auth/refresh', {
         refreshToken: currentToken
       });
 
