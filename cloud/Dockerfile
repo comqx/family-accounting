@@ -1,6 +1,6 @@
 # 微信云托管 Dockerfile
 # 基于 Node.js 18 官方镜像
-FROM node:18-alpine
+FROM --platform=linux/amd64 node:18.20.8
 
 # 设置工作目录
 WORKDIR /app
