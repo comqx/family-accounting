@@ -58,7 +58,13 @@
     "docker:prod-run": "docker run --rm family-accounting:latest",
     "docker:stop": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "docker:clean": "docker-compose down -v --rmi local"
+    "docker:clean": "docker-compose down -v --rmi local",
+    "cloud:dev": "cd cloud && npm run dev",
+    "cloud:start": "cd cloud && npm start",
+    "cloud:build": "cd cloud && docker build -t family-accounting-cloud:latest .",
+    "cloud:deploy": "node scripts/deploy-cloud.js",
+    "cloud:deploy:dev": "NODE_ENV=development node scripts/deploy-cloud.js",
+    "cloud:deploy:prod": "NODE_ENV=production node scripts/deploy-cloud.js"
   },
   "browserslist": [
     "defaults and fully supports es6-module",
