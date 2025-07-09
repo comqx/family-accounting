@@ -5,17 +5,17 @@ import Taro from '@tarojs/taro'
 const API_CONFIG = {
   // 开发环境
   development: {
-    baseURL: 'http://localhost:80/api',
+    baseURL: 'https://express-9o49-171950-8-1322802786.sh.run.tcloudbase.com/api',
     timeout: 10000
   },
   // 测试环境
   staging: {
-    baseURL: 'https://your-staging-domain.com/api',
+    baseURL: 'https://express-9o49-171950-8-1322802786.sh.run.tcloudbase.com/api',
     timeout: 10000
   },
   // 生产环境 - 微信云托管
   production: {
-    baseURL: 'https://your-cloud-service.weixin.qq.com/api',
+    baseURL: 'https://express-9o49-171950-8-1322802786.sh.run.tcloudbase.com/api',
     timeout: 15000
   }
 }

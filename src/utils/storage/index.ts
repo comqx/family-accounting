@@ -183,34 +183,66 @@ class StorageManager {
 const storage = new StorageManager();
 
 // 便捷方法
-export const setToken = (token) => storage.set(STORAGE_KEYS.TOKEN, token);
-export const getToken = () => storage.get(STORAGE_KEYS.TOKEN);
-export const clearToken = () => storage.remove(STORAGE_KEYS.TOKEN);
+export function setToken(token) {
+  return storage.set(STORAGE_KEYS.TOKEN, token);
+}
 
-export const setUserInfo = (userInfo) => storage.set(STORAGE_KEYS.USER_INFO, userInfo);
-export const getUserInfo = () => storage.get(STORAGE_KEYS.USER_INFO);
-export const clearUserInfo = () => storage.remove(STORAGE_KEYS.USER_INFO);
+export function getToken() {
+  return storage.get(STORAGE_KEYS.TOKEN);
+}
 
-export const setFamilyInfo = (familyInfo) => storage.set(STORAGE_KEYS.FAMILY_INFO, familyInfo);
-export const getFamilyInfo = () => storage.get(STORAGE_KEYS.FAMILY_INFO);
-export const clearFamilyInfo = () => storage.remove(STORAGE_KEYS.FAMILY_INFO);
+export function clearToken() {
+  return storage.remove(STORAGE_KEYS.TOKEN);
+}
 
-export const setAppSettings = (settings) => storage.set(STORAGE_KEYS.APP_SETTINGS, settings);
-export const getAppSettings = () => storage.get(STORAGE_KEYS.APP_SETTINGS, {
-  theme: 'light',
-  language: 'zh-CN',
-  currency: 'CNY',
-  notifications: {
-    recordChanges: true,
-    budgetAlerts: true,
-    memberActivities: true
-  },
-  privacy: {
-    showAmountInList: true,
-    requirePasswordForReports: false
-  }
-});
-export const clearAppSettings = () => storage.remove(STORAGE_KEYS.APP_SETTINGS);
+export function setUserInfo(userInfo) {
+  return storage.set(STORAGE_KEYS.USER_INFO, userInfo);
+}
+
+export function getUserInfo() {
+  return storage.get(STORAGE_KEYS.USER_INFO);
+}
+
+export function clearUserInfo() {
+  return storage.remove(STORAGE_KEYS.USER_INFO);
+}
+
+export function setFamilyInfo(familyInfo) {
+  return storage.set(STORAGE_KEYS.FAMILY_INFO, familyInfo);
+}
+
+export function getFamilyInfo() {
+  return storage.get(STORAGE_KEYS.FAMILY_INFO);
+}
+
+export function clearFamilyInfo() {
+  return storage.remove(STORAGE_KEYS.FAMILY_INFO);
+}
+
+export function setAppSettings(settings) {
+  return storage.set(STORAGE_KEYS.APP_SETTINGS, settings);
+}
+
+export function getAppSettings() {
+  return storage.get(STORAGE_KEYS.APP_SETTINGS, {
+    theme: 'light',
+    language: 'zh-CN',
+    currency: 'CNY',
+    notifications: {
+      recordChanges: true,
+      budgetAlerts: true,
+      memberActivities: true
+    },
+    privacy: {
+      showAmountInList: true,
+      requirePasswordForReports: false
+    }
+  });
+}
+
+export function clearAppSettings() {
+  return storage.remove(STORAGE_KEYS.APP_SETTINGS);
+}
 
 // 清除所有用户数据
 export const clearUserData = () => {

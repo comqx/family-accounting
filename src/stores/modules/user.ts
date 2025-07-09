@@ -6,7 +6,7 @@ import Taro from '@tarojs/taro';
 import { User, UserRole } from '../../types/business';
 import { AuthAPI, UserAPI } from '../../types/api';
 import request from '../../utils/request';
-import { setToken, getToken, setUserInfo, getUserInfo, clearUserData } from '../../utils/storage';
+import { clearUserData } from '../../utils/storage';
 
 export const useUserStore = defineStore('user', () => {
   // 状态
@@ -24,8 +24,8 @@ export const useUserStore = defineStore('user', () => {
 
   // 初始化用户状态
   const initUserState = () => {
-    const savedToken = getToken();
-    const savedUser = getUserInfo();
+    const savedToken = Taro.getStorageSync('token');
+    const savedUser = Taro.getStorageSync('userInfo');
     
     if (savedToken && savedUser) {
       token.value = savedToken;
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 微信登录
-  const login = async () => {
+  const login = async (userInfo) => {
     try {
       isLoading.value = true;
 
@@ -49,8 +49,9 @@ export const useUserStore = defineStore('user', () => {
       }
 
       // 调用登录接口
-      const response = await request.post('/auth/login', {
-        code: loginResult.code
+      const response = await request.post('/auth/wechat-login', {
+        code: loginResult.code,
+        userInfo: userInfo
       });
 
       if (response.data) {
@@ -61,8 +62,9 @@ export const useUserStore = defineStore('user', () => {
         user.value = userInfo;
         isLoggedIn.value = true;
         
-        setToken(newToken);
-        setUserInfo(userInfo);
+        // 只用 Taro API 存储
+        Taro.setStorageSync('token', newToken);
+        Taro.setStorageSync('userInfo', userInfo);
         request.setToken(newToken);
 
         // 如果有家庭信息，触发家庭store更新
@@ -95,7 +97,7 @@ export const useUserStore = defineStore('user', () => {
       
       if (response.data?.user) {
         user.value = response.data.user;
-        setUserInfo(response.data.user);
+        Taro.setStorageSync('userInfo', response.data.user);
         return true;
       }
       
@@ -115,7 +117,7 @@ export const useUserStore = defineStore('user', () => {
       
       if (response.data?.user) {
         user.value = response.data.user;
-        setUserInfo(response.data.user);
+        Taro.setStorageSync('userInfo', response.data.user);
         
         Taro.showToast({
           title: '更新成功',
@@ -167,7 +169,7 @@ export const useUserStore = defineStore('user', () => {
   // 刷新token
   const refreshToken = async () => {
     try {
-      const currentToken = getToken();
+      const currentToken = Taro.getStorageSync('token');
       if (!currentToken) {
         return false;
       }
@@ -179,7 +181,7 @@ export const useUserStore = defineStore('user', () => {
       if (response.data) {
         const { token: newToken } = response.data;
         token.value = newToken;
-        setToken(newToken);
+        Taro.setStorageSync('token', newToken);
         request.setToken(newToken);
         return true;
       }
@@ -200,13 +202,8 @@ export const useUserStore = defineStore('user', () => {
     }
 
     try {
-      // 尝试获取用户信息来验证token有效性
-      const success = await getUserProfile();
-      if (!success) {
-        // 尝试刷新token
-        return await refreshToken();
-      }
-      return true;
+      // 尝试刷新token来验证token有效性，而不是获取用户信息
+      return await refreshToken();
     } catch (error) {
       // token无效，清除登录状态
       logout();
@@ -268,14 +265,14 @@ export const useUserStore = defineStore('user', () => {
   const updateUserRole = (newRole) => {
     if (user.value) {
       user.value.role = newRole;
-      setUserInfo(user.value);
+      Taro.setStorageSync('userInfo', user.value);
     }
   };
 
   // 设置用户信息（用于其他store调用）
   const setUser = (userInfo) => {
     user.value = userInfo;
-    setUserInfo(userInfo);
+    Taro.setStorageSync('userInfo', userInfo);
   };
 
   return {

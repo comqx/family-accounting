@@ -1,0 +1,106 @@
+# 完整版 Dockerfile - 包含前端和后端
+# 多阶段构建
+
+# 第一阶段：构建前端
+FROM --platform=linux/amd64 node:18.20.8 AS frontend-builder
+
+WORKDIR /app
+
+# 安装 pnpm
+RUN npm install -g pnpm
+
+# 复制前端代码
+COPY package.json pnpm-lock.yaml ./
+COPY src/ ./src/
+COPY config/ ./config/
+COPY tsconfig.json babel.config.js ./
+
+# 安装依赖并构建
+RUN pnpm install --frozen-lockfile
+RUN pnpm run build:weapp
+
+# 第二阶段：构建后端
+FROM --platform=linux/amd64 node:18.20.8 AS backend-builder
+
+WORKDIR /app
+
+# 复制后端代码
+COPY cloud/package*.json ./
+RUN npm install --omit=dev
+
+COPY cloud/ ./
+
+# 第三阶段：最终镜像
+FROM --platform=linux/amd64 node:18.20.8 AS production
+
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制后端
+COPY --from=backend-builder /app ./
+
+# 复制前端静态文件
+COPY --from=frontend-builder /app/dist ./public
+
+# 创建上传目录
+RUN mkdir -p uploads
+
+# 配置 Nginx
+COPY <<EOF /etc/nginx/sites-available/default
+server {
+    listen 80;
+    server_name localhost;
+    
+    # 静态文件服务
+    location / {
+        root /app/public;
+        try_files \$uri \$uri/ /index.html;
+    }
+    
+    # API 代理
+    location /api/ {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+    
+    # 文件上传
+    location /uploads/ {
+        alias /app/uploads/;
+    }
+}
+EOF
+
+# 设置环境变量
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# 暴露端口
+EXPOSE 80
+
+# 启动脚本
+COPY <<EOF /app/start.sh
+#!/bin/bash
+# 启动后端服务
+node index.js &
+# 启动 Nginx
+nginx -g "daemon off;"
+EOF
+
+RUN chmod +x /app/start.sh
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/api/health || exit 1
+
+# 启动应用
+CMD ["/app/start.sh"] 

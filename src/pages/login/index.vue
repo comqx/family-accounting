@@ -125,8 +125,14 @@ const handleWechatLogin = async () => {
   try {
     isLogging.value = true
 
+    // 先获取微信用户信息
+    const userInfo = await userStore.getWechatUserInfo()
+    if (!userInfo) {
+      throw new Error('获取用户信息失败')
+    }
+
     // 执行登录
-    const success = await userStore.login()
+    const success = await userStore.login(userInfo)
 
     if (success) {
       // 登录成功，跳转到主页
