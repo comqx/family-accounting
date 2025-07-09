@@ -3,8 +3,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import Taro from '@tarojs/taro';
-import { Family, User, UserRole, FamilySettings } from '../../types/business';
-import { FamilyAPI } from '../../types/api';
 import request from '../../utils/request';
 import { setFamilyInfo, clearFamilyInfo } from '../../utils/storage';
 
@@ -30,11 +28,11 @@ export const useFamilyStore = defineStore('family', () => {
   );
 
   const regularMembers = computed(() => 
-    members.value.filter(member => member.role === UserRole.MEMBER)
+    members.value.filter(member => member.role === 'MEMBER')
   );
 
   const observers = computed(() => 
-    members.value.filter(member => member.role === UserRole.OBSERVER)
+    members.value.filter(member => member.role === 'OBSERVER')
   );
 
   // 初始化家庭状态
@@ -63,7 +61,7 @@ export const useFamilyStore = defineStore('family', () => {
         const userStore = useUserStore();
         if (userStore.user) {
           userStore.user.familyId = response.data.family.id;
-          userStore.user.role = UserRole.ADMIN;
+          userStore.user.role = 'ADMIN';
           userStore.setUser(userStore.user);
         }
 
@@ -93,7 +91,7 @@ export const useFamilyStore = defineStore('family', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.post<FamilyAPI.JoinFamilyResponse>('/families/join', {
+      const response = await request.post('/api/family/join', {
         inviteCode
       });
 
@@ -134,11 +132,11 @@ export const useFamilyStore = defineStore('family', () => {
   // 获取家庭信息
   const getFamilyInfo = async () => {
     try {
-      const response = await request.get<FamilyAPI.GetFamilyResponse>('/families/current');
+      const response = await request.get('/api/family/list');
 
-      if (response.data?.family) {
-        family.value = response.data.family;
-        setFamilyInfo(response.data.family);
+      if (response.data && response.data.length > 0) {
+        family.value = response.data[0];
+        setFamilyInfo(response.data[0]);
         return true;
       }
 
@@ -154,11 +152,11 @@ export const useFamilyStore = defineStore('family', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.put<FamilyAPI.UpdateFamilyResponse>('/families/current', familyData);
+      const response = await request.put(`/api/family/${family.value?.id}`, familyData);
 
-      if (response.data?.family) {
-        family.value = response.data.family;
-        setFamilyInfo(response.data.family);
+      if (response.data) {
+        family.value = response.data;
+        setFamilyInfo(response.data);
         
         Taro.showToast({
           title: '更新成功',
@@ -184,10 +182,10 @@ export const useFamilyStore = defineStore('family', () => {
   // 获取家庭成员
   const loadMembers = async () => {
     try {
-      const response = await request.get<FamilyAPI.GetMembersResponse>('/families/members');
+      const response = await request.get(`/api/family/${family.value?.id}/members`);
 
-      if (response.data?.members) {
-        members.value = response.data.members;
+      if (response.data) {
+        members.value = response.data;
         return true;
       }
 
@@ -199,11 +197,11 @@ export const useFamilyStore = defineStore('family', () => {
   };
 
   // 邀请成员
-  const inviteMember = async (userId, role = UserRole.MEMBER) => {
+  const inviteMember = async (userId, role = 'MEMBER') => {
     try {
       isLoading.value = true;
 
-      const response = await request.post<FamilyAPI.InviteMemberResponse>('/families/invite', {
+      const response = await request.post('/api/family/invite', {
         userId,
         role
       });
@@ -300,7 +298,7 @@ export const useFamilyStore = defineStore('family', () => {
     try {
       isLoading.value = true;
 
-      await request.post('/families/leave');
+      await request.post(`/api/family/${family.value?.id}/leave`);
 
       // 清除家庭信息
       family.value = null;
@@ -312,7 +310,7 @@ export const useFamilyStore = defineStore('family', () => {
       const userStore = useUserStore();
       if (userStore.user) {
         userStore.user.familyId = undefined;
-        userStore.user.role = UserRole.MEMBER;
+        userStore.user.role = 'MEMBER';
         userStore.setUser(userStore.user);
       }
 
@@ -339,7 +337,7 @@ export const useFamilyStore = defineStore('family', () => {
     try {
       isLoading.value = true;
 
-      await request.delete('/families/current');
+      await request.delete(`/api/family/${family.value?.id}`);
 
       // 清除家庭信息
       family.value = null;
@@ -351,7 +349,7 @@ export const useFamilyStore = defineStore('family', () => {
       const userStore = useUserStore();
       if (userStore.user) {
         userStore.user.familyId = undefined;
-        userStore.user.role = UserRole.MEMBER;
+        userStore.user.role = 'MEMBER';
         userStore.setUser(userStore.user);
       }
 

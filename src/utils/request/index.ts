@@ -31,7 +31,7 @@ import Taro from '@tarojs/taro';
 class RequestManager {
   constructor() {
     // 初始化属性
-    this.baseURL = '';
+    this.baseURL = 'https://express-9o49-171950-8-1322802786.sh.run.tcloudbase.com';
     this.defaultTimeout = 10000;
     this.token = '';
     this.responseInterceptors = [];
