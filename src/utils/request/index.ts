@@ -56,12 +56,14 @@ class RequestManager {
 
   // 设置token
   setToken(token) {
+    console.log('[TAG] request.setToken called', token, new Date().toISOString());
     this.token = token;
     Taro.setStorageSync('token', token);
   }
 
   // 清除token
   clearToken() {
+    console.log('[TAG] request.clearToken called', new Date().toISOString());
     this.token = '';
     Taro.removeStorageSync('token');
   }

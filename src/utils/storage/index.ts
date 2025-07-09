@@ -184,6 +184,7 @@ const storage = new StorageManager();
 
 // 便捷方法
 export function setToken(token) {
+  console.log('[TAG] storage.setToken called', token, new Date().toISOString());
   return storage.set(STORAGE_KEYS.TOKEN, token);
 }
 

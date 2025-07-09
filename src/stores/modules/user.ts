@@ -33,7 +33,7 @@ export const useUserStore = defineStore('user', () => {
         user.value = savedUser;
       }
       isLoggedIn.value = true;
-      request.setToken(savedToken);
+      request.token = savedToken;
     }
   };
 
@@ -65,7 +65,7 @@ export const useUserStore = defineStore('user', () => {
         // 只用 Taro API 存储
         Taro.setStorageSync('token', newToken);
         Taro.setStorageSync('userInfo', userInfo);
-        request.setToken(newToken);
+        request.token = newToken;
 
         // 如果有家庭信息，触发家庭store更新
         if (family) {
@@ -182,7 +182,7 @@ export const useUserStore = defineStore('user', () => {
         const { token: newToken } = response.data;
         token.value = newToken;
         Taro.setStorageSync('token', newToken);
-        request.setToken(newToken);
+        request.token = newToken;
         return true;
       }
 
