@@ -52,7 +52,7 @@ export const useFamilyStore = defineStore('family', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.post<FamilyAPI.CreateFamilyResponse>('/families', familyData);
+      const response = await request.post('/api/family/create', familyData);
 
       if (response.data?.family) {
         family.value = response.data.family;

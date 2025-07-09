@@ -400,3 +400,56 @@ Taro.useDidShow(() => {
   }
 })
 </script>
+
+<style lang="scss">
+.index-page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  display: flex;
+  flex-direction: column;
+  padding: 32rpx 24rpx 80rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.index-header {
+  margin-bottom: 40rpx;
+  text-align: center;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.index-section {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.04);
+  margin-bottom: 32rpx;
+  padding: 32rpx 24rpx;
+}
+
+.index-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 16rpx;
+}
+
+.index-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.index-list-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+  font-size: 28rpx;
+  color: #444;
+}
+
+.index-list-item:last-child {
+  border-bottom: none;
+}
+</style>

@@ -70,9 +70,9 @@
       <!-- 操作按钮 -->
       <view class="action-section">
         <button
-          class="create-btn"
-          :class="{ disabled: !canCreate }"
-          @tap="handleCreateFamily"
+          class="family-btn"
+          :class="{ 'family-btn--disabled': !canCreate }"
+          @tap="canCreate ? handleCreateFamily() : null"
           :loading="isCreating"
           :disabled="!canCreate || isCreating"
         >
@@ -186,239 +186,113 @@ Taro.useShareAppMessage(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .family-create-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #f7b267 0%, #f4845f 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx 24rpx 80rpx 24rpx;
+  box-sizing: border-box;
+}
 
-  // 顶部导航
-  .nav-header {
-    background: white;
-    padding: 20rpx 0;
-    text-align: center;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+.family-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.06);
+  padding: 40rpx 32rpx 32rpx 32rpx;
+  width: 100%;
+  max-width: 700rpx;
+  margin-bottom: 40rpx;
+}
 
-    .nav-title {
-      font-size: 36rpx;
-      font-weight: bold;
-      color: #333;
-    }
-  }
+.family-title {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+  text-align: center;
+}
 
-  // 主要内容
-  .main-content {
-    padding: 40rpx 30rpx;
+.family-desc {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 32rpx;
+  text-align: center;
+}
 
-    // 欢迎区域
-    .welcome-section {
-      text-align: center;
-      margin-bottom: 60rpx;
+.input-label {
+  font-size: 28rpx;
+  color: #444;
+  margin-bottom: 8rpx;
+}
 
-      .welcome-icon {
-        font-size: 120rpx;
-        margin-bottom: 30rpx;
-      }
+.input-box {
+  width: 100%;
+  background: #f7f8fa;
+  border-radius: 12rpx;
+  border: 1rpx solid #eee;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  margin-bottom: 24rpx;
+  box-sizing: border-box;
+}
 
-      .welcome-title {
-        display: block;
-        font-size: 42rpx;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 20rpx;
-      }
+.input-box:focus {
+  border-color: #f4845f;
+}
 
-      .welcome-desc {
-        display: block;
-        font-size: 28rpx;
-        color: #666;
-        line-height: 1.5;
-      }
-    }
+.family-feature-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222;
+  margin: 32rpx 0 12rpx 0;
+}
 
-    // 表单区域
-    .form-section {
-      background: white;
-      border-radius: 20rpx;
-      padding: 40rpx 30rpx;
-      margin-bottom: 40rpx;
-      box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+.family-feature-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
-      .form-item {
-        margin-bottom: 40rpx;
-        position: relative;
+.family-feature-item {
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+  color: #444;
+  margin-bottom: 16rpx;
+}
 
-        &:last-child {
-          margin-bottom: 0;
-        }
+.family-feature-item .icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+}
 
-        .form-label {
-          display: block;
-          font-size: 30rpx;
-          color: #333;
-          margin-bottom: 20rpx;
-          font-weight: 500;
-        }
+.family-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #f4845f 0%, #f7b267 100%);
+  color: #222 !important;
+  font-size: 36rpx;
+  font-weight: bold;
+  border: none;
+  border-radius: 16rpx;
+  padding: 32rpx 0;
+  margin-top: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(244,132,95,0.12);
+  transition: background 0.2s, color 0.2s;
+}
 
-        .form-input {
-          width: 100%;
-          padding: 24rpx 20rpx;
-          border: 2rpx solid #e0e0e0;
-          border-radius: 12rpx;
-          font-size: 30rpx;
-          color: #333;
-          background: #fafafa;
+.family-btn--disabled {
+  background: #eee !important;
+  color: #222 !important;
+  opacity: 1 !important;
+}
 
-          &:focus {
-            border-color: #1296db;
-            background: white;
-          }
-
-          &::placeholder {
-            color: #999;
-          }
-        }
-
-        .form-textarea {
-          width: 100%;
-          min-height: 120rpx;
-          padding: 24rpx 20rpx;
-          border: 2rpx solid #e0e0e0;
-          border-radius: 12rpx;
-          font-size: 30rpx;
-          color: #333;
-          background: #fafafa;
-          resize: none;
-
-          &:focus {
-            border-color: #1296db;
-            background: white;
-          }
-
-          &::placeholder {
-            color: #999;
-          }
-        }
-
-        .char-count {
-          position: absolute;
-          right: 20rpx;
-          bottom: 20rpx;
-          font-size: 24rpx;
-          color: #999;
-        }
-      }
-    }
-
-    // 功能介绍
-    .features-section {
-      margin-bottom: 60rpx;
-
-      .section-title {
-        display: block;
-        font-size: 32rpx;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 30rpx;
-      }
-
-      .feature-list {
-        .feature-item {
-          display: flex;
-          align-items: center;
-          background: white;
-          padding: 30rpx;
-          border-radius: 16rpx;
-          margin-bottom: 20rpx;
-          box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-
-          .feature-icon {
-            font-size: 48rpx;
-            margin-right: 30rpx;
-          }
-
-          .feature-content {
-            flex: 1;
-
-            .feature-name {
-              display: block;
-              font-size: 30rpx;
-              font-weight: 500;
-              color: #333;
-              margin-bottom: 8rpx;
-            }
-
-            .feature-desc {
-              display: block;
-              font-size: 26rpx;
-              color: #666;
-              line-height: 1.4;
-            }
-          }
-        }
-      }
-    }
-
-    // 操作区域
-    .action-section {
-      .create-btn {
-        width: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 50rpx;
-        padding: 28rpx 0;
-        font-size: 32rpx;
-        font-weight: bold;
-        margin-bottom: 40rpx;
-        box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.3);
-
-        &.disabled {
-          background: #ccc;
-          box-shadow: none;
-        }
-
-        &::after {
-          border: none;
-        }
-      }
-
-      .or-divider {
-        display: flex;
-        align-items: center;
-        margin-bottom: 40rpx;
-
-        .divider-line {
-          flex: 1;
-          height: 2rpx;
-          background: #e0e0e0;
-        }
-
-        .divider-text {
-          margin: 0 30rpx;
-          font-size: 26rpx;
-          color: #999;
-        }
-      }
-
-      .join-btn {
-        width: 100%;
-        background: white;
-        color: #1296db;
-        border: 2rpx solid #1296db;
-        border-radius: 50rpx;
-        padding: 28rpx 0;
-        font-size: 32rpx;
-        font-weight: bold;
-
-        &::after {
-          border: none;
-        }
-      }
-    }
-  }
+.family-or {
+  text-align: center;
+  color: #aaa;
+  font-size: 28rpx;
+  margin: 32rpx 0 24rpx 0;
 }
 </style>
