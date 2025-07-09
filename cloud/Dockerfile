@@ -6,11 +6,11 @@ FROM --platform=linux/amd64 node:18.20.8
 WORKDIR /app
 
 # 安装系统依赖
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/lib/apt/lists/*
 
 # 复制 package.json 和 package-lock.json
 COPY package*.json ./
