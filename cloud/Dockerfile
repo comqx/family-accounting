@@ -37,3 +37,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # 启动应用
 CMD ["node", "index.js"] 
+
