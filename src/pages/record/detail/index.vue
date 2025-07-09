@@ -105,7 +105,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../../stores'
@@ -138,7 +138,7 @@ const record = ref({
 })
 
 // 方法
-const formatDateTime = (date: Date | string): string => {
+const formatDateTime = (date) => {
   if (!date) return ''
   const d = new Date(date)
   return `${formatDate(d, 'YYYY-MM-DD')} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`

@@ -105,11 +105,10 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../stores'
-import { SplitRecord, SplitStatus, ParticipantStatus } from '../../types/business'
 import { formatAmount, formatRelativeTime } from '../../utils/format'
 import splitService from '../../services/split'
 
@@ -119,16 +118,16 @@ const familyStore = useFamilyStore()
 const appStore = useAppStore()
 
 // 响应式数据
-const splitRecords = ref<SplitRecord[]>([])
-const currentFilter = ref<SplitStatus | 'all'>('all')
+const splitRecords = ref([])
+const currentFilter = ref('all')
 const isProcessing = ref(false)
 
 // 状态筛选选项
 const statusFilters = [
   { label: '全部', value: 'all' },
-  { label: '待确认', value: SplitStatus.PENDING },
-  { label: '已确认', value: SplitStatus.CONFIRMED },
-  { label: '已结算', value: SplitStatus.SETTLED }
+  { label: '待确认', value: 'PENDING' },
+  { label: '已确认', value: 'CONFIRMED' },
+  { label: '已结算', value: 'SETTLED' }
 ]
 
 // 计算属性
@@ -140,15 +139,15 @@ const filteredSplits = computed(() => {
 })
 
 const pendingCount = computed(() => 
-  splitRecords.value.filter(split => split.status === SplitStatus.PENDING).length
+  splitRecords.value.filter(split => split.status === 'PENDING').length
 )
 
 const confirmedCount = computed(() => 
-  splitRecords.value.filter(split => split.status === SplitStatus.CONFIRMED).length
+  splitRecords.value.filter(split => split.status === 'CONFIRMED').length
 )
 
 const settledCount = computed(() => 
-  splitRecords.value.filter(split => split.status === SplitStatus.SETTLED).length
+  splitRecords.value.filter(split => split.status === 'SETTLED').length
 )
 
 // 方法
@@ -156,29 +155,29 @@ const switchFilter = (filter) => {
   currentFilter.value = filter
 }
 
-const getStatusText = (status: SplitStatus): string => {
+const getStatusText = (status) => {
   const statusMap = {
-    [SplitStatus.PENDING]: '待确认',
-    [SplitStatus.CONFIRMED]: '已确认',
-    [SplitStatus.SETTLED]: '已结算',
-    [SplitStatus.CANCELLED]: '已取消'
+    'PENDING': '待确认',
+    'CONFIRMED': '已确认',
+    'SETTLED': '已结算',
+    'CANCELLED': '已取消'
   }
   return statusMap[status] || status
 }
 
-const getParticipantStatusText = (status: ParticipantStatus): string => {
+const getParticipantStatusText = (status) => {
   const statusMap = {
-    [ParticipantStatus.PENDING]: '待确认',
-    [ParticipantStatus.CONFIRMED]: '已确认',
-    [ParticipantStatus.SETTLED]: '已结算',
-    [ParticipantStatus.DECLINED]: '已拒绝'
+    'PENDING': '待确认',
+    'CONFIRMED': '已确认',
+    'SETTLED': '已结算',
+    'DECLINED': '已拒绝'
   }
   return statusMap[status] || status
 }
 
-const hasUserParticipant = (split: SplitRecord): boolean => {
+const hasUserParticipant = (split) => {
   return split.participants.some(p => 
-    p.userId === userStore.user?.id && p.status === ParticipantStatus.PENDING
+    p.userId === userStore.user?.id && p.status === 'PENDING'
   )
 }
 

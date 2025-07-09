@@ -20,24 +20,22 @@
           <text class="form-label">家庭名称</text>
           <input
             class="form-input"
-            :value="familyForm.name"
-            @input="onNameInput"
+            v-model="familyName"
             placeholder="请输入家庭名称，如：张家小屋"
             maxlength="20"
           />
-          <text class="char-count">{{ familyForm.name.length }}/20</text>
+          <text class="char-count">{{ familyName.length }}/20</text>
         </view>
 
         <view class="form-item">
           <text class="form-label">家庭描述</text>
           <textarea
             class="form-textarea"
-            :value="familyForm.description"
-            @input="onDescInput"
+            v-model="familyDescription"
             placeholder="简单描述一下您的家庭（可选）"
             maxlength="100"
           />
-          <text class="char-count">{{ familyForm.description.length }}/100</text>
+          <text class="char-count">{{ familyDescription.length }}/100</text>
         </view>
       </view>
 
@@ -98,7 +96,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
@@ -109,27 +107,16 @@ const familyStore = useFamilyStore()
 const appStore = useAppStore()
 
 // 响应式数据
-const familyForm = ref({
-  name: '',
-  description: ''
-})
-
+const familyName = ref('')
+const familyDescription = ref('')
 const isCreating = ref(false)
 
 // 计算属性
 const canCreate = computed(() => {
-  return familyForm.value.name.trim().length >= 2
+  return familyName.value.trim().length >= 2
 })
 
 // 方法
-const onNameInput = (e) => {
-  familyForm.value.name = e.detail.value
-}
-
-const onDescInput = (e) => {
-  familyForm.value.description = e.detail.value
-}
-
 const handleCreateFamily = async () => {
   if (!canCreate.value || isCreating.value) return
 
@@ -137,8 +124,8 @@ const handleCreateFamily = async () => {
     isCreating.value = true
 
     const success = await familyStore.createFamily({
-      name: familyForm.value.name.trim(),
-      description: familyForm.value.description.trim()
+      name: familyName.value.trim(),
+      description: familyDescription.value.trim()
     })
 
     if (success) {

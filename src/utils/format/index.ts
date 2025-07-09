@@ -1,12 +1,7 @@
 // 格式化工具函数
 
 // 金额格式化
-export const formatAmount = (amount: number, options?: {
-  currency?: string;
-  showSymbol?: boolean;
-  precision?: number;
-  showSign?: boolean;
-}): string => {
+export const formatAmount = (amount, options) => {
   const {
     currency = 'CNY',
     showSymbol = true,
@@ -38,7 +33,7 @@ export const formatAmount = (amount: number, options?: {
 
   // 添加货币符号
   if (showSymbol) {
-    const symbols: Record<string, string> = {
+    const symbols = {
       CNY: '¥',
       USD: '$',
       EUR: '€',
@@ -53,7 +48,7 @@ export const formatAmount = (amount: number, options?: {
 };
 
 // 简化金额显示（大数值转换）
-export const formatAmountSimple = (amount: number): string => {
+export const formatAmountSimple = (amount) => {
   if (Math.abs(amount) >= 100000000) {
     return `${(amount / 100000000).toFixed(1)}亿`;
   } else if (Math.abs(amount) >= 10000) {
@@ -64,7 +59,7 @@ export const formatAmountSimple = (amount: number): string => {
 };
 
 // 日期格式化
-export const formatDate = (date: Date | string | number, format?: string): string => {
+export const formatDate = (date, format) => {
   if (!date) return '';
   
   const d = new Date(date);
@@ -77,7 +72,7 @@ export const formatDate = (date: Date | string | number, format?: string): strin
   const minute = String(d.getMinutes()).padStart(2, '0');
   const second = String(d.getSeconds()).padStart(2, '0');
 
-  const formatMap: Record<string, string> = {
+  const formatMap = {
     'YYYY-MM-DD': `${year}-${month}-${day}`,
     'YYYY/MM/DD': `${year}/${month}/${day}`,
     'MM-DD': `${month}-${day}`,
@@ -92,7 +87,7 @@ export const formatDate = (date: Date | string | number, format?: string): strin
 };
 
 // 相对时间格式化
-export const formatRelativeTime = (date: Date | string | number): string => {
+export const formatRelativeTime = (date) => {
   if (!date) return '';
   
   const d = new Date(date);
@@ -119,7 +114,7 @@ export const formatRelativeTime = (date: Date | string | number): string => {
 };
 
 // 手机号格式化
-export const formatPhone = (phone: string): string => {
+export const formatPhone = (phone) => {
   if (!phone) return '';
   
   const cleaned = phone.replace(/\D/g, '');
@@ -132,7 +127,7 @@ export const formatPhone = (phone: string): string => {
 };
 
 // 手机号脱敏
-export const maskPhone = (phone: string): string => {
+export const maskPhone = (phone) => {
   if (!phone) return '';
   
   const cleaned = phone.replace(/\D/g, '');
@@ -145,7 +140,7 @@ export const maskPhone = (phone: string): string => {
 };
 
 // 文件大小格式化
-export const formatFileSize = (bytes: number): string => {
+export const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 B';
   
   const k = 1024;
@@ -156,13 +151,13 @@ export const formatFileSize = (bytes: number): string => {
 };
 
 // 百分比格式化
-export const formatPercentage = (value: number, precision: number = 1): string => {
+export const formatPercentage = (value, precision = 1) => {
   if (isNaN(value)) return '0%';
   return `${(value * 100).toFixed(precision)}%`;
 };
 
 // 数字格式化（添加千分位分隔符）
-export const formatNumber = (num: number, precision?: number): string => {
+export const formatNumber = (num, precision) => {
   if (isNaN(num)) return '0';
   
   const fixed = precision !== undefined ? num.toFixed(precision) : num.toString();
@@ -173,7 +168,7 @@ export const formatNumber = (num: number, precision?: number): string => {
 };
 
 // 银行卡号格式化
-export const formatBankCard = (cardNumber: string): string => {
+export const formatBankCard = (cardNumber) => {
   if (!cardNumber) return '';
   
   const cleaned = cardNumber.replace(/\D/g, '');
@@ -181,7 +176,7 @@ export const formatBankCard = (cardNumber: string): string => {
 };
 
 // 银行卡号脱敏
-export const maskBankCard = (cardNumber: string): string => {
+export const maskBankCard = (cardNumber) => {
   if (!cardNumber) return '';
   
   const cleaned = cardNumber.replace(/\D/g, '');
@@ -197,93 +192,95 @@ export const maskBankCard = (cardNumber: string): string => {
 };
 
 // 身份证号脱敏
-export const maskIdCard = (idCard: string): string => {
+export const maskIdCard = (idCard) => {
   if (!idCard) return '';
   
-  if (idCard.length === 18) {
-    return idCard.replace(/(\d{6})\d{8}(\d{4})/, '$1********$2');
-  } else if (idCard.length === 15) {
-    return idCard.replace(/(\d{6})\d{6}(\d{3})/, '$1******$2');
+  const cleaned = idCard.replace(/\D/g, '');
+  
+  if (cleaned.length === 18) {
+    return cleaned.replace(/(\d{6})\d{8}(\d{4})/, '$1********$2');
+  } else if (cleaned.length === 15) {
+    return cleaned.replace(/(\d{6})\d{6}(\d{3})/, '$1******$2');
   }
   
   return idCard;
 };
 
 // 邮箱脱敏
-export const maskEmail = (email: string): string => {
+export const maskEmail = (email) => {
   if (!email) return '';
   
-  const [username, domain] = email.split('@');
-  if (!username || !domain) return email;
+  const parts = email.split('@');
+  if (parts.length !== 2) return email;
+  
+  const username = parts[0];
+  const domain = parts[1];
   
   if (username.length <= 2) {
-    return `${username[0]}*@${domain}`;
-  } else {
-    const maskedUsername = username[0] + '*'.repeat(username.length - 2) + username[username.length - 1];
-    return `${maskedUsername}@${domain}`;
+    return email;
   }
+  
+  const maskedUsername = username.slice(0, 2) + '*'.repeat(username.length - 2);
+  return `${maskedUsername}@${domain}`;
 };
 
 // 姓名脱敏
-export const maskName = (name: string): string => {
+export const maskName = (name) => {
   if (!name) return '';
   
-  if (name.length === 1) {
+  if (name.length <= 1) {
     return name;
-  } else if (name.length === 2) {
-    return name[0] + '*';
-  } else {
-    return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
   }
+  
+  return name.slice(0, 1) + '*'.repeat(name.length - 1);
 };
 
 // 地址脱敏
-export const maskAddress = (address: string): string => {
+export const maskAddress = (address) => {
   if (!address) return '';
   
   if (address.length <= 6) {
     return address;
-  } else {
-    const start = address.slice(0, 6);
-    const end = address.slice(-4);
-    return `${start}****${end}`;
   }
+  
+  const start = address.slice(0, 3);
+  const end = address.slice(-3);
+  const middle = '*'.repeat(address.length - 6);
+  return `${start}${middle}${end}`;
 };
 
-// 时长格式化（秒转换为时分秒）
-export const formatDuration = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) return '00:00';
-  
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  
-  if (hours > 0) {
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+// 时长格式化
+export const formatDuration = (seconds) => {
+  if (seconds < 60) {
+    return `${seconds}秒`;
+  } else if (seconds < 3600) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}分${remainingSeconds}秒`;
   } else {
-    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours}小时${minutes}分${remainingSeconds}秒`;
   }
 };
 
 // 距离格式化
-export const formatDistance = (meters: number): string => {
-  if (isNaN(meters) || meters < 0) return '0m';
-  
+export const formatDistance = (meters) => {
   if (meters < 1000) {
-    return `${Math.round(meters)}m`;
+    return `${meters}米`;
   } else {
-    return `${(meters / 1000).toFixed(1)}km`;
+    const kilometers = (meters / 1000).toFixed(1);
+    return `${kilometers}公里`;
   }
 };
 
 // 温度格式化
-export const formatTemperature = (celsius: number, unit: 'C' | 'F' = 'C'): string => {
-  if (isNaN(celsius)) return '0°C';
-  
+export const formatTemperature = (celsius, unit = 'C') => {
   if (unit === 'F') {
     const fahrenheit = (celsius * 9/5) + 32;
-    return `${Math.round(fahrenheit)}°F`;
+    return `${fahrenheit.toFixed(1)}°F`;
   } else {
-    return `${Math.round(celsius)}°C`;
+    return `${celsius.toFixed(1)}°C`;
   }
 };

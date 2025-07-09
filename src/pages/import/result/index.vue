@@ -162,12 +162,11 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useRecordStore, useAppStore } from '../../../stores'
 import { useRealTimeSync } from '../../../hooks/useRealTimeSync'
-import { ParsedBillData, ParsedTransaction, BillPlatform } from '../../../types/business'
 import { formatAmount, formatDate } from '../../../utils/format'
 
 // Store
@@ -179,8 +178,8 @@ const appStore = useAppStore()
 const { syncRecordChange } = useRealTimeSync()
 
 // 响应式数据
-const billData = ref<ParsedBillData>({
-  platform: BillPlatform.ALIPAY,
+const billData = ref({
+  platform: 'ALIPAY',
   transactions: [],
   summary: {
     totalAmount: 0,
@@ -193,9 +192,9 @@ const billData = ref<ParsedBillData>({
   confidence: 0
 })
 
-const editableRecords = ref<(ParsedTransaction & { selected: boolean })[]>([])
+const editableRecords = ref([])
 const showEditModal = ref(false)
-const editingRecord = ref<ParsedTransaction>({
+const editingRecord = ref({
   amount: 0,
   type: 'expense',
   merchant: '',
@@ -223,12 +222,12 @@ const isSuccess = computed(() =>
 )
 
 // 方法
-const getPlatformName = (platform: BillPlatform): string => {
+const getPlatformName = (platform) => {
   const names = {
-    [BillPlatform.ALIPAY]: '支付宝账单',
-    [BillPlatform.WECHAT]: '微信账单',
-    [BillPlatform.BANK_CARD]: '银行卡账单',
-    [BillPlatform.CREDIT_CARD]: '信用卡账单'
+    'ALIPAY': '支付宝账单',
+    'WECHAT': '微信账单',
+    'BANK_CARD': '银行卡账单',
+    'CREDIT_CARD': '信用卡账单'
   }
   return names[platform] || '未知类型'
 }
@@ -344,13 +343,13 @@ const initData = () => {
 
       if (options.batch === 'true') {
         // 批量导入结果
-        const allTransactions: ParsedTransaction[] = []
-        data.forEach((billData: ParsedBillData) => {
+        const allTransactions = []
+        data.forEach((billData) => {
           allTransactions.push(...billData.transactions)
         })
 
         billData.value = {
-          platform: BillPlatform.ALIPAY,
+          platform: 'ALIPAY',
           transactions: allTransactions,
           summary: {
             totalAmount: allTransactions.reduce((sum, t) => sum + t.amount, 0),

@@ -8,7 +8,7 @@ import { getAppSettings, setAppSettings } from '../../utils/storage';
 
 export const useAppStore = defineStore('app', () => {
   // 状态
-  const settings = ref<AppSettings>({
+  const settings = ref({
     theme: 'light',
     language: 'zh-CN',
     currency: 'CNY',
@@ -23,11 +23,11 @@ export const useAppStore = defineStore('app', () => {
     }
   });
 
-  const systemInfo = ref<Taro.getSystemInfoSync.Result | null>(null);
-  const networkType = ref<string>('unknown');
-  const isOnline = ref<boolean>(true);
-  const loading = ref<boolean>(false);
-  const globalError = ref<string>('');
+  const systemInfo = ref(null);
+  const networkType = ref('unknown');
+  const isOnline = ref(true);
+  const loading = ref(false);
+  const globalError = ref('');
 
   // 计算属性
   const isDarkMode = computed(() => settings.value.theme === 'dark');
@@ -45,8 +45,8 @@ export const useAppStore = defineStore('app', () => {
       settings.value = {
         ...settings.value,
         ...savedSettings,
-        theme: savedSettings.theme as 'auto' | 'dark' | 'light',
-        language: savedSettings.language as 'zh-CN' | 'en-US'
+        theme: savedSettings.theme,
+        language: savedSettings.language
       };
     }
 
@@ -100,7 +100,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 更新设置
-  const updateSettings = (newSettings: Partial<AppSettings>) => {
+  const updateSettings = (newSettings) => {
     settings.value = { ...settings.value, ...newSettings };
     setAppSettings(settings.value);
 
@@ -111,7 +111,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 设置主题
-  const setTheme = (theme: 'light' | 'dark' | 'auto') => {
+  const setTheme = (theme) => {
     let actualTheme = theme;
     
     if (theme === 'auto') {
@@ -139,7 +139,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 设置语言
-  const setLanguage = (language: 'zh-CN' | 'en-US') => {
+  const setLanguage = (language) => {
     updateSettings({ language });
     
     // 这里可以集成国际化库
@@ -147,12 +147,12 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 设置货币
-  const setCurrency = (currency: string) => {
+  const setCurrency = (currency) => {
     updateSettings({ currency });
   };
 
   // 显示加载状态
-  const showLoading = (title: string = '加载中...') => {
+  const showLoading = (title = '加载中...') => {
     loading.value = true;
     Taro.showLoading({ title });
   };
@@ -164,7 +164,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 显示提示
-  const showToast = (title: string, icon: 'success' | 'error' | 'loading' | 'none' = 'none', duration: number = 2000) => {
+  const showToast = (title, icon = 'none', duration = 2000) => {
     Taro.showToast({
       title,
       icon,
@@ -173,13 +173,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 显示模态框
-  const showModal = (options: {
-    title?: string;
-    content: string;
-    showCancel?: boolean;
-    cancelText?: string;
-    confirmText?: string;
-  }): Promise<boolean> => {
+  const showModal = (options) => {
     return new Promise((resolve) => {
       Taro.showModal({
         title: options.title || '提示',
@@ -198,7 +192,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 显示操作菜单
-  const showActionSheet = (itemList: string[]): Promise<number> => {
+  const showActionSheet = (itemList) => {
     return new Promise((resolve, reject) => {
       Taro.showActionSheet({
         itemList,
@@ -213,7 +207,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 设置全局错误
-  const setGlobalError = (error: string) => {
+  const setGlobalError = (error) => {
     globalError.value = error;
     if (error) {
       showToast(error, 'none');
@@ -226,7 +220,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 检查权限
-  const checkPermission = async (scope: string): Promise<boolean> => {
+  const checkPermission = async (scope) => {
     try {
       const result = await Taro.getSetting();
       return result.authSetting[scope] === true;
@@ -237,7 +231,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 请求权限
-  const requestPermission = async (scope: string): Promise<boolean> => {
+  const requestPermission = async (scope) => {
     try {
       await Taro.authorize({ scope });
       return true;
@@ -248,7 +242,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 打开设置页面
-  const openSetting = (): Promise<boolean> => {
+  const openSetting = () => {
     return new Promise((resolve) => {
       Taro.openSetting({
         success: (_res) => {
@@ -262,7 +256,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 复制到剪贴板
-  const copyToClipboard = async (text: string): Promise<boolean> => {
+  const copyToClipboard = async (text) => {
     try {
       await Taro.setClipboardData({ data: text });
       showToast('已复制到剪贴板', 'success');
@@ -275,11 +269,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 分享
-  const share = (options: {
-    title?: string;
-    path?: string;
-    imageUrl?: string;
-  }) => {
+  const share = (options) => {
     // 这个方法主要用于设置分享信息
     // 实际分享由页面的onShareAppMessage处理
     return {
@@ -290,7 +280,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 预览图片
-  const previewImage = (urls: string[], current?: string) => {
+  const previewImage = (urls, current) => {
     Taro.previewImage({
       urls,
       current: current || urls[0]
@@ -298,7 +288,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 保存图片到相册
-  const saveImageToPhotosAlbum = async (filePath: string): Promise<boolean> => {
+  const saveImageToPhotosAlbum = async (filePath) => {
     try {
       // 检查权限
       const hasPermission = await checkPermission('scope.writePhotosAlbum');

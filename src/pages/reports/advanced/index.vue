@@ -227,7 +227,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../../stores'
@@ -241,8 +241,8 @@ const appStore = useAppStore()
 const selectedRange = ref('month')
 const customStartDate = ref('')
 const customEndDate = ref('')
-const analysisView = ref<'chart' | 'list'>('list')
-const trendType = ref<'daily' | 'weekly' | 'monthly'>('daily')
+const analysisView = ref('list')
+const trendType = ref('daily')
 
 // 时间范围选项
 const timeRanges = [

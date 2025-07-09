@@ -223,7 +223,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
@@ -321,12 +321,12 @@ const selectCurrency = (currency) => {
   appStore.showToast('货币设置已保存', 'success')
 }
 
-const onNotificationChange = (key: string, e) => {
+const onNotificationChange = (key, e) => {
   notifications.value[key] = e.detail.value
   saveSettings()
 }
 
-const onPrivacyChange = (key: string, e) => {
+const onPrivacyChange = (key, e) => {
   privacy.value[key] = e.detail.value
   saveSettings()
 }
@@ -417,20 +417,9 @@ const checkUserStatus = () => {
   }
 }
 
-// 加载设置
-const loadSettings = () => {
-  const settings = appStore.settings
-
-  notifications.value = settings.notifications
-  privacy.value = settings.privacy
-  currentLanguage.value = settings.language
-  currentCurrency.value = settings.currency
-}
-
 // 生命周期
 onMounted(() => {
   checkUserStatus()
-  loadSettings()
 })
 
 // 页面配置

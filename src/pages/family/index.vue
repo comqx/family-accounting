@@ -117,11 +117,10 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../stores'
-import { UserRole } from '../../types/business'
 import { formatAmount } from '../../utils/format'
 
 // Store
@@ -140,19 +139,19 @@ const mockMembers = ref([
   {
     id: '1',
     nickName: '张爸爸',
-    role: UserRole.ADMIN,
+    role: 'ADMIN',
     isOnline: true
   },
   {
     id: '2',
     nickName: '李妈妈',
-    role: UserRole.MEMBER,
+    role: 'MEMBER',
     isOnline: true
   },
   {
     id: '3',
     nickName: '小明',
-    role: UserRole.OBSERVER,
+    role: 'OBSERVER',
     isOnline: false
   }
 ])
@@ -162,13 +161,13 @@ const familyName = computed(() => familyStore.familyName || '我的家庭')
 const memberCount = computed(() => mockMembers.value.length)
 
 // 方法
-const getRoleText = (role: UserRole): string => {
+const getRoleText = (role) => {
   switch (role) {
-    case UserRole.ADMIN:
+    case 'ADMIN':
       return '管理员'
-    case UserRole.MEMBER:
+    case 'MEMBER':
       return '成员'
-    case UserRole.OBSERVER:
+    case 'OBSERVER':
       return '观察员'
     default:
       return '成员'
@@ -186,7 +185,7 @@ const handleInviteMember = async () => {
   showInviteModal.value = true
 }
 
-const generateInviteCode = (): string => {
+const generateInviteCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''
   for (let i = 0; i < 6; i++) {

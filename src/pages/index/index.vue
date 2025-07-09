@@ -162,12 +162,11 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useCategoryStore, useRecordStore } from '../../stores'
 import { useRealTimeSync } from '../../hooks/useRealTimeSync'
-import { RecordType, Category, AccountRecord } from '../../types/business'
 import { formatAmount, formatDate, formatRelativeTime } from '../../utils/format'
 import './index.scss'
 
@@ -193,7 +192,7 @@ const saving = ref(false)
 const showDatePickerModal = ref(false)
 const monthExpense = ref(0)
 const monthIncome = ref(0)
-const recentRecords = ref<any[]>([])
+const recentRecords = ref([])
 
 // 计算属性
 const currentCategories = computed(() => {

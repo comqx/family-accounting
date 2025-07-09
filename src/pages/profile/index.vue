@@ -100,11 +100,10 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
-import { UserRole } from '../../types/business'
 
 // Store
 const userStore = useUserStore()
@@ -121,11 +120,11 @@ const userName = computed(() => userStore.user?.nickName || '用户')
 const userInitial = computed(() => userName.value.charAt(0))
 const userRoleText = computed(() => {
   switch (userStore.userRole) {
-    case UserRole.ADMIN:
+    case 'ADMIN':
       return '家庭管理员'
-    case UserRole.MEMBER:
+    case 'MEMBER':
       return '家庭成员'
-    case UserRole.OBSERVER:
+    case 'OBSERVER':
       return '财务观察员'
     default:
       return '家庭成员'

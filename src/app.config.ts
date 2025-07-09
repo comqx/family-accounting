@@ -10,7 +10,7 @@ export default defineAppConfig({
     'pages/record/detail/index',
     'pages/record/edit/index',
     'pages/category/index',
-    'pages/category/add/index',
+
     'pages/family/create/index',
     'pages/family/join/index',
     'pages/family/members/index',

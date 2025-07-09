@@ -1,26 +1,23 @@
 // WebSocket实时通信服务
 
 import Taro from '@tarojs/taro';
-import { WSMessage } from '../../types/api';
-
-type MessageHandler = (message: WSMessage.BaseMessage) => void;
+// import { WSMessage } from '../../types/api'; // 移除类型依赖
 
 class WebSocketService {
-  private socket: Taro.SocketTask | null = null;
-  private isConnected = false;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectInterval = 3000;
-  private heartbeatInterval: NodeJS.Timeout | null = null;
-  private messageHandlers: Map<string, MessageHandler[]> = new Map();
-  private url = '';
-  private _token = '';
-
   constructor() {
+    this.socket = null;
+    this.isConnected = false;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
+    this.reconnectInterval = 3000;
+    this.heartbeatInterval = null;
+    this.messageHandlers = new Map();
+    this.url = '';
+    this._token = '';
     this.init();
   }
 
-  private init() {
+  init() {
     // 根据环境设置WebSocket URL
     const accountInfo = Taro.getAccountInfoSync();
     if (accountInfo.miniProgram.envVersion === 'develop') {
@@ -33,7 +30,7 @@ class WebSocketService {
   }
 
   // 连接WebSocket
-  connect(token: string, familyId: string): Promise<boolean> {
+  connect(token, familyId) {
     return new Promise((resolve, reject) => {
       if (this.isConnected) {
         resolve(true);
@@ -41,7 +38,6 @@ class WebSocketService {
       }
 
       this._token = token;
-      
       try {
         this.socket = Taro.connectSocket({
           url: `${this.url}?token=${token}&familyId=${familyId}`,
@@ -52,9 +48,9 @@ class WebSocketService {
             console.error('WebSocket connect failed:', error);
             reject(error);
           }
-        }) as any; // 临时类型断言，避免Taro类型定义问题
+        });
 
-        this.socket!.onOpen(() => {
+        this.socket.onOpen(() => {
           console.log('WebSocket connected');
           this.isConnected = true;
           this.reconnectAttempts = 0;
@@ -62,27 +58,24 @@ class WebSocketService {
           resolve(true);
         });
 
-        this.socket!.onMessage((res) => {
+        this.socket.onMessage((res) => {
           this.handleMessage(res.data);
         });
 
-        this.socket!.onClose((res) => {
+        this.socket.onClose((res) => {
           console.log('WebSocket closed:', res);
           this.isConnected = false;
           this.stopHeartbeat();
-          
-          // 自动重连
           if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnect(token, familyId);
           }
         });
 
-        this.socket!.onError((error) => {
+        this.socket.onError((error) => {
           console.error('WebSocket error:', error);
           this.isConnected = false;
           reject(error);
         });
-
       } catch (error) {
         console.error('WebSocket connect error:', error);
         reject(error);
@@ -105,15 +98,13 @@ class WebSocketService {
   }
 
   // 重连
-  private reconnect(token: string, familyId: string) {
+  reconnect(token, familyId) {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.log('Max reconnect attempts reached');
       return;
     }
-
     this.reconnectAttempts++;
     console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`);
-
     setTimeout(() => {
       this.connect(token, familyId).catch((error) => {
         console.error('Reconnect failed:', error);
@@ -122,12 +113,11 @@ class WebSocketService {
   }
 
   // 发送消息
-  send(message: WSMessage.BaseMessage): boolean {
+  send(message) {
     if (!this.isConnected || !this.socket) {
       console.warn('WebSocket not connected');
       return false;
     }
-
     try {
       this.socket.send({
         data: JSON.stringify(message),
@@ -146,12 +136,10 @@ class WebSocketService {
   }
 
   // 处理接收到的消息
-  private handleMessage(data: string) {
+  handleMessage(data) {
     try {
-      const message: WSMessage.BaseMessage = JSON.parse(data);
+      const message = JSON.parse(data);
       console.log('Received message:', message.type);
-
-      // 调用对应的消息处理器
       const handlers = this.messageHandlers.get(message.type);
       if (handlers) {
         handlers.forEach(handler => {
@@ -162,8 +150,6 @@ class WebSocketService {
           }
         });
       }
-
-      // 调用通用消息处理器
       const globalHandlers = this.messageHandlers.get('*');
       if (globalHandlers) {
         globalHandlers.forEach(handler => {
@@ -174,27 +160,25 @@ class WebSocketService {
           }
         });
       }
-
     } catch (error) {
       console.error('Parse message error:', error);
     }
   }
 
   // 添加消息处理器
-  on(messageType: string, handler: MessageHandler) {
+  on(messageType, handler) {
     if (!this.messageHandlers.has(messageType)) {
       this.messageHandlers.set(messageType, []);
     }
-    this.messageHandlers.get(messageType)!.push(handler);
+    this.messageHandlers.get(messageType).push(handler);
   }
 
   // 移除消息处理器
-  off(messageType: string, handler?: MessageHandler) {
+  off(messageType, handler) {
     if (!handler) {
       this.messageHandlers.delete(messageType);
       return;
     }
-
     const handlers = this.messageHandlers.get(messageType);
     if (handlers) {
       const index = handlers.indexOf(handler);
@@ -208,7 +192,7 @@ class WebSocketService {
   }
 
   // 开始心跳
-  private startHeartbeat() {
+  startHeartbeat() {
     this.heartbeatInterval = setInterval(() => {
       if (this.isConnected) {
         this.send({
@@ -218,11 +202,11 @@ class WebSocketService {
           timestamp: Date.now()
         });
       }
-    }, 30000); // 30秒心跳
+    }, 30000);
   }
 
   // 停止心跳
-  private stopHeartbeat() {
+  stopHeartbeat() {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
@@ -230,8 +214,8 @@ class WebSocketService {
   }
 
   // 发送记录变更消息
-  sendRecordChanged(action: 'create' | 'update' | 'delete', record: any, familyId: string, userId: string) {
-    const message: WSMessage.RecordChangedMessage = {
+  sendRecordChanged(action, record, familyId, userId) {
+    const message = {
       type: 'record_changed',
       action,
       record,
@@ -243,8 +227,8 @@ class WebSocketService {
   }
 
   // 发送成员变更消息
-  sendMemberChanged(action: 'join' | 'leave' | 'role_updated', member: any, familyId: string, userId: string) {
-    const message: WSMessage.MemberChangedMessage = {
+  sendMemberChanged(action, member, familyId, userId) {
+    const message = {
       type: 'member_changed',
       action,
       member,
@@ -256,8 +240,8 @@ class WebSocketService {
   }
 
   // 发送通知消息
-  sendNotification(notification: any, familyId: string, userId: string) {
-    const message: WSMessage.NotificationMessage = {
+  sendNotification(notification, familyId, userId) {
+    const message = {
       type: 'notification',
       notification,
       familyId,
@@ -268,8 +252,8 @@ class WebSocketService {
   }
 
   // 请求数据同步
-  requestSync(lastSyncTime: number, familyId: string, userId: string) {
-    const message: WSMessage.SyncRequestMessage = {
+  requestSync(lastSyncTime, familyId, userId) {
+    const message = {
       type: 'sync_request',
       lastSyncTime,
       familyId,
@@ -280,12 +264,12 @@ class WebSocketService {
   }
 
   // 获取连接状态
-  get connected(): boolean {
+  get connected() {
     return this.isConnected;
   }
 
   // 获取重连次数
-  get reconnectCount(): number {
+  get reconnectCount() {
     return this.reconnectAttempts;
   }
 }

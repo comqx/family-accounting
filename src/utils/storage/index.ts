@@ -10,20 +10,21 @@ export const STORAGE_KEYS = {
   APP_SETTINGS: 'appSettings',
   CACHE_PREFIX: 'cache_',
   DRAFT_PREFIX: 'draft_'
-} as const;
+};
 
-// 存储项接口
-interface StorageItem<T = any> {
-  data: T;
-  timestamp: number;
-  expireTime?: number;
-}
+// 存储项类型 - 使用JSDoc注释
+/**
+ * @typedef {Object} StorageItem
+ * @property {*} data - 存储的数据
+ * @property {number} timestamp - 时间戳
+ * @property {number} [expireTime] - 过期时间
+ */
 
 class StorageManager {
   // 设置存储项
-  set<T>(key: string, value: T, expireTime?: number): boolean {
+  set(key, value, expireTime) {
     try {
-      const item: StorageItem<T> = {
+      const item = {
         data: value,
         timestamp: Date.now(),
         expireTime: expireTime ? Date.now() + expireTime : undefined
@@ -38,9 +39,9 @@ class StorageManager {
   }
 
   // 获取存储项
-  get<T>(key: string, defaultValue?: T): T | undefined {
+  get(key, defaultValue) {
     try {
-      const item: StorageItem<T> = Taro.getStorageSync(key);
+      const item = Taro.getStorageSync(key);
       
       if (!item) {
         return defaultValue;
@@ -60,7 +61,7 @@ class StorageManager {
   }
 
   // 移除存储项
-  remove(key: string): boolean {
+  remove(key) {
     try {
       Taro.removeStorageSync(key);
       return true;
@@ -71,7 +72,7 @@ class StorageManager {
   }
 
   // 清空所有存储
-  clear(): boolean {
+  clear() {
     try {
       Taro.clearStorageSync();
       return true;
@@ -82,7 +83,7 @@ class StorageManager {
   }
 
   // 获取所有存储键
-  getAllKeys(): string[] {
+  getAllKeys() {
     try {
       const info = Taro.getStorageInfoSync();
       return info.keys;
@@ -93,7 +94,7 @@ class StorageManager {
   }
 
   // 获取存储信息
-  getInfo(): { keys: string[]; currentSize: number; limitSize: number } {
+  getInfo() {
     try {
       return Taro.getStorageInfoSync();
     } catch (error) {
@@ -103,7 +104,7 @@ class StorageManager {
   }
 
   // 检查存储项是否存在
-  has(key: string): boolean {
+  has(key) {
     try {
       const item = Taro.getStorageSync(key);
       return item !== undefined && item !== null && item !== '';
@@ -113,20 +114,20 @@ class StorageManager {
   }
 
   // 设置缓存（带过期时间）
-  setCache<T>(key: string, value: T, expireMinutes: number = 30): boolean {
+  setCache(key, value, expireMinutes = 30) {
     const cacheKey = STORAGE_KEYS.CACHE_PREFIX + key;
     const expireTime = expireMinutes * 60 * 1000; // 转换为毫秒
     return this.set(cacheKey, value, expireTime);
   }
 
   // 获取缓存
-  getCache<T>(key: string, defaultValue?: T): T | undefined {
+  getCache(key, defaultValue) {
     const cacheKey = STORAGE_KEYS.CACHE_PREFIX + key;
     return this.get(cacheKey, defaultValue);
   }
 
   // 清除所有缓存
-  clearCache(): boolean {
+  clearCache() {
     try {
       const keys = this.getAllKeys();
       const cacheKeys = keys.filter(key => key.startsWith(STORAGE_KEYS.CACHE_PREFIX));
@@ -143,25 +144,25 @@ class StorageManager {
   }
 
   // 设置草稿
-  setDraft<T>(key: string, value: T): boolean {
+  setDraft(key, value) {
     const draftKey = STORAGE_KEYS.DRAFT_PREFIX + key;
     return this.set(draftKey, value);
   }
 
   // 获取草稿
-  getDraft<T>(key: string, defaultValue?: T): T | undefined {
+  getDraft(key, defaultValue) {
     const draftKey = STORAGE_KEYS.DRAFT_PREFIX + key;
     return this.get(draftKey, defaultValue);
   }
 
   // 清除草稿
-  clearDraft(key: string): boolean {
+  clearDraft(key) {
     const draftKey = STORAGE_KEYS.DRAFT_PREFIX + key;
     return this.remove(draftKey);
   }
 
   // 清除所有草稿
-  clearAllDrafts(): boolean {
+  clearAllDrafts() {
     try {
       const keys = this.getAllKeys();
       const draftKeys = keys.filter(key => key.startsWith(STORAGE_KEYS.DRAFT_PREFIX));
@@ -182,19 +183,19 @@ class StorageManager {
 const storage = new StorageManager();
 
 // 便捷方法
-export const setToken = (token: string) => storage.set(STORAGE_KEYS.TOKEN, token);
-export const getToken = () => storage.get<string>(STORAGE_KEYS.TOKEN);
+export const setToken = (token) => storage.set(STORAGE_KEYS.TOKEN, token);
+export const getToken = () => storage.get(STORAGE_KEYS.TOKEN);
 export const clearToken = () => storage.remove(STORAGE_KEYS.TOKEN);
 
-export const setUserInfo = (userInfo: any) => storage.set(STORAGE_KEYS.USER_INFO, userInfo);
+export const setUserInfo = (userInfo) => storage.set(STORAGE_KEYS.USER_INFO, userInfo);
 export const getUserInfo = () => storage.get(STORAGE_KEYS.USER_INFO);
 export const clearUserInfo = () => storage.remove(STORAGE_KEYS.USER_INFO);
 
-export const setFamilyInfo = (familyInfo: any) => storage.set(STORAGE_KEYS.FAMILY_INFO, familyInfo);
+export const setFamilyInfo = (familyInfo) => storage.set(STORAGE_KEYS.FAMILY_INFO, familyInfo);
 export const getFamilyInfo = () => storage.get(STORAGE_KEYS.FAMILY_INFO);
 export const clearFamilyInfo = () => storage.remove(STORAGE_KEYS.FAMILY_INFO);
 
-export const setAppSettings = (settings: any) => storage.set(STORAGE_KEYS.APP_SETTINGS, settings);
+export const setAppSettings = (settings) => storage.set(STORAGE_KEYS.APP_SETTINGS, settings);
 export const getAppSettings = () => storage.get(STORAGE_KEYS.APP_SETTINGS, {
   theme: 'light',
   language: 'zh-CN',
@@ -209,14 +210,17 @@ export const getAppSettings = () => storage.get(STORAGE_KEYS.APP_SETTINGS, {
     requirePasswordForReports: false
   }
 });
+export const clearAppSettings = () => storage.remove(STORAGE_KEYS.APP_SETTINGS);
 
-// 清除所有用户相关数据
+// 清除所有用户数据
 export const clearUserData = () => {
   clearToken();
   clearUserInfo();
   clearFamilyInfo();
+  clearAppSettings();
   storage.clearCache();
   storage.clearAllDrafts();
 };
 
+// 导出存储管理器实例
 export default storage;

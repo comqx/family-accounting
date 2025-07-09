@@ -110,6 +110,7 @@
     "typescript": "^5.4.5",
     "vue-loader": "^17.4.2",
     "webpack": "5.91.0",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "@swc/core": "1.12.11"
   }
 }

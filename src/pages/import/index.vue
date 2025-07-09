@@ -107,11 +107,10 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
-import { BillPlatform } from '../../types/business'
 import { formatAmount, formatRelativeTime } from '../../utils/format'
 import ocrService from '../../services/ocr'
 
@@ -232,7 +231,7 @@ const processImage = async (imagePath) => {
   }
 }
 
-const processBatchImages = async (imagePaths: string[]) => {
+const processBatchImages = async (imagePaths) => {
   try {
     isProcessing.value = true;
     processingText.value = `正在批量识别 ${imagePaths.length} 张图片...`;

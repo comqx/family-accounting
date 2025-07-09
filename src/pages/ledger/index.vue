@@ -158,11 +158,10 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useCategoryStore, useAppStore } from '../../stores'
-import { RecordType } from '../../types/business'
 import { formatAmount, formatDate } from '../../utils/format'
 
 // Store
@@ -268,7 +267,7 @@ const filteredRecords = computed(() => {
 })
 
 const groupedRecords = computed(() => {
-  const groups: { [key: string]: any } = {}
+  const groups = {}
 
   filteredRecords.value.forEach(record => {
     const dateKey = formatDate(record.date, 'MM-DD')

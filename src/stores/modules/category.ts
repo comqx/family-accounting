@@ -9,7 +9,7 @@ import request from '../../utils/request';
 
 export const useCategoryStore = defineStore('category', () => {
   // 状态
-  const categories = ref<Category[]>([]);
+  const categories = ref([]);
   const isLoading = ref(false);
 
   // 计算属性
@@ -30,11 +30,11 @@ export const useCategoryStore = defineStore('category', () => {
   );
 
   // 获取分类列表
-  const loadCategories = async (familyId?: string): Promise<boolean> => {
+  const loadCategories = async (familyId) => {
     try {
       isLoading.value = true;
 
-      const response = await request.get<CategoryAPI.GetCategoriesResponse>('/categories', {
+      const response = await request.get('/categories', {
         familyId,
         includeDefault: true
       });
@@ -45,7 +45,7 @@ export const useCategoryStore = defineStore('category', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Load categories error:', error);
       return false;
     } finally {
@@ -54,17 +54,11 @@ export const useCategoryStore = defineStore('category', () => {
   };
 
   // 创建分类
-  const createCategory = async (categoryData: {
-    name: string;
-    icon: string;
-    color: string;
-    type: RecordType;
-    parentId?: string;
-  }): Promise<boolean> => {
+  const createCategory = async (categoryData) => {
     try {
       isLoading.value = true;
 
-      const response = await request.post<CategoryAPI.CreateCategoryResponse>('/categories', categoryData);
+      const response = await request.post('/categories', categoryData);
 
       if (response.data?.category) {
         categories.value.push(response.data.category);
@@ -79,7 +73,7 @@ export const useCategoryStore = defineStore('category', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Create category error:', error);
       Taro.showToast({
         title: error.message || '创建失败',
@@ -92,17 +86,11 @@ export const useCategoryStore = defineStore('category', () => {
   };
 
   // 更新分类
-  const updateCategory = async (id: string, categoryData: Partial<{
-    name: string;
-    icon: string;
-    color: string;
-    type: RecordType;
-    parentId?: string;
-  }>): Promise<boolean> => {
+  const updateCategory = async (id, categoryData) => {
     try {
       isLoading.value = true;
 
-      const response = await request.put<CategoryAPI.UpdateCategoryResponse>(`/categories/${id}`, categoryData);
+      const response = await request.put(`/categories/${id}`, categoryData);
 
       if (response.data?.category) {
         const index = categories.value.findIndex(cat => cat.id === id);
@@ -119,7 +107,7 @@ export const useCategoryStore = defineStore('category', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update category error:', error);
       Taro.showToast({
         title: error.message || '更新失败',
@@ -132,7 +120,7 @@ export const useCategoryStore = defineStore('category', () => {
   };
 
   // 删除分类
-  const deleteCategory = async (id: string): Promise<boolean> => {
+  const deleteCategory = async (id) => {
     try {
       isLoading.value = true;
 
@@ -149,7 +137,7 @@ export const useCategoryStore = defineStore('category', () => {
       });
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Delete category error:', error);
       Taro.showToast({
         title: error.message || '删除失败',
@@ -179,9 +167,9 @@ export const useCategoryStore = defineStore('category', () => {
   };
 
   // 更新分类排序
-  const updateCategoriesSort = async (categoryIds: string[]): Promise<boolean> => {
+  const updateCategoriesSort = async (categoryIds) => {
     try {
-      const response = await request.put<CategoryAPI.SortCategoriesResponse>('/categories/sort', {
+      const response = await request.put('/categories/sort', {
         categoryIds
       });
 
@@ -191,24 +179,24 @@ export const useCategoryStore = defineStore('category', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update categories sort error:', error);
       return false;
     }
   };
 
   // 根据ID获取分类
-  const getCategoryById = (id: string): Category | undefined => {
+  const getCategoryById = (id) => {
     return categories.value.find(cat => cat.id === id);
   };
 
   // 根据类型获取分类
-  const getCategoriesByType = (type: RecordType): Category[] => {
+  const getCategoriesByType = (type) => {
     return categories.value.filter(cat => cat.type === type && cat.isActive);
   };
 
   // 搜索分类
-  const searchCategories = (keyword: string): Category[] => {
+  const searchCategories = (keyword) => {
     if (!keyword.trim()) {
       return categories.value;
     }

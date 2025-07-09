@@ -111,7 +111,7 @@ const App = createApp({
     },
 
     // 错误上报
-    reportError(error: any) {
+    reportError(error) {
       // 这里可以集成错误监控服务，如Sentry等
       console.error('Error reported:', error)
 

@@ -1,66 +1,74 @@
-// 实时同步Hook
-
+// 实时同步 Hook
 import { ref, onMounted, onUnmounted } from 'vue';
 import Taro from '@tarojs/taro';
-import { useUserStore, useFamilyStore, useRecordStore, useCategoryStore, useAppStore } from '../stores';
+import { useUserStore } from '../stores/modules/user';
+import { useRecordStore } from '../stores/modules/record';
+import { useCategoryStore } from '../stores/modules/category';
+import { useFamilyStore } from '../stores/modules/family';
+import { useAppStore } from '../stores/modules/app';
 import wsService from '../services/websocket';
-import { WSMessage } from '../types/api';
 
 export function useRealTimeSync() {
   const userStore = useUserStore();
-  const familyStore = useFamilyStore();
   const recordStore = useRecordStore();
   const categoryStore = useCategoryStore();
+  const familyStore = useFamilyStore();
   const appStore = useAppStore();
-
   const isConnected = ref(false);
-  const lastSyncTime = ref(Date.now());
+  const lastSyncTime = ref(0);
 
-  // 初始化WebSocket连接
+  // 初始化连接
   const initConnection = async () => {
-    if (!userStore.isLoggedIn || !userStore.hasFamily) {
+    if (!userStore.user?.id || !familyStore.familyId) {
+      console.log('User or family info not available');
       return;
     }
 
     try {
-      const success = await wsService.connect(userStore.token, familyStore.familyId);
+      const token = userStore.token;
+      const success = await wsService.connect(token, familyStore.familyId);
+      
       if (success) {
         isConnected.value = true;
         setupMessageHandlers();
-        
-        // 请求初始同步
         requestInitialSync();
-        
-        console.log('Real-time sync initialized');
+        console.log('WebSocket connected');
+      } else {
+        console.error('Failed to connect WebSocket');
       }
     } catch (error) {
-      console.error('Failed to initialize real-time sync:', error);
-      isConnected.value = false;
+      console.error('WebSocket connection error:', error);
     }
   };
 
   // 设置消息处理器
   const setupMessageHandlers = () => {
-    // 记录变更处理
+    // 处理记录变更
     wsService.on('record_changed', handleRecordChanged);
     
-    // 成员变更处理
+    // 处理成员变更
     wsService.on('member_changed', handleMemberChanged);
     
-    // 通知处理
+    // 处理通知
     wsService.on('notification', handleNotification);
     
-    // 同步响应处理
+    // 处理同步响应
     wsService.on('sync_response', handleSyncResponse);
     
-    // 连接状态变化
-    wsService.on('*', (_message) => {
-      isConnected.value = wsService.connected;
+    // 处理连接状态
+    wsService.on('connected', () => {
+      isConnected.value = true;
+      console.log('WebSocket reconnected');
+    });
+    
+    wsService.on('disconnected', () => {
+      isConnected.value = false;
+      console.log('WebSocket disconnected');
     });
   };
 
   // 处理记录变更
-  const handleRecordChanged = (message: WSMessage.RecordChangedMessage) => {
+  const handleRecordChanged = (message) => {
     // 如果是自己的操作，忽略
     if (message.userId === userStore.user?.id) {
       return;
@@ -99,7 +107,7 @@ export function useRealTimeSync() {
   };
 
   // 处理成员变更
-  const handleMemberChanged = (message: WSMessage.MemberChangedMessage) => {
+  const handleMemberChanged = (message) => {
     const { action, member } = message;
     
     switch (action) {
@@ -132,7 +140,7 @@ export function useRealTimeSync() {
   };
 
   // 处理通知
-  const handleNotification = (message: WSMessage.NotificationMessage) => {
+  const handleNotification = (message) => {
     const { notification } = message;
     
     // 显示通知
@@ -148,7 +156,7 @@ export function useRealTimeSync() {
   };
 
   // 处理同步响应
-  const handleSyncResponse = (message: WSMessage.SyncResponseMessage) => {
+  const handleSyncResponse = (message) => {
     const { changes } = message;
     
     // 更新本地数据
@@ -193,21 +201,21 @@ export function useRealTimeSync() {
   };
 
   // 发送记录变更
-  const syncRecordChange = (action: 'create' | 'update' | 'delete', record: any) => {
+  const syncRecordChange = (action, record) => {
     if (wsService.connected) {
       wsService.sendRecordChanged(action, record, familyStore.familyId, userStore.user?.id || '');
     }
   };
 
   // 发送成员变更
-  const syncMemberChange = (action: 'join' | 'leave' | 'role_updated', member: any) => {
+  const syncMemberChange = (action, member) => {
     if (wsService.connected) {
       wsService.sendMemberChanged(action, member, familyStore.familyId, userStore.user?.id || '');
     }
   };
 
   // 显示同步通知
-  const showSyncNotification = (message: string) => {
+  const showSyncNotification = (message) => {
     if (appStore.settings.notifications.recordChanges) {
       Taro.showToast({
         title: message,
@@ -218,7 +226,7 @@ export function useRealTimeSync() {
   };
 
   // 获取用户名称
-  const getUserName = (userId: string): string => {
+  const getUserName = (userId) => {
     const member = familyStore.members.find(m => m.id === userId);
     return member?.nickName || '家庭成员';
   };
@@ -259,10 +267,11 @@ export function useRealTimeSync() {
   return {
     isConnected,
     lastSyncTime,
-    syncRecordChange,
-    syncMemberChange,
-    manualSync,
+    initConnection,
+    disconnect,
     reconnect,
-    disconnect
+    manualSync,
+    syncRecordChange,
+    syncMemberChange
   };
 }

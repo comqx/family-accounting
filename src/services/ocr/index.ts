@@ -1,12 +1,11 @@
 // OCR文字识别服务
 
 import Taro from '@tarojs/taro';
-import { OCRResult, BillPlatform, ParsedBillData, ParsedTransaction, CreditCardInfo, InstallmentInfo, RecordType } from '../../types/business';
 import request from '../../utils/request';
 
 class OCRService {
   // 识别图片中的文字
-  async recognizeText(imagePath: string): Promise<OCRResult> {
+  async recognizeText(imagePath) {
     try {
       // 方案1: 使用后端OCR服务
       const result = await this.callBackendOCR(imagePath);
@@ -33,7 +32,7 @@ class OCRService {
   }
 
   // 调用后端OCR服务
-  private async callBackendOCR(imagePath: string): Promise<OCRResult | null> {
+  async callBackendOCR(imagePath) {
     try {
       // 上传图片到后端进行OCR识别
       const uploadResult = await Taro.uploadFile({
@@ -56,7 +55,7 @@ class OCRService {
   }
 
   // 尝试使用微信原生OCR能力
-  private async tryNativeOCR(_imagePath: string): Promise<OCRResult | null> {
+  async tryNativeOCR(_imagePath) {
     try {
       // 检查是否支持微信原生OCR
       if (Taro.getSystemInfoSync().platform === 'devtools') {
@@ -75,7 +74,7 @@ class OCRService {
   }
 
   // 获取用户token
-  private getToken(): string {
+  getToken() {
     try {
       return Taro.getStorageSync('token') || '';
     } catch {
@@ -84,7 +83,7 @@ class OCRService {
   }
 
   // 识别账单信息
-  async recognizeBill(imagePath: string, platform?: BillPlatform): Promise<ParsedBillData> {
+  async recognizeBill(imagePath, platform) {
     try {
       // 先进行OCR识别
       const ocrResult = await this.recognizeText(imagePath);
@@ -100,7 +99,7 @@ class OCRService {
   }
 
   // 解析账单数据
-  private async parseBillData(ocrResult: OCRResult, platform?: BillPlatform): Promise<ParsedBillData> {
+  async parseBillData(ocrResult, platform) {
     try {
       // 发送到后端进行智能解析
       const response = await request.post('/api/ocr/parse-bill', {
@@ -125,22 +124,22 @@ class OCRService {
   }
 
   // 本地解析账单数据
-  private parseLocalBillData(ocrResult: OCRResult, platform?: BillPlatform): ParsedBillData {
+  parseLocalBillData(ocrResult, platform) {
     const text = ocrResult.text;
-    const _transactions: ParsedTransaction[] = [];
+    const _transactions = [];
     
     // 检测平台类型
     const detectedPlatform = platform || this.detectPlatform(text);
     
     // 根据平台类型解析
     switch (detectedPlatform) {
-      case BillPlatform.ALIPAY:
+      case 'alipay':
         return this.parseAlipayBill(text);
-      case BillPlatform.WECHAT:
+      case 'wechat':
         return this.parseWechatBill(text);
-      case BillPlatform.CREDIT_CARD:
+      case 'credit_card':
         return this.parseCreditCardBill(text);
-      case BillPlatform.BANK_CARD:
+      case 'bank_card':
         return this.parseBankBill(text);
       default:
         return this.parseGenericBill(text);
@@ -148,24 +147,24 @@ class OCRService {
   }
 
   // 检测账单平台
-  private detectPlatform(text: string): BillPlatform {
+  detectPlatform(text) {
     if (text.includes('支付宝') || text.includes('alipay')) {
-      return BillPlatform.ALIPAY;
+      return 'alipay';
     } else if (text.includes('微信') || text.includes('wechat')) {
-      return BillPlatform.WECHAT;
+      return 'wechat';
     } else if (text.includes('信用卡') || text.includes('账单日') || text.includes('还款日') ||
                text.includes('招商银行') || text.includes('建设银行') || text.includes('工商银行')) {
-      return BillPlatform.CREDIT_CARD;
+      return 'credit_card';
     } else if (text.includes('银行') || text.includes('储蓄卡')) {
-      return BillPlatform.BANK_CARD;
+      return 'bank_card';
     } else {
-      return BillPlatform.ALIPAY; // 默认
+      return 'alipay'; // 默认
     }
   }
 
   // 解析支付宝账单
-  private parseAlipayBill(text: string): ParsedBillData {
-    const transactions: ParsedTransaction[] = [];
+  parseAlipayBill(text) {
+    const transactions = [];
     
     // 正则表达式匹配交易记录
     const patterns = [
@@ -177,19 +176,19 @@ class OCRService {
     patterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(text)) !== null) {
-        const transaction = this.createTransactionFromMatch(match, BillPlatform.ALIPAY);
+        const transaction = this.createTransactionFromMatch(match, 'alipay');
         if (transaction) {
           transactions.push(transaction);
         }
       }
     });
 
-    return this.createParsedBillData(transactions, BillPlatform.ALIPAY);
+    return this.createParsedBillData(transactions, 'alipay');
   }
 
   // 解析微信账单
-  private parseWechatBill(text: string): ParsedBillData {
-    const transactions: ParsedTransaction[] = [];
+  parseWechatBill(text) {
+    const transactions = [];
     
     // 微信账单解析逻辑
     const patterns = [
@@ -200,277 +199,251 @@ class OCRService {
     patterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(text)) !== null) {
-        const transaction = this.createTransactionFromMatch(match, BillPlatform.WECHAT);
+        const transaction = this.createTransactionFromMatch(match, 'wechat');
         if (transaction) {
           transactions.push(transaction);
         }
       }
     });
 
-    return this.createParsedBillData(transactions, BillPlatform.WECHAT);
+    return this.createParsedBillData(transactions, 'wechat');
   }
 
   // 解析银行账单
-  private parseBankBill(text: string): ParsedBillData {
-    const transactions: ParsedTransaction[] = [];
-
+  parseBankBill(text) {
+    const transactions = [];
+    
     // 银行账单解析逻辑
     const patterns = [
-      /(\d{4}\/\d{2}\/\d{2})\s+(.+?)\s+([+-]?\d+\.?\d*)/g,
-      /(\d{2}-\d{2})\s+(.+?)\s+(\d+\.\d{2})/g
+      /(\d{4}-\d{2}-\d{2})\s+(.+?)\s+([+-]?\d+\.?\d*)/g,
+      /(.+?)\s+(\d+\.\d{2})\s+转账/g
     ];
 
     patterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(text)) !== null) {
-        const transaction = this.createTransactionFromMatch(match, BillPlatform.BANK_CARD);
+        const transaction = this.createTransactionFromMatch(match, 'bank_card');
         if (transaction) {
           transactions.push(transaction);
         }
       }
     });
 
-    return this.createParsedBillData(transactions, BillPlatform.BANK_CARD);
+    return this.createParsedBillData(transactions, 'bank_card');
   }
 
   // 解析信用卡账单
-  private parseCreditCardBill(text: string): ParsedBillData {
-    const transactions: ParsedTransaction[] = [];
-
+  parseCreditCardBill(text) {
+    const transactions = [];
+    
     // 信用卡账单解析逻辑
     const patterns = [
-      // 标准信用卡账单格式
-      /(\d{2}\/\d{2})\s+(\d{2}\/\d{2})\s+(.+?)\s+(\d+\.\d{2})/g,
-      // 带分期信息的格式
-      /(\d{4}-\d{2}-\d{2})\s+(.+?)\s+(\d+\.\d{2})\s+(\d+\/\d+期)?/g,
-      // 简化格式
-      /(.+?)\s+(\d+\.\d{2})\s+(分\d+期)?/g
+      /(\d{4}-\d{2}-\d{2})\s+(.+?)\s+([+-]?\d+\.?\d*)/g,
+      /(.+?)\s+(\d+\.\d{2})\s+消费/g
     ];
-
-    // 提取信用卡基本信息
-    const cardInfo = this.extractCreditCardInfo(text);
 
     patterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(text)) !== null) {
-        const transaction = this.createCreditCardTransaction(match, cardInfo);
+        const transaction = this.createTransactionFromMatch(match, 'credit_card');
         if (transaction) {
           transactions.push(transaction);
         }
       }
     });
 
-    return this.createParsedBillData(transactions, BillPlatform.CREDIT_CARD);
+    // 提取信用卡信息
+    const cardInfo = this.extractCreditCardInfo(text);
+    
+    return {
+      ...this.createParsedBillData(transactions, 'credit_card'),
+      cardInfo
+    };
   }
 
   // 提取信用卡信息
-  private extractCreditCardInfo(text: string): CreditCardInfo | undefined {
-    try {
-      // 提取卡号
-      const cardNumberMatch = text.match(/\*{4,}\d{4}/);
-      const cardNumber = cardNumberMatch ? cardNumberMatch[0] : '';
-
-      // 提取银行名称
-      const bankNames = ['招商银行', '建设银行', '工商银行', '农业银行', '中国银行', '交通银行', '浦发银行', '民生银行', '兴业银行', '平安银行', '光大银行', '华夏银行'];
-      const bankName = bankNames.find(bank => text.includes(bank)) || '';
-
-      // 提取账单日和还款日
-      const billingDateMatch = text.match(/账单日[：:]\s*(\d{1,2})/);
-      const dueDateMatch = text.match(/还款日[：:]\s*(\d{1,2})/);
-
-      // 提取信用额度
-      const creditLimitMatch = text.match(/信用额度[：:]\s*(\d+\.?\d*)/);
-      const availableCreditMatch = text.match(/可用额度[：:]\s*(\d+\.?\d*)/);
-
-      if (cardNumber || bankName) {
-        return {
-          cardNumber,
-          bankName,
-          cardType: '信用卡',
-          billingDate: billingDateMatch ? new Date(2024, 0, parseInt(billingDateMatch[1])) : undefined,
-          dueDate: dueDateMatch ? new Date(2024, 0, parseInt(dueDateMatch[1])) : undefined,
-          creditLimit: creditLimitMatch ? parseFloat(creditLimitMatch[1]) : undefined,
-          availableCredit: availableCreditMatch ? parseFloat(availableCreditMatch[1]) : undefined
-        };
-      }
-    } catch (error) {
-      console.error('Extract credit card info error:', error);
+  extractCreditCardInfo(text) {
+    // 提取信用卡号
+    const cardNumberMatch = text.match(/\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}/);
+    const cardNumber = cardNumberMatch ? cardNumberMatch[0].replace(/[-\s]/g, '') : '';
+    
+    // 提取账单日
+    const billDateMatch = text.match(/账单日[：:]\s*(\d{1,2})/);
+    const billDate = billDateMatch ? parseInt(billDateMatch[1]) : 0;
+    
+    // 提取还款日
+    const dueDateMatch = text.match(/还款日[：:]\s*(\d{1,2})/);
+    const dueDate = dueDateMatch ? parseInt(dueDateMatch[1]) : 0;
+    
+    // 提取信用额度
+    const creditLimitMatch = text.match(/信用额度[：:]\s*(\d+\.?\d*)/);
+    const creditLimit = creditLimitMatch ? parseFloat(creditLimitMatch[1]) : 0;
+    
+    // 提取本期账单金额
+    const billAmountMatch = text.match(/本期账单金额[：:]\s*(\d+\.?\d*)/);
+    const billAmount = billAmountMatch ? parseFloat(billAmountMatch[1]) : 0;
+    
+    // 提取最低还款额
+    const minPaymentMatch = text.match(/最低还款额[：:]\s*(\d+\.?\d*)/);
+    const minPayment = minPaymentMatch ? parseFloat(minPaymentMatch[1]) : 0;
+    
+    // 提取分期信息
+    const installmentMatch = text.match(/分期期数[：:]\s*(\d+)\/(\d+)/);
+    const installmentInfo = installmentMatch ? {
+      totalPeriods: parseInt(installmentMatch[2]),
+      currentPeriod: parseInt(installmentMatch[1])
+    } : null;
+    
+    if (cardNumber || billDate || dueDate || creditLimit || billAmount) {
+      return {
+        cardNumber,
+        billDate,
+        dueDate,
+        creditLimit,
+        billAmount,
+        minPayment,
+        installmentInfo
+      };
     }
-
+    
     return undefined;
   }
 
   // 创建信用卡交易记录
-  private createCreditCardTransaction(match: RegExpExecArray, cardInfo?: CreditCardInfo): ParsedTransaction | null {
+  createCreditCardTransaction(match, cardInfo) {
     try {
-      let amount = 0;
-      let merchant = '';
-      let date = new Date();
-      let installment: InstallmentInfo | undefined;
-
-      if (match.length >= 3) {
-        // 提取金额
-        const amountStr = match[match.length - 1];
-        if (amountStr.includes('期')) {
-          // 处理分期信息
-          const periodMatch = amountStr.match(/(\d+)\/(\d+)期/);
-          if (periodMatch) {
-            installment = {
-              totalPeriods: parseInt(periodMatch[2]),
-              currentPeriod: parseInt(periodMatch[1]),
-              monthlyAmount: 0,
-              remainingAmount: 0,
-              interestRate: 0
-            };
-          }
-          amount = parseFloat(match[match.length - 2] || '0');
-        } else {
-          amount = parseFloat(amountStr.replace(/[^\d.]/g, ''));
-        }
-
-        // 提取商户名
-        merchant = match[match.length - 2] || match[1] || '未知商户';
-
-        // 提取日期
-        if (match[1] && /\d{2}\/\d{2}/.test(match[1])) {
-          const [month, day] = match[1].split('/');
-          date = new Date(2024, parseInt(month) - 1, parseInt(day));
-        }
-      }
-
-      if (amount > 0) {
-        return {
-          amount,
-          type: 'expense' as RecordType,
-          merchant: merchant.trim(),
-          description: `信用卡消费`,
-          date,
-          confidence: 0.85,
-          needsReview: false,
-          creditCard: cardInfo,
-          installment
-        };
-      }
+      const date = match[1];
+      const description = match[2];
+      const amount = parseFloat(match[3]);
+      
+      return {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        date: new Date(date),
+        description,
+        amount: Math.abs(amount),
+        type: amount > 0 ? 'income' : 'expense',
+        category: '信用卡',
+        platform: 'credit_card',
+        cardInfo
+      };
     } catch (error) {
       console.error('Create credit card transaction error:', error);
+      return null;
     }
-
-    return null;
   }
 
-  // 通用账单解析
-  private parseGenericBill(text: string): ParsedBillData {
-    const transactions: ParsedTransaction[] = [];
+  // 解析通用账单
+  parseGenericBill(text) {
+    const transactions = [];
     
-    // 通用金额匹配
-    const amountPattern = /¥?(\d+\.?\d*)/g;
-    let match;
-    
-    while ((match = amountPattern.exec(text)) !== null) {
-      const amount = parseFloat(match[1]);
-      if (amount > 0) {
-        transactions.push({
-          amount,
-          type: 'expense' as RecordType,
-          merchant: '未知商户',
-          description: '账单导入',
-          date: new Date(),
-          confidence: 0.5,
-          needsReview: true
-        });
-      }
-    }
+    // 通用账单解析逻辑
+    const patterns = [
+      /(\d{4}-\d{2}-\d{2})\s+(.+?)\s+([+-]?\d+\.?\d*)/g,
+      /(.+?)\s+(\d+\.\d{2})/g
+    ];
 
-    return this.createParsedBillData(transactions, BillPlatform.ALIPAY);
+    patterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const transaction = this.createTransactionFromMatch(match, 'generic');
+        if (transaction) {
+          transactions.push(transaction);
+        }
+      }
+    });
+
+    return this.createParsedBillData(transactions, 'generic');
   }
 
   // 从正则匹配创建交易记录
-  private createTransactionFromMatch(match: RegExpExecArray, platform: BillPlatform): ParsedTransaction | null {
+  createTransactionFromMatch(match, platform) {
     try {
-      let amount = 0;
-      let merchant = '';
-      let date = new Date();
+      let date, description, amount;
       
-      if (match.length >= 3) {
-        // 提取金额
-        const amountStr = match[match.length - 1];
-        amount = parseFloat(amountStr.replace(/[^\d.]/g, ''));
-        
-        // 提取商户名
-        merchant = match[match.length - 2] || '未知商户';
-        
-        // 提取日期
-        if (match[1] && /\d{4}-\d{2}-\d{2}/.test(match[1])) {
-          date = new Date(match[1]);
-        }
+      if (match.length >= 4) {
+        // 格式: 日期 描述 金额
+        date = match[1];
+        description = match[2];
+        amount = parseFloat(match[3]);
+      } else if (match.length >= 3) {
+        // 格式: 描述 金额
+        description = match[1];
+        amount = parseFloat(match[2]);
+        date = new Date().toISOString().split('T')[0];
+      } else {
+        return null;
       }
-
-      if (amount > 0) {
-        return {
-          amount,
-          type: 'expense' as RecordType,
-          merchant: merchant.trim(),
-          description: `${platform}账单导入`,
-          date,
-          confidence: 0.8,
-          needsReview: false
-        };
-      }
+      
+      return {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        date: new Date(date),
+        description,
+        amount: Math.abs(amount),
+        type: amount > 0 ? 'income' : 'expense',
+        category: '其他',
+        platform
+      };
     } catch (error) {
-      console.error('Create transaction error:', error);
+      console.error('Create transaction from match error:', error);
+      return null;
     }
-    
-    return null;
   }
 
-  // 创建解析结果
-  private createParsedBillData(transactions: ParsedTransaction[], platform: BillPlatform): ParsedBillData {
-    const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
-    const dates = transactions.map(t => t.date).filter(d => d);
+  // 创建解析后的账单数据
+  createParsedBillData(transactions, platform) {
+    const totalIncome = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+      
+    const totalExpense = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
     
     return {
       platform,
       transactions,
       summary: {
-        totalAmount,
-        transactionCount: transactions.length,
-        dateRange: {
-          start: dates.length > 0 ? new Date(Math.min(...dates.map(d => d.getTime()))) : new Date(),
-          end: dates.length > 0 ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date()
-        }
+        totalIncome,
+        totalExpense,
+        netAmount: totalIncome - totalExpense,
+        transactionCount: transactions.length
       },
-      confidence: transactions.length > 0 ? 
-        transactions.reduce((sum, t) => sum + t.confidence, 0) / transactions.length : 0
+      parseTime: new Date(),
+      confidence: 0.8
     };
   }
 
   // 获取模拟OCR结果
-  private getMockOCRResult(): OCRResult {
+  getMockOCRResult() {
     return {
-      text: '支付宝账单\n2024-01-15 12:30:00 午餐 25.50\n2024-01-15 18:45:00 地铁 6.00',
-      confidence: 0.95,
+      text: '模拟OCR识别结果\n2024-01-15 14:30:00 超市购物 -50.00\n2024-01-16 09:15:00 工资收入 +5000.00',
       words: [
-        { text: '支付宝账单', confidence: 0.98, boundingBox: { x: 10, y: 10, width: 100, height: 20 } },
-        { text: '25.50', confidence: 0.99, boundingBox: { x: 200, y: 50, width: 50, height: 15 } }
+        { text: '模拟OCR识别结果', confidence: 0.9 },
+        { text: '2024-01-15', confidence: 0.95 },
+        { text: '超市购物', confidence: 0.8 },
+        { text: '-50.00', confidence: 0.9 }
       ],
-      regions: []
+      regions: [
+        { text: '模拟OCR识别结果', confidence: 0.9, boundingBox: { x: 0, y: 0, width: 200, height: 30 } }
+      ]
     };
   }
 
-  // 批量识别图片
-  async recognizeMultipleImages(imagePaths: string[]): Promise<ParsedBillData[]> {
-    const results: ParsedBillData[] = [];
+  // 识别多张图片
+  async recognizeMultipleImages(imagePaths) {
+    const results = [];
     
     for (const imagePath of imagePaths) {
       try {
         const result = await this.recognizeBill(imagePath);
         results.push(result);
       } catch (error) {
-        console.error(`Failed to recognize image ${imagePath}:`, error);
+        console.error(`OCR recognition failed for ${imagePath}:`, error);
+        results.push(null);
       }
     }
     
-    return results;
+    return results.filter(result => result !== null);
   }
 }
 

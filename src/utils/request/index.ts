@@ -1,35 +1,45 @@
 // HTTP请求工具
 
 import Taro from '@tarojs/taro';
-import { ApiResponse } from '../../types/api';
+// import { ApiResponse } from '../../types/api';
 
-// 请求配置
-interface RequestConfig {
-  url: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  data?: any;
-  header?: Record<string, string>;
-  timeout?: number;
-  loading?: boolean;
-  cache?: boolean;
-}
+// 请求配置 - 使用JSDoc注释
+/**
+ * @typedef {Object} RequestConfig
+ * @property {string} url - 请求URL
+ * @property {string} [method] - 请求方法
+ * @property {*} [data] - 请求数据
+ * @property {Object} [header] - 请求头
+ * @property {number} [timeout] - 超时时间
+ * @property {boolean} [loading] - 是否显示加载提示
+ * @property {boolean} [cache] - 是否缓存
+ */
 
-// 响应拦截器类型
-type ResponseInterceptor = (response: any) => any;
-type ErrorInterceptor = (error: any) => any;
+// 响应拦截器类型 - 使用JSDoc注释
+/**
+ * @typedef {Function} ResponseInterceptor
+ * @param {*} response - 响应数据
+ * @returns {*} 处理后的响应数据
+ */
+
+/**
+ * @typedef {Function} ErrorInterceptor
+ * @param {*} error - 错误信息
+ * @returns {*} 处理后的错误信息
+ */
 
 class RequestManager {
-  private baseURL = '';
-  private defaultTimeout = 10000;
-  private token = '';
-  private responseInterceptors: ResponseInterceptor[] = [];
-  private errorInterceptors: ErrorInterceptor[] = [];
-
   constructor() {
+    // 初始化属性
+    this.baseURL = '';
+    this.defaultTimeout = 10000;
+    this.token = '';
+    this.responseInterceptors = [];
+    this.errorInterceptors = [];
     this.init();
   }
 
-  private init() {
+  init() {
     // 从存储中获取token
     this.token = Taro.getStorageSync('token') || '';
     
@@ -45,7 +55,7 @@ class RequestManager {
   }
 
   // 设置token
-  setToken(token: string) {
+  setToken(token) {
     this.token = token;
     Taro.setStorageSync('token', token);
   }
@@ -57,17 +67,17 @@ class RequestManager {
   }
 
   // 添加响应拦截器
-  addResponseInterceptor(interceptor: ResponseInterceptor) {
+  addResponseInterceptor(interceptor) {
     this.responseInterceptors.push(interceptor);
   }
 
   // 添加错误拦截器
-  addErrorInterceptor(interceptor: ErrorInterceptor) {
+  addErrorInterceptor(interceptor) {
     this.errorInterceptors.push(interceptor);
   }
 
   // 通用请求方法
-  async request<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
+  async request(config) {
     const {
       url,
       method = 'GET',
@@ -118,7 +128,7 @@ class RequestManager {
       }
 
       // 处理响应
-      let result = response.data as ApiResponse<T>;
+      let result = response.data;
 
       // 应用响应拦截器
       for (const interceptor of this.responseInterceptors) {
@@ -140,7 +150,7 @@ class RequestManager {
 
       return result;
 
-    } catch (error: any) {
+    } catch (error) {
       if (loading) {
         Taro.hideLoading();
       }
@@ -184,11 +194,11 @@ class RequestManager {
   }
 
   // GET请求
-  get<T = any>(url: string, params?: any, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
+  get(url, params, config) {
     const queryString = params ? this.buildQueryString(params) : '';
     const fullUrl = queryString ? `${url}?${queryString}` : url;
     
-    return this.request<T>({
+    return this.request({
       url: fullUrl,
       method: 'GET',
       ...config
@@ -196,8 +206,8 @@ class RequestManager {
   }
 
   // POST请求
-  post<T = any>(url: string, data?: any, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
-    return this.request<T>({
+  post(url, data, config) {
+    return this.request({
       url,
       method: 'POST',
       data,
@@ -206,8 +216,8 @@ class RequestManager {
   }
 
   // PUT请求
-  put<T = any>(url: string, data?: any, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
-    return this.request<T>({
+  put(url, data, config) {
+    return this.request({
       url,
       method: 'PUT',
       data,
@@ -216,8 +226,8 @@ class RequestManager {
   }
 
   // DELETE请求
-  delete<T = any>(url: string, config?: Partial<RequestConfig>): Promise<ApiResponse<T>> {
-    return this.request<T>({
+  delete(url, config) {
+    return this.request({
       url,
       method: 'DELETE',
       ...config
@@ -225,103 +235,132 @@ class RequestManager {
   }
 
   // 构建查询字符串
-  private buildQueryString(params: Record<string, any>): string {
-    const pairs: string[] = [];
-    
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null && value !== '') {
-        pairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+  buildQueryString(params) {
+    if (!params || typeof params !== 'object') {
+      return '';
+    }
+
+    const queryParts = [];
+    for (const key in params) {
+      if (params.hasOwnProperty(key) && params[key] !== undefined && params[key] !== null) {
+        const value = typeof params[key] === 'object' ? JSON.stringify(params[key]) : params[key];
+        queryParts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
       }
     }
-    
-    return pairs.join('&');
+
+    return queryParts.join('&');
   }
 
-  // 上传文件
-  async uploadFile(config: {
-    url: string;
-    filePath: string;
-    name: string;
-    formData?: Record<string, any>;
-    header?: Record<string, string>;
-  }): Promise<any> {
-    const { url, filePath, name, formData, header = {} } = config;
+  // 文件上传
+  async uploadFile(config) {
+    const {
+      url,
+      filePath,
+      name,
+      formData = {},
+      header = {}
+    } = config;
 
-    if (this.token) {
-      header['Authorization'] = `Bearer ${this.token}`;
-    }
+    // 显示加载提示
+    Taro.showLoading({ title: '上传中...' });
 
-    return new Promise((resolve, reject) => {
-      const uploadTask = Taro.uploadFile({
+    try {
+      // 构建请求头
+      const requestHeader = {
+        ...header
+      };
+
+      if (this.token) {
+        requestHeader['Authorization'] = `Bearer ${this.token}`;
+      }
+
+      // 发起上传请求
+      const response = await Taro.uploadFile({
         url: this.baseURL + url,
         filePath,
         name,
         formData,
-        header,
-        success: (res) => {
-          try {
-            const data = JSON.parse(res.data);
-            if (data.code === 200) {
-              resolve(data);
-            } else {
-              reject(new Error(data.message || '上传失败'));
-            }
-          } catch (error) {
-            reject(new Error('响应数据格式错误'));
-          }
-        },
-        fail: (error) => {
-          reject(error);
-        }
+        header: requestHeader
       });
 
-      // 可以返回uploadTask用于监听上传进度
-      return uploadTask;
-    });
+      Taro.hideLoading();
+
+      // 解析响应数据
+      const result = JSON.parse(response.data);
+
+      // 检查业务状态码
+      if (result.code !== 200) {
+        throw new Error(result.message || '上传失败');
+      }
+
+      return result;
+
+    } catch (error) {
+      Taro.hideLoading();
+
+      // 处理网络错误
+      if (error.errMsg) {
+        if (error.errMsg.includes('timeout')) {
+          throw new Error('上传超时，请检查网络连接');
+        } else if (error.errMsg.includes('fail')) {
+          throw new Error('网络连接失败，请检查网络设置');
+        }
+      }
+
+      throw error;
+    }
   }
 
-  // 下载文件
-  async downloadFile(url: string, fileName?: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      Taro.downloadFile({
+  // 文件下载
+  async downloadFile(url, fileName) {
+    // 显示加载提示
+    Taro.showLoading({ title: '下载中...' });
+
+    try {
+      // 发起下载请求
+      const response = await Taro.downloadFile({
         url: this.baseURL + url,
-        success: (res) => {
-          if (res.statusCode === 200) {
-            // 保存到本地
-            if (fileName) {
-              Taro.saveFile({
-                tempFilePath: res.tempFilePath,
-                success: (saveRes) => {
-                  resolve(saveRes.savedFilePath);
-                },
-                fail: reject
-              });
-            } else {
-              resolve(res.tempFilePath);
-            }
-          } else {
-            reject(new Error('下载失败'));
-          }
-        },
-        fail: reject
+        header: this.token ? { 'Authorization': `Bearer ${this.token}` } : {}
       });
-    });
+
+      Taro.hideLoading();
+
+      // 保存文件
+      if (response.statusCode === 200) {
+        const savedPath = await Taro.saveFile({
+          tempFilePath: response.tempFilePath
+        });
+
+        Taro.showToast({
+          title: '下载成功',
+          icon: 'success'
+        });
+
+        return savedPath.savedFilePath;
+      } else {
+        throw new Error('下载失败');
+      }
+
+    } catch (error) {
+      Taro.hideLoading();
+
+      // 处理网络错误
+      if (error.errMsg) {
+        if (error.errMsg.includes('timeout')) {
+          throw new Error('下载超时，请检查网络连接');
+        } else if (error.errMsg.includes('fail')) {
+          throw new Error('网络连接失败，请检查网络设置');
+        }
+      }
+
+      throw error;
+    }
   }
 }
 
-// 创建请求实例
+// 创建默认实例
 const request = new RequestManager();
 
-// 添加默认拦截器
-request.addResponseInterceptor((response) => {
-  // 可以在这里添加全局响应处理逻辑
-  return response;
-});
-
-request.addErrorInterceptor((error) => {
-  // 可以在这里添加全局错误处理逻辑
-  console.error('Request Error:', error);
-  return error;
-});
-
+// 导出实例和类
 export default request;
+export { RequestManager };

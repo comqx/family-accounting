@@ -1,26 +1,16 @@
 // 自动分摊服务
 
 // import Taro from '@tarojs/taro'; // 暂时注释，未使用
-import { 
-  SplitRecord, 
-  SplitType, 
-  SplitStatus, 
-  SplitParticipant, 
-  ParticipantStatus,
-  SplitTemplate,
-  AccountRecord,
-  FamilyMember
-} from '../../types/business';
 import request from '../../utils/request';
 
 class SplitService {
   // 创建分摊记录
   async createSplitRecord(
-    originalRecord: AccountRecord,
-    splitType: SplitType,
-    participants: Partial<SplitParticipant>[],
-    description?: string
-  ): Promise<SplitRecord> {
+    originalRecord,
+    splitType,
+    participants,
+    description
+  ) {
     try {
       // 计算分摊金额
       const calculatedParticipants = this.calculateSplitAmounts(
@@ -29,14 +19,14 @@ class SplitService {
         participants
       );
 
-      const splitRecord: Omit<SplitRecord, 'id' | 'createTime' | 'updateTime'> = {
+      const splitRecord = {
         originalRecordId: originalRecord.id,
         familyId: originalRecord.familyId,
         totalAmount: originalRecord.amount,
         splitType,
         participants: calculatedParticipants,
         description,
-        status: SplitStatus.PENDING,
+        status: 'PENDING',
         createdBy: originalRecord.userId
       };
 
@@ -53,7 +43,7 @@ class SplitService {
         id: Date.now().toString(),
         createTime: new Date(),
         updateTime: new Date()
-      } as SplitRecord;
+      };
 
     } catch (error) {
       console.error('Create split record error:', error);
@@ -62,15 +52,15 @@ class SplitService {
   }
 
   // 计算分摊金额
-  private calculateSplitAmounts(
-    totalAmount: number,
-    splitType: SplitType,
-    participants: Partial<SplitParticipant>[]
-  ): SplitParticipant[] {
-    const result: SplitParticipant[] = [];
+  calculateSplitAmounts(
+    totalAmount,
+    splitType,
+    participants
+  ) {
+    const result = [];
 
     switch (splitType) {
-      case SplitType.EQUAL:
+      case 'EQUAL':
         // 平均分摊
         const equalAmount = Math.round((totalAmount / participants.length) * 100) / 100;
         let remainingAmount = totalAmount;
@@ -80,60 +70,60 @@ class SplitService {
           remainingAmount -= amount;
 
           result.push({
-            userId: participant.userId!,
-            nickName: participant.nickName!,
-            avatarUrl: participant.avatarUrl!,
+            userId: participant.userId,
+            nickName: participant.nickName,
+            avatarUrl: participant.avatarUrl,
             amount,
             percentage: Math.round((amount / totalAmount) * 10000) / 100,
-            status: ParticipantStatus.PENDING
+            status: 'PENDING'
           });
         });
         break;
 
-      case SplitType.PERCENTAGE:
+      case 'PERCENTAGE':
         // 按比例分摊
         participants.forEach(participant => {
           const percentage = participant.percentage || 0;
           const amount = Math.round((totalAmount * percentage / 100) * 100) / 100;
 
           result.push({
-            userId: participant.userId!,
-            nickName: participant.nickName!,
-            avatarUrl: participant.avatarUrl!,
+            userId: participant.userId,
+            nickName: participant.nickName,
+            avatarUrl: participant.avatarUrl,
             amount,
             percentage,
-            status: ParticipantStatus.PENDING
+            status: 'PENDING'
           });
         });
         break;
 
-      case SplitType.AMOUNT:
+      case 'AMOUNT':
         // 按金额分摊
         participants.forEach(participant => {
           const amount = participant.amount || 0;
           const percentage = Math.round((amount / totalAmount) * 10000) / 100;
 
           result.push({
-            userId: participant.userId!,
-            nickName: participant.nickName!,
-            avatarUrl: participant.avatarUrl!,
+            userId: participant.userId,
+            nickName: participant.nickName,
+            avatarUrl: participant.avatarUrl,
             amount,
             percentage,
-            status: ParticipantStatus.PENDING
+            status: 'PENDING'
           });
         });
         break;
 
-      case SplitType.CUSTOM:
+      case 'CUSTOM':
         // 自定义分摊
         participants.forEach(participant => {
           result.push({
-            userId: participant.userId!,
-            nickName: participant.nickName!,
-            avatarUrl: participant.avatarUrl!,
+            userId: participant.userId,
+            nickName: participant.nickName,
+            avatarUrl: participant.avatarUrl,
             amount: participant.amount || 0,
             percentage: participant.percentage,
-            status: ParticipantStatus.PENDING
+            status: 'PENDING'
           });
         });
         break;
@@ -143,7 +133,7 @@ class SplitService {
   }
 
   // 确认分摊
-  async confirmSplit(splitId: string, userId: string): Promise<boolean> {
+  async confirmSplit(splitId, userId) {
     try {
       const response = await request.post(`/api/split/${splitId}/confirm`, { userId });
       return response.data?.success || true;
@@ -154,7 +144,7 @@ class SplitService {
   }
 
   // 拒绝分摊
-  async declineSplit(splitId: string, userId: string, reason?: string): Promise<boolean> {
+  async declineSplit(splitId, userId, reason) {
     try {
       const response = await request.post(`/api/split/${splitId}/decline`, { userId, reason });
       return response.data?.success || true;
@@ -165,7 +155,7 @@ class SplitService {
   }
 
   // 结算分摊
-  async settleSplit(splitId: string, userId: string): Promise<boolean> {
+  async settleSplit(splitId, userId) {
     try {
       const response = await request.post(`/api/split/${splitId}/settle`, { userId });
       return response.data?.success || true;
@@ -176,7 +166,7 @@ class SplitService {
   }
 
   // 获取分摊记录列表
-  async getSplitRecords(familyId: string, status?: SplitStatus): Promise<SplitRecord[]> {
+  async getSplitRecords(familyId, status) {
     try {
       const params = { familyId, status };
       const response = await request.get('/api/split/list', { params });
@@ -194,7 +184,7 @@ class SplitService {
   }
 
   // 获取分摊详情
-  async getSplitDetail(splitId: string): Promise<SplitRecord | null> {
+  async getSplitDetail(splitId) {
     try {
       const response = await request.get(`/api/split/${splitId}`);
       return response.data || null;
@@ -205,9 +195,9 @@ class SplitService {
   }
 
   // 创建分摊模板
-  async createSplitTemplate(template: Omit<SplitTemplate, 'id' | 'createTime'>): Promise<SplitTemplate> {
+  async createSplitTemplate(template) {
     try {
-      const response = await request.post('/api/split/template', template);
+      const response = await request.post('/api/split/template/create', template);
       
       if (response.data) {
         return response.data;
@@ -226,10 +216,18 @@ class SplitService {
   }
 
   // 获取分摊模板列表
-  async getSplitTemplates(familyId: string): Promise<SplitTemplate[]> {
+  async getSplitTemplates(familyId) {
     try {
-      const response = await request.get('/api/split/templates', { params: { familyId } });
-      return response.data || [];
+      const response = await request.get('/api/split/template/list', { 
+        params: { familyId } 
+      });
+      
+      if (response.data) {
+        return response.data;
+      }
+
+      // 返回模拟数据
+      return [];
     } catch (error) {
       console.error('Get split templates error:', error);
       return [];
@@ -238,24 +236,20 @@ class SplitService {
 
   // 应用分摊模板
   async applySplitTemplate(
-    templateId: string,
-    originalRecord: AccountRecord,
-    familyMembers: FamilyMember[]
-  ): Promise<SplitRecord> {
+    templateId,
+    originalRecord,
+    familyMembers
+  ) {
     try {
       // 获取模板
       const template = await this.getSplitTemplate(templateId);
       if (!template) {
-        throw new Error('分摊模板不存在');
+        throw new Error('模板不存在');
       }
 
-      // 构建参与者列表
-      const participants: Partial<SplitParticipant>[] = template.participants.map(tp => {
+      // 根据模板创建参与者列表
+      const participants = template.participants.map(tp => {
         const member = familyMembers.find(m => m.userId === tp.userId);
-        if (!member) {
-          throw new Error(`成员 ${tp.userId} 不存在`);
-        }
-
         return {
           userId: member.userId,
           nickName: member.nickName,
@@ -269,7 +263,7 @@ class SplitService {
         originalRecord,
         template.splitType,
         participants,
-        `使用模板: ${template.name}`
+        template.description
       );
     } catch (error) {
       console.error('Apply split template error:', error);
@@ -277,8 +271,8 @@ class SplitService {
     }
   }
 
-  // 获取分摊模板详情
-  private async getSplitTemplate(templateId: string): Promise<SplitTemplate | null> {
+  // 获取分摊模板
+  async getSplitTemplate(templateId) {
     try {
       const response = await request.get(`/api/split/template/${templateId}`);
       return response.data || null;
@@ -290,72 +284,67 @@ class SplitService {
 
   // 验证分摊数据
   validateSplitData(
-    totalAmount: number,
-    splitType: SplitType,
-    participants: Partial<SplitParticipant>[]
-  ): { valid: boolean; message?: string } {
-    if (participants.length === 0) {
+    totalAmount,
+    splitType,
+    participants
+  ) {
+    if (!participants || participants.length === 0) {
       return { valid: false, message: '至少需要一个参与者' };
     }
 
-    switch (splitType) {
-      case SplitType.PERCENTAGE:
-        const totalPercentage = participants.reduce((sum, p) => sum + (p.percentage || 0), 0);
-        if (Math.abs(totalPercentage - 100) > 0.01) {
-          return { valid: false, message: '百分比总和必须等于100%' };
-        }
-        break;
+    if (splitType === 'PERCENTAGE') {
+      const totalPercentage = participants.reduce((sum, p) => sum + (p.percentage || 0), 0);
+      if (Math.abs(totalPercentage - 100) > 0.01) {
+        return { valid: false, message: '百分比总和必须等于100%' };
+      }
+    }
 
-      case SplitType.AMOUNT:
-        const totalSplitAmount = participants.reduce((sum, p) => sum + (p.amount || 0), 0);
-        if (Math.abs(totalSplitAmount - totalAmount) > 0.01) {
-          return { valid: false, message: '分摊金额总和必须等于总金额' };
-        }
-        break;
+    if (splitType === 'AMOUNT') {
+      const totalSplitAmount = participants.reduce((sum, p) => sum + (p.amount || 0), 0);
+      if (Math.abs(totalSplitAmount - totalAmount) > 0.01) {
+        return { valid: false, message: '分摊金额总和必须等于总金额' };
+      }
     }
 
     return { valid: true };
   }
 
   // 获取模拟分摊记录
-  private getMockSplitRecords(): SplitRecord[] {
+  getMockSplitRecords() {
     return [
       {
         id: '1',
         originalRecordId: 'record_1',
         familyId: 'family_1',
-        totalAmount: 120.00,
-        splitType: SplitType.EQUAL,
+        totalAmount: 100.00,
+        splitType: 'EQUAL',
         participants: [
           {
             userId: 'user_1',
             nickName: '张三',
             avatarUrl: '',
-            amount: 60.00,
+            amount: 50.00,
             percentage: 50,
-            status: ParticipantStatus.CONFIRMED,
+            status: 'CONFIRMED',
             confirmTime: new Date()
           },
           {
             userId: 'user_2',
             nickName: '李四',
             avatarUrl: '',
-            amount: 60.00,
+            amount: 50.00,
             percentage: 50,
-            status: ParticipantStatus.PENDING
+            status: 'PENDING'
           }
         ],
-        description: '晚餐费用分摊',
-        status: SplitStatus.PENDING,
+        description: '午餐分摊',
+        status: 'PENDING',
+        createdBy: 'user_1',
         createTime: new Date(),
-        updateTime: new Date(),
-        createdBy: 'user_1'
+        updateTime: new Date()
       }
     ];
   }
 }
 
-// 创建分摊服务实例
-const splitService = new SplitService();
-
-export default splitService;
+export default new SplitService();

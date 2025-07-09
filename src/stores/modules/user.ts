@@ -10,10 +10,10 @@ import { setToken, getToken, setUserInfo, getUserInfo, clearUserData } from '../
 
 export const useUserStore = defineStore('user', () => {
   // 状态
-  const user = ref<User | null>(null);
-  const token = ref<string>('');
-  const isLoggedIn = ref<boolean>(false);
-  const isLoading = ref<boolean>(false);
+  const user = ref(null);
+  const token = ref('');
+  const isLoggedIn = ref(false);
+  const isLoading = ref(false);
 
   // 计算属性
   const userRole = computed(() => user.value?.role || UserRole.MEMBER);
@@ -30,7 +30,7 @@ export const useUserStore = defineStore('user', () => {
     if (savedToken && savedUser) {
       token.value = savedToken;
       if (savedUser && typeof savedUser === 'object' && 'id' in savedUser) {
-        user.value = savedUser as User;
+        user.value = savedUser;
       }
       isLoggedIn.value = true;
       request.setToken(savedToken);
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 微信登录
-  const login = async (): Promise<boolean> => {
+  const login = async () => {
     try {
       isLoading.value = true;
 
@@ -49,7 +49,7 @@ export const useUserStore = defineStore('user', () => {
       }
 
       // 调用登录接口
-      const response = await request.post<AuthAPI.LoginResponse>('/auth/login', {
+      const response = await request.post('/auth/login', {
         code: loginResult.code
       });
 
@@ -76,7 +76,7 @@ export const useUserStore = defineStore('user', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Login error:', error);
       Taro.showToast({
         title: error.message || '登录失败',
@@ -89,9 +89,9 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 获取用户信息
-  const getUserProfile = async (): Promise<boolean> => {
+  const getUserProfile = async () => {
     try {
-      const response = await request.get<UserAPI.GetProfileResponse>('/user/profile');
+      const response = await request.get('/user/profile');
       
       if (response.data?.user) {
         user.value = response.data.user;
@@ -100,21 +100,18 @@ export const useUserStore = defineStore('user', () => {
       }
       
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get user profile error:', error);
       return false;
     }
   };
 
   // 更新用户信息
-  const updateProfile = async (profileData: {
-    nickName?: string;
-    avatarUrl?: string;
-  }): Promise<boolean> => {
+  const updateProfile = async (profileData) => {
     try {
       isLoading.value = true;
 
-      const response = await request.put<UserAPI.UpdateProfileResponse>('/user/profile', profileData);
+      const response = await request.put('/user/profile', profileData);
       
       if (response.data?.user) {
         user.value = response.data.user;
@@ -129,7 +126,7 @@ export const useUserStore = defineStore('user', () => {
       }
       
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update profile error:', error);
       Taro.showToast({
         title: error.message || '更新失败',
@@ -142,10 +139,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 获取微信用户信息
-  const getWechatUserInfo = async (): Promise<{
-    nickName: string;
-    avatarUrl: string;
-  } | null> => {
+  const getWechatUserInfo = async () => {
     try {
       // 获取用户信息
       const userInfo = await Taro.getUserProfile({
@@ -156,7 +150,7 @@ export const useUserStore = defineStore('user', () => {
         nickName: userInfo.userInfo.nickName,
         avatarUrl: userInfo.userInfo.avatarUrl
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Get wechat user info error:', error);
       
       if (error.errMsg && error.errMsg.includes('auth deny')) {
@@ -171,14 +165,14 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 刷新token
-  const refreshToken = async (): Promise<boolean> => {
+  const refreshToken = async () => {
     try {
       const currentToken = getToken();
       if (!currentToken) {
         return false;
       }
 
-      const response = await request.post<AuthAPI.RefreshTokenResponse>('/auth/refresh', {
+      const response = await request.post('/auth/refresh', {
         refreshToken: currentToken
       });
 
@@ -191,7 +185,7 @@ export const useUserStore = defineStore('user', () => {
       }
 
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Refresh token error:', error);
       // token刷新失败，清除登录状态
       logout();
@@ -200,7 +194,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 检查登录状态
-  const checkLoginStatus = async (): Promise<boolean> => {
+  const checkLoginStatus = async () => {
     if (!isLoggedIn.value || !token.value) {
       return false;
     }
@@ -250,7 +244,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 检查权限
-  const hasPermission = (permission: string): boolean => {
+  const hasPermission = (permission) => {
     if (!user.value || !hasFamily.value) {
       return false;
     }
@@ -271,7 +265,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 更新用户角色
-  const updateUserRole = (newRole: UserRole) => {
+  const updateUserRole = (newRole) => {
     if (user.value) {
       user.value.role = newRole;
       setUserInfo(user.value);
@@ -279,7 +273,7 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 设置用户信息（用于其他store调用）
-  const setUser = (userInfo: User) => {
+  const setUser = (userInfo) => {
     user.value = userInfo;
     setUserInfo(userInfo);
   };

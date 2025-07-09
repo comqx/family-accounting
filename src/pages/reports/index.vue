@@ -144,7 +144,7 @@
   </view>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
@@ -216,17 +216,13 @@ const timeTabs = [
 const balance = computed(() => totalIncome.value - totalExpense.value)
 
 const currentTimeText = computed(() => {
-  const date = new Date(customDate.value + '-01')
-  switch (selectedPeriod.value) {
-    case 'week':
-      return '本周'
-    case 'month':
-      return `${date.getFullYear()}年${date.getMonth() + 1}月`
-    case 'year':
-      return `${date.getFullYear()}年`
-    default:
-      return '本月'
+  if (selectedPeriod.value === 'custom') {
+    const date = new Date(customDate.value + '-01')
+    return `${date.getFullYear()}年${date.getMonth() + 1}月`
   }
+  
+  const option = timeTabs.find(tab => tab.value === selectedPeriod.value)
+  return option?.label || '本月'
 })
 
 // 方法
@@ -236,6 +232,7 @@ const selectPeriod = (period) => {
 }
 
 const showCustomPicker = () => {
+  selectedPeriod.value = 'custom'
   showTimePicker.value = true
 }
 
@@ -246,23 +243,15 @@ const onCustomDateChange = (e) => {
 }
 
 const loadReportData = () => {
-  // 模拟加载报表数据
-  console.log('Loading report data for:', selectedPeriod.value, customDate.value)
+  // 根据选择的时间段加载数据
+  console.log('Loading report data for period:', selectedPeriod.value)
+  
+  // 这里应该调用API获取对应时间段的数据
+  // 暂时使用模拟数据
 }
 
-const exportReport = async () => {
-  try {
-    appStore.showLoading('导出中...')
-
-    // 模拟导出过程
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    appStore.hideLoading()
-    appStore.showToast('导出成功', 'success')
-  } catch (error) {
-    appStore.hideLoading()
-    appStore.showToast('导出失败', 'none')
-  }
+const exportReport = () => {
+  appStore.showToast('功能开发中', 'none')
 }
 
 const shareReport = () => {
@@ -288,14 +277,14 @@ onMounted(() => {
 // 页面配置
 Taro.useLoad(() => {
   Taro.setNavigationBarTitle({
-    title: '报表'
+    title: '报表分析'
   })
 })
 
 // 页面分享
 Taro.useShareAppMessage(() => {
   return appStore.share({
-    title: '家账通 - 我的财务报表',
+    title: '家账通 - 财务报表分析',
     path: '/pages/reports/index'
   })
 })

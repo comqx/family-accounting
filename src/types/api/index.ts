@@ -1,430 +1,246 @@
-// API接口类型定义
+// API接口类型定义 - 已转换为纯JavaScript
 
-import {
-  User, Family, AccountRecord, Category, BillImport,
-  ReportData, Notification, PaginationParams, PaginationResult,
-  RecordForm, CategoryForm, FamilyForm, ReportPeriod
-} from '../business';
+// 导入业务类型（如果需要的话）
+// import {
+//   User, Family, AccountRecord, Category, BillImport,
+//   ReportData, Notification, PaginationParams, PaginationResult,
+//   RecordForm, CategoryForm, FamilyForm, ReportPeriod
+// } from '../business';
 
-// 基础响应类型
-export interface BaseResponse {
-  code: number;
-  message: string;
-  timestamp: number;
-}
+// 基础响应类型 - 使用JSDoc注释
+/**
+ * @typedef {Object} BaseResponse
+ * @property {number} code - 响应状态码
+ * @property {string} message - 响应消息
+ * @property {number} timestamp - 时间戳
+ */
 
-export interface ApiResponse<T = any> extends BaseResponse {
-  data: T;
-}
+/**
+ * @typedef {Object} ApiResponse
+ * @property {number} code - 响应状态码
+ * @property {string} message - 响应消息
+ * @property {number} timestamp - 时间戳
+ * @property {*} data - 响应数据
+ */
 
-export interface ErrorResponse extends BaseResponse {
-  error?: string;
-  details?: any;
-}
+/**
+ * @typedef {Object} ErrorResponse
+ * @property {number} code - 响应状态码
+ * @property {string} message - 响应消息
+ * @property {number} timestamp - 时间戳
+ * @property {string} [error] - 错误信息
+ * @property {*} [details] - 错误详情
+ */
 
 // 认证相关API
-export namespace AuthAPI {
-  export interface LoginRequest {
-    code: string; // 微信登录code
-  }
+/**
+ * @typedef {Object} AuthAPI.LoginRequest
+ * @property {string} code - 微信登录code
+ */
 
-  export interface LoginResponse {
-    token: string;
-    user: User;
-    family?: Family;
-  }
+/**
+ * @typedef {Object} AuthAPI.LoginResponse
+ * @property {string} token - 访问令牌
+ * @property {Object} user - 用户信息
+ * @property {Object} [family] - 家庭信息
+ */
 
-  export interface RefreshTokenRequest {
-    refreshToken: string;
-  }
+/**
+ * @typedef {Object} AuthAPI.RefreshTokenRequest
+ * @property {string} refreshToken - 刷新令牌
+ */
 
-  export interface RefreshTokenResponse {
-    token: string;
-    refreshToken: string;
-  }
-}
+/**
+ * @typedef {Object} AuthAPI.RefreshTokenResponse
+ * @property {string} token - 新的访问令牌
+ * @property {string} refreshToken - 新的刷新令牌
+ */
 
 // 用户相关API
-export namespace UserAPI {
-  export interface GetProfileResponse {
-    user: User;
-  }
+/**
+ * @typedef {Object} UserAPI.GetProfileResponse
+ * @property {Object} user - 用户信息
+ */
 
-  export interface UpdateProfileRequest {
-    nickName?: string;
-    avatarUrl?: string;
-  }
+/**
+ * @typedef {Object} UserAPI.UpdateProfileRequest
+ * @property {string} [nickName] - 昵称
+ * @property {string} [avatarUrl] - 头像URL
+ */
 
-  export interface UpdateProfileResponse {
-    user: User;
-  }
-}
+/**
+ * @typedef {Object} UserAPI.UpdateProfileResponse
+ * @property {Object} user - 更新后的用户信息
+ */
 
 // 家庭相关API
-export namespace FamilyAPI {
-  export interface CreateFamilyRequest extends FamilyForm {}
+/**
+ * @typedef {Object} FamilyAPI.CreateFamilyRequest
+ */
 
-  export interface CreateFamilyResponse {
-    family: Family;
-  }
+/**
+ * @typedef {Object} FamilyAPI.CreateFamilyResponse
+ * @property {Object} family - 创建的家庭信息
+ */
 
-  export interface JoinFamilyRequest {
-    inviteCode: string;
-  }
+/**
+ * @typedef {Object} FamilyAPI.JoinFamilyRequest
+ * @property {string} inviteCode - 邀请码
+ */
 
-  export interface JoinFamilyResponse {
-    family: Family;
-  }
+/**
+ * @typedef {Object} FamilyAPI.JoinFamilyResponse
+ * @property {Object} family - 加入的家庭信息
+ */
 
-  export interface GetFamilyResponse {
-    family: Family;
-  }
+/**
+ * @typedef {Object} FamilyAPI.GetFamilyResponse
+ * @property {Object} family - 家庭信息
+ */
 
-  export interface UpdateFamilyRequest extends Partial<FamilyForm> {}
+/**
+ * @typedef {Object} FamilyAPI.UpdateFamilyRequest
+ */
 
-  export interface UpdateFamilyResponse {
-    family: Family;
-  }
+/**
+ * @typedef {Object} FamilyAPI.UpdateFamilyResponse
+ * @property {Object} family - 更新后的家庭信息
+ */
 
-  export interface InviteMemberRequest {
-    userId: string;
-    role: string;
-  }
+/**
+ * @typedef {Object} FamilyAPI.InviteMemberRequest
+ * @property {string} userId - 用户ID
+ * @property {string} role - 角色
+ */
 
-  export interface InviteMemberResponse {
-    inviteCode: string;
-    expireTime: Date;
-  }
+/**
+ * @typedef {Object} FamilyAPI.InviteMemberResponse
+ * @property {string} inviteCode - 邀请码
+ * @property {Date} expireTime - 过期时间
+ */
 
-  export interface RemoveMemberRequest {
-    userId: string;
-  }
+/**
+ * @typedef {Object} FamilyAPI.RemoveMemberRequest
+ * @property {string} userId - 用户ID
+ */
 
-  export interface UpdateMemberRoleRequest {
-    userId: string;
-    role: string;
-  }
+/**
+ * @typedef {Object} FamilyAPI.UpdateMemberRoleRequest
+ * @property {string} userId - 用户ID
+ * @property {string} role - 新角色
+ */
 
-  export interface GetMembersResponse {
-    members: User[];
-  }
-}
+/**
+ * @typedef {Object} FamilyAPI.GetMembersResponse
+ * @property {Array} members - 成员列表
+ */
 
 // 记账记录相关API
-export namespace RecordAPI {
-  export interface CreateRecordRequest extends RecordForm {}
+/**
+ * @typedef {Object} RecordAPI.CreateRecordRequest
+ */
 
-  export interface CreateRecordResponse {
-    record: AccountRecord;
-  }
+/**
+ * @typedef {Object} RecordAPI.CreateRecordResponse
+ * @property {Object} record - 创建的记录
+ */
 
-  export interface UpdateRecordRequest extends Partial<RecordForm> {
-    id: string;
-  }
+/**
+ * @typedef {Object} RecordAPI.UpdateRecordRequest
+ * @property {string} id - 记录ID
+ */
 
-  export interface UpdateRecordResponse {
-    record: AccountRecord;
-  }
+/**
+ * @typedef {Object} RecordAPI.UpdateRecordResponse
+ * @property {Object} record - 更新后的记录
+ */
 
-  export interface DeleteRecordRequest {
-    id: string;
-  }
+/**
+ * @typedef {Object} RecordAPI.DeleteRecordRequest
+ * @property {string} id - 记录ID
+ */
 
-  export interface GetRecordsRequest extends PaginationParams {
-    familyId: string;
-    startDate?: Date;
-    endDate?: Date;
-    type?: string;
-    categoryId?: string;
-    userId?: string;
-    keyword?: string;
-  }
+/**
+ * @typedef {Object} RecordAPI.GetRecordsRequest
+ * @property {string} familyId - 家庭ID
+ * @property {Date} [startDate] - 开始日期
+ * @property {Date} [endDate] - 结束日期
+ * @property {string} [type] - 记录类型
+ * @property {string} [categoryId] - 分类ID
+ * @property {string} [userId] - 用户ID
+ * @property {string} [keyword] - 关键词
+ */
 
-  export interface GetRecordsResponse extends PaginationResult<AccountRecord> {}
+/**
+ * @typedef {Object} RecordAPI.GetRecordsResponse
+ */
 
-  export interface GetRecordDetailRequest {
-    id: string;
-  }
+/**
+ * @typedef {Object} RecordAPI.GetRecordDetailRequest
+ * @property {string} id - 记录ID
+ */
 
-  export interface GetRecordDetailResponse {
-    record: AccountRecord;
-  }
+/**
+ * @typedef {Object} RecordAPI.GetRecordDetailResponse
+ * @property {Object} record - 记录详情
+ */
 
-  export interface BatchDeleteRequest {
-    ids: string[];
-  }
+/**
+ * @typedef {Object} RecordAPI.BatchDeleteRequest
+ * @property {Array<string>} ids - 记录ID列表
+ */
 
-  export interface BatchDeleteResponse {
-    deletedCount: number;
-  }
-}
+/**
+ * @typedef {Object} RecordAPI.BatchDeleteResponse
+ * @property {number} deletedCount - 删除的记录数量
+ */
 
 // 分类相关API
-export namespace CategoryAPI {
-  export interface CreateCategoryRequest extends CategoryForm {}
+/**
+ * @typedef {Object} CategoryAPI.CreateCategoryRequest
+ */
 
-  export interface CreateCategoryResponse {
-    category: Category;
-  }
+/**
+ * @typedef {Object} CategoryAPI.CreateCategoryResponse
+ * @property {Object} category - 创建的分类
+ */
 
-  export interface UpdateCategoryRequest extends Partial<CategoryForm> {
-    id: string;
-  }
+/**
+ * @typedef {Object} CategoryAPI.UpdateCategoryRequest
+ * @property {string} id - 分类ID
+ */
 
-  export interface UpdateCategoryResponse {
-    category: Category;
-  }
+/**
+ * @typedef {Object} CategoryAPI.UpdateCategoryResponse
+ * @property {Object} category - 更新后的分类
+ */
 
-  export interface DeleteCategoryRequest {
-    id: string;
-  }
+/**
+ * @typedef {Object} CategoryAPI.DeleteCategoryRequest
+ * @property {string} id - 分类ID
+ */
 
-  export interface GetCategoriesRequest {
-    familyId?: string;
-    type?: string;
-    includeDefault?: boolean;
-  }
+/**
+ * @typedef {Object} CategoryAPI.GetCategoriesRequest
+ * @property {string} [familyId] - 家庭ID
+ * @property {string} [type] - 分类类型
+ * @property {boolean} [includeDefault] - 是否包含默认分类
+ */
 
-  export interface GetCategoriesResponse {
-    categories: Category[];
-  }
+/**
+ * @typedef {Object} CategoryAPI.GetCategoriesResponse
+ * @property {Array} categories - 分类列表
+ */
 
-  export interface SortCategoriesRequest {
-    categoryIds: string[];
-  }
+/**
+ * @typedef {Object} CategoryAPI.SortCategoriesRequest
+ * @property {Array<string>} categoryIds - 分类ID列表
+ */
 
-  export interface SortCategoriesResponse {
-    categories: Category[];
-  }
-}
+/**
+ * @typedef {Object} CategoryAPI.SortCategoriesResponse
+ * @property {Array} categories - 排序后的分类列表
+ */
 
-// 账单导入相关API
-export namespace BillImportAPI {
-  export interface UploadImagesRequest {
-    images: File[];
-    platform?: string;
-  }
-
-  export interface UploadImagesResponse {
-    uploadId: string;
-    imageUrls: string[];
-  }
-
-  export interface ProcessBillRequest {
-    uploadId: string;
-    platform: string;
-  }
-
-  export interface ProcessBillResponse {
-    importId: string;
-    status: string;
-  }
-
-  export interface GetImportStatusRequest {
-    importId: string;
-  }
-
-  export interface GetImportStatusResponse {
-    import: BillImport;
-  }
-
-  export interface ConfirmImportRequest {
-    importId: string;
-    confirmedTransactions: {
-      index: number;
-      data: RecordForm;
-    }[];
-  }
-
-  export interface ConfirmImportResponse {
-    records: AccountRecord[];
-  }
-
-  export interface GetImportHistoryRequest extends PaginationParams {
-    familyId: string;
-    status?: string;
-    platform?: string;
-  }
-
-  export interface GetImportHistoryResponse extends PaginationResult<BillImport> {}
-}
-
-// 报表相关API
-export namespace ReportAPI {
-  export interface GetReportRequest {
-    familyId: string;
-    period: ReportPeriod;
-    startDate?: Date;
-    endDate?: Date;
-    categoryIds?: string[];
-    userIds?: string[];
-  }
-
-  export interface GetReportResponse {
-    report: ReportData;
-  }
-
-  export interface ExportReportRequest {
-    familyId: string;
-    period: ReportPeriod;
-    startDate?: Date;
-    endDate?: Date;
-    format: 'excel' | 'pdf' | 'csv';
-  }
-
-  export interface ExportReportResponse {
-    downloadUrl: string;
-    fileName: string;
-  }
-}
-
-// 通知相关API
-export namespace NotificationAPI {
-  export interface GetNotificationsRequest extends PaginationParams {
-    familyId: string;
-    isRead?: boolean;
-    type?: string;
-  }
-
-  export interface GetNotificationsResponse extends PaginationResult<Notification> {}
-
-  export interface MarkAsReadRequest {
-    notificationIds: string[];
-  }
-
-  export interface MarkAsReadResponse {
-    updatedCount: number;
-  }
-
-  export interface GetUnreadCountRequest {
-    familyId: string;
-  }
-
-  export interface GetUnreadCountResponse {
-    count: number;
-  }
-}
-
-// 文件上传相关API
-export namespace UploadAPI {
-  export interface UploadFileRequest {
-    file: File;
-    type: 'avatar' | 'record_image' | 'bill_image';
-  }
-
-  export interface UploadFileResponse {
-    url: string;
-    fileName: string;
-    size: number;
-  }
-
-  export interface BatchUploadRequest {
-    files: File[];
-    type: 'avatar' | 'record_image' | 'bill_image';
-  }
-
-  export interface BatchUploadResponse {
-    results: UploadFileResponse[];
-  }
-}
-
-// 统计相关API
-export namespace StatAPI {
-  export interface GetDashboardRequest {
-    familyId: string;
-    period?: ReportPeriod;
-  }
-
-  export interface GetDashboardResponse {
-    summary: {
-      todayExpense: number;
-      monthExpense: number;
-      monthIncome: number;
-      monthBalance: number;
-    };
-    recentRecords: AccountRecord[];
-    topCategories: {
-      categoryId: string;
-      categoryName: string;
-      amount: number;
-      percentage: number;
-    }[];
-    trends: {
-      date: string;
-      amount: number;
-    }[];
-  }
-
-  export interface GetBudgetStatusRequest {
-    familyId: string;
-    month?: string;
-  }
-
-  export interface GetBudgetStatusResponse {
-    budgets: {
-      categoryId: string;
-      categoryName: string;
-      budgetAmount: number;
-      usedAmount: number;
-      percentage: number;
-      isOverBudget: boolean;
-    }[];
-  }
-}
-
-// WebSocket消息类型
-export namespace WSMessage {
-  export interface BaseMessage {
-    type: string;
-    familyId: string;
-    userId: string;
-    timestamp: number;
-  }
-
-  export interface RecordChangedMessage extends BaseMessage {
-    type: 'record_changed';
-    action: 'create' | 'update' | 'delete';
-    record: AccountRecord;
-  }
-
-  export interface MemberChangedMessage extends BaseMessage {
-    type: 'member_changed';
-    action: 'join' | 'leave' | 'role_updated';
-    member: User;
-  }
-
-  export interface NotificationMessage extends BaseMessage {
-    type: 'notification';
-    notification: Notification;
-  }
-
-  export interface SyncRequestMessage extends BaseMessage {
-    type: 'sync_request';
-    lastSyncTime: number;
-  }
-
-  export interface SyncResponseMessage extends BaseMessage {
-    type: 'sync_response';
-    changes: {
-      records: AccountRecord[];
-      categories: Category[];
-      members: User[];
-    };
-  }
-}
-
-// 错误响应类型
-export interface ErrorResponse {
-  code: number;
-  message: string;
-  details?: any;
-  timestamp: number;
-}
-
-// 通用请求配置
-export interface RequestConfig {
-  timeout?: number;
-  retries?: number;
-  cache?: boolean;
-  loading?: boolean;
-}
+// 导出空对象，保持模块结构
+export default {};
