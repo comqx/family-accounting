@@ -43,8 +43,8 @@ npm run test:db
 # 只启动 MySQL 和 Redis
 docker-compose -f docker-compose.dev.yml up mysql redis -d
 
-# 等待数据库启动后初始化
-npm run db:init
+# 等待数据库启动后创建数据库
+npm run db:create
 ```
 
 ### 5. 启动应用
@@ -57,11 +57,8 @@ npm run dev
 
 #### 生产模式
 ```bash
-# 直接启动（不包含数据库初始化）
+# 直接启动
 npm start
-
-# 使用启动脚本启动（包含数据库初始化）
-npm run start:with-init
 ```
 
 #### Docker 模式
@@ -69,20 +66,20 @@ npm run start:with-init
 # 构建镜像
 npm run docker:build
 
-# 运行容器（自动包含数据库初始化）
+# 运行容器
 npm run docker:run
 ```
 
 ## 📊 数据库管理
 
+### 创建数据库
+```bash
+npm run db:create
+```
+
 ### 查看数据库状态
 ```bash
 npm run db:status
-```
-
-### 手动初始化数据库
-```bash
-npm run db:init
 ```
 
 ### 重置数据库（开发环境）
@@ -112,34 +109,6 @@ npm run docker:down
 npm run dev:full
 ```
 
-## 🚀 启动脚本功能
-
-项目提供了智能启动脚本 `start.sh`，具有以下功能：
-
-### 自动数据库初始化
-- 等待数据库服务就绪
-- 自动创建表结构和初始数据
-- 验证数据库状态
-- 错误处理和重试机制
-
-### 启动流程
-1. **数据库连接检测**: 最多等待 30 次（每次 5 秒）
-2. **数据库初始化**: 创建表和初始数据
-3. **状态验证**: 检查数据库状态
-4. **应用启动**: 启动 Node.js 服务
-
-### 使用启动脚本
-```bash
-# 直接运行启动脚本
-./start.sh
-
-# 通过 npm 脚本运行
-npm run start:with-init
-
-# Docker 容器中自动使用
-docker run family-accounting-cloud
-```
-
 ## 🌐 微信云托管部署
 
 ### 系统变量配置
@@ -167,26 +136,19 @@ COS_REGION=your-cos-region
 ### 启动日志示例
 
 ```
-==========================================
-🏠 家账通云托管服务启动脚本
-==========================================
 🚀 家账通云托管服务启动中...
 📍 当前目录: /app
 🌍 环境: production
 📊 数据库: your-mysql-host:3306/family_accounting
 👤 数据库用户: your-mysql-username
-⏳ 等待数据库启动...
-🔍 尝试连接数据库 (1/30)...
+📦 数据库连接池已创建
 🔧 数据库配置: { host: 'your-mysql-host', port: '3306', user: 'your-mysql-username', database: 'family_accounting' }
-✅ 数据库已就绪
-🔧 开始数据库初始化...
-✅ 数据库初始化成功
-📊 检查数据库状态...
-✅ 数据库状态检查完成
-🚀 启动应用服务...
-📍 服务地址: http://0.0.0.0:80
-🔍 健康检查: http://0.0.0.0:80/health
-==========================================
+✅ 数据库连接测试成功
+🚀 家账通云托管服务启动成功
+📍 服务地址: http://localhost:80
+🔍 健康检查: http://localhost:80/health
+🌍 环境: production
+📊 数据库: your-mysql-host:3306/family_accounting
 ```
 
 ## 📝 环境配置
@@ -285,19 +247,11 @@ curl -X POST http://localhost:3000/api/auth/wechat-login \
 3. **权限问题**
    ```bash
    # 确保脚本有执行权限
-   chmod +x start.sh
+   chmod +x test-startup.sh
+   chmod +x test-env-vars.sh
    ```
 
-4. **启动脚本问题**
-   ```bash
-   # 检查启动脚本权限
-   ls -la start.sh
-   
-   # 重新给权限
-   chmod +x start.sh
-   ```
-
-5. **微信云托管系统变量问题**
+4. **微信云托管系统变量问题**
    ```bash
    # 检查系统变量是否正确注入
    echo $MYSQL_ADDRESS
@@ -307,6 +261,10 @@ curl -X POST http://localhost:3000/api/auth/wechat-login \
    # 查看启动日志中的配置信息
    docker logs your-container-name | grep "数据库配置"
    ```
+
+5. **表不存在错误**
+   - 需要手动执行 `scripts/create-tables.sql` 创建表
+   - 查看 [SQL 文件使用说明](./scripts/README-SQL.md)
 
 ### 重置环境
 
@@ -329,9 +287,6 @@ npm run dev:full
 # 查看 Docker 容器日志
 docker logs family-accounting-app
 
-# 查看启动脚本输出
-docker logs family-accounting-app 2>&1 | grep -E "(🚀|🔧|✅|❌|📊)"
-
 # 查看微信云托管日志
 # 在微信云托管控制台查看实时日志
 ```
@@ -340,6 +295,7 @@ docker logs family-accounting-app 2>&1 | grep -E "(🚀|🔧|✅|❌|📊)"
 
 - [数据库初始化指南](./README-DATABASE.md)
 - [启动脚本说明](./README-STARTUP.md)
+- [SQL 文件使用说明](./scripts/README-SQL.md)
 - [API 文档](./docs/API.md)
 - [部署指南](./docs/DEPLOYMENT.md)
 

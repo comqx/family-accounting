@@ -41,7 +41,7 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.post<RecordAPI.CreateRecordResponse>('/records', recordData);
+      const response = await request.post<RecordAPI.CreateRecordResponse>('/api/record/create', recordData);
 
       if (response.data?.record) {
         records.value.unshift(response.data.record);
@@ -62,7 +62,7 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.put<RecordAPI.UpdateRecordResponse>(`/records/${id}`, {
+      const response = await request.put<RecordAPI.UpdateRecordResponse>(`/api/record/${id}`, {
         id,
         ...recordData
       });
@@ -95,7 +95,7 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      await request.delete(`/records/${id}`);
+      await request.delete(`/api/record/${id}`);
 
       const index = records.value.findIndex(record => record.id === id);
       if (index !== -1) {
@@ -121,7 +121,7 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.post<RecordAPI.BatchDeleteResponse>('/records/batch-delete', {
+      const response = await request.post<RecordAPI.BatchDeleteResponse>('/api/record/batch-delete', {
         ids
       });
 
@@ -153,7 +153,7 @@ export const useRecordStore = defineStore('record', () => {
 
       const page = params?.refresh ? 1 : (params?.page || currentPage.value);
       
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
+      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
         ...params,
         page,
         pageSize: params?.pageSize || 20
@@ -186,7 +186,7 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.get<RecordAPI.GetRecordDetailResponse>(`/records/${id}`);
+      const response = await request.get<RecordAPI.GetRecordDetailResponse>(`/api/record/${id}`);
 
       if (response.data?.record) {
         currentRecord.value = response.data.record;
@@ -205,7 +205,7 @@ export const useRecordStore = defineStore('record', () => {
   // 获取最近记录
   const getRecentRecords = async (limit = 10) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
+      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
         page: 1,
         pageSize: limit
       });
@@ -224,7 +224,7 @@ export const useRecordStore = defineStore('record', () => {
   // 获取统计数据
   const getStatsByDateRange = async (startDate, endDate) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
+      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
         startDate,
         endDate,
         page: 1,
@@ -269,7 +269,7 @@ export const useRecordStore = defineStore('record', () => {
   // 按分类统计
   const getStatsByCategory = async (startDate, endDate) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
+      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
         startDate,
         endDate,
         page: 1,
@@ -309,7 +309,7 @@ export const useRecordStore = defineStore('record', () => {
   // 搜索记录
   const searchRecords = async (keyword) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/records', {
+      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
         keyword,
         page: 1,
         pageSize: 100

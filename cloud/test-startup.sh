@@ -1,32 +1,18 @@
 #!/bin/bash
 
-# 测试启动脚本功能
+# 测试项目配置
 # ================================
 
-echo "🧪 测试启动脚本功能..."
+echo "🧪 测试项目配置..."
 
-# 检查启动脚本是否存在
-if [ ! -f "start.sh" ]; then
-    echo "❌ 启动脚本 start.sh 不存在"
-    exit 1
-fi
-
-# 检查启动脚本权限
-if [ ! -x "start.sh" ]; then
-    echo "❌ 启动脚本没有执行权限"
-    echo "请运行: chmod +x start.sh"
-    exit 1
-fi
-
-echo "✅ 启动脚本存在且有执行权限"
-
-# 检查必要的脚本文件
+# 检查必要文件是否存在
 required_files=(
-    "scripts/init-database.js"
+    "index.js"
+    "package.json"
+    "scripts/create-database.js"
     "scripts/db-manager.js"
     "config/database.js"
     "utils/database.js"
-    "index.js"
 )
 
 for file in "${required_files[@]}"; do
@@ -47,18 +33,27 @@ fi
 # 检查 package.json 中的脚本
 if [ -f "package.json" ]; then
     echo "📋 可用的 npm 脚本:"
-    npm run 2>/dev/null | grep -E "(start|db|docker)" || echo "  无相关脚本"
+    npm run 2>/dev/null | grep -E "(start|db|docker|test)" || echo "  无相关脚本"
+fi
+
+# 检查 SQL 文件
+if [ -f "scripts/create-tables.sql" ]; then
+    echo "✅ SQL 文件存在: scripts/create-tables.sql"
+else
+    echo "⚠️  SQL 文件不存在: scripts/create-tables.sql"
 fi
 
 echo ""
-echo "🎉 启动脚本测试完成！"
+echo "🎉 项目配置测试完成！"
 echo ""
 echo "📝 使用方法:"
-echo "  ./start.sh                    # 直接运行启动脚本"
-echo "  npm run start:with-init       # 通过 npm 运行"
-echo "  docker build -t app .         # 构建 Docker 镜像"
-echo "  docker run app                # 运行 Docker 容器"
+echo "  npm start                    # 启动应用"
+echo "  npm run dev                  # 开发模式"
+echo "  npm run db:create            # 创建数据库"
+echo "  docker build -t app .        # 构建 Docker 镜像"
+echo "  docker run app               # 运行 Docker 容器"
 echo ""
 echo "📚 更多信息请查看:"
-echo "  QUICKSTART.md                 # 快速启动指南"
-echo "  README-DATABASE.md            # 数据库初始化指南" 
+echo "  QUICKSTART.md                # 快速启动指南"
+echo "  README-DATABASE.md           # 数据库初始化指南"
+echo "  scripts/README-SQL.md        # SQL 文件使用说明" 

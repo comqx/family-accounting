@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "start:with-init": "./start.sh",
     "dev": "nodemon index.js",
     "build": "echo 'No build step needed'",
     "test": "echo 'No tests specified' && exit 0",

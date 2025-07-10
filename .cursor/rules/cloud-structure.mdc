@@ -1,0 +1,16 @@
+# cloud 目录结构与功能说明
+
+- cloud 目录为微信云托管后端服务的主目录。
+- 主要入口文件为 [index.js](mdc:cloud/index.js)，负责 Express 服务启动和路由挂载。
+- [Dockerfile](mdc:cloud/Dockerfile) 用于构建云托管 Docker 镜像，直接以 `node index.js` 启动。
+- [config/database.js](mdc:cloud/config/database.js) 提供数据库连接池和配置，优先使用微信云托管系统变量。
+- [routes/](mdc:cloud/routes/) 目录下为各业务模块的 Express 路由（如 auth, user, family, record, category, report, upload）。
+- [scripts/](mdc:cloud/scripts/) 目录下包含数据库创建、初始化、管理、SQL 文件等脚本。
+- [start.sh](mdc:cloud/start.sh) 为启动脚本，仅负责等待数据库和创建数据库，不再做表结构初始化。
+- [package.json](mdc:cloud/package.json) 定义了常用的 npm 脚本（如 db:create, db:status, db:reset, docker:up, docker:run 等）。
+- [QUICKSTART.md](mdc:cloud/QUICKSTART.md)、[README-DATABASE.md](mdc:cloud/README-DATABASE.md)、[README-STARTUP.md](mdc:cloud/README-STARTUP.md) 等文档详细说明了部署、数据库、启动流程。
+- cloud 目录所有接口均以 `/api/` 开头，前端需与之保持一致。
+description:
+globs:
+alwaysApply: false
+---
