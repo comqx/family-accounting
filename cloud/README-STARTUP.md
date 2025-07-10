@@ -2,27 +2,25 @@
 
 ## 概述
 
-本项目新增了智能启动脚本 `start.sh`，用于在 Docker 容器启动时自动处理数据库初始化和应用启动流程。
+本项目新增了智能启动脚本 `start.sh`，用于在 Docker 容器启动时自动处理数据库创建和应用启动流程。
 
 ## 启动脚本功能
 
-### 🚀 自动数据库初始化
+### 🚀 自动数据库管理
 - **数据库连接检测**: 自动等待数据库服务就绪，最多等待 30 次（每次 5 秒）
-- **表结构创建**: 如果表不存在，自动创建所有必要的数据库表
-- **初始数据插入**: 自动插入默认分类和系统配置数据
+- **数据库创建**: 如果数据库不存在，自动创建数据库
 - **状态验证**: 启动前验证数据库状态
 
 ### 🔧 错误处理和重试
 - **连接重试**: 数据库连接失败时自动重试
-- **错误处理**: 初始化失败时停止启动并显示错误信息
+- **错误处理**: 数据库创建失败时停止启动并显示错误信息
 - **信号处理**: 正确处理 Docker 停止信号
 
 ### 📊 启动流程
 1. **环境检查**: 显示当前环境和配置信息
 2. **数据库等待**: 等待数据库服务就绪
-3. **数据库初始化**: 创建表和初始数据
-4. **状态检查**: 验证数据库状态
-5. **应用启动**: 启动 Node.js 应用服务
+3. **数据库创建**: 如果数据库不存在，自动创建数据库
+4. **应用启动**: 启动 Node.js 应用服务
 
 ## 微信云托管系统变量
 
@@ -48,10 +46,13 @@
 cloud/
 ├── start.sh                 # 主启动脚本
 ├── test-startup.sh          # 启动脚本测试工具
+├── test-env-vars.sh         # 系统变量测试工具
 ├── Dockerfile               # Docker 镜像构建文件
 ├── index.js                 # 应用入口文件（已简化）
 ├── scripts/
-│   ├── init-database.js     # 数据库初始化脚本
+│   ├── create-database.js   # 数据库创建脚本
+│   ├── create-tables.sql    # 数据库表结构 SQL 文件
+│   ├── README-SQL.md        # SQL 文件使用说明
 │   ├── db-manager.js        # 数据库管理工具
 │   └── test-db.js           # 数据库测试脚本
 ├── config/
@@ -87,18 +88,44 @@ docker run -p 3000:80 family-accounting-cloud
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
-## 测试启动脚本
+## 数据库表创建
 
-### 运行测试
+启动脚本只会创建数据库，不会创建表结构。你需要手动执行 SQL 文件来创建表：
+
+### 使用提供的 SQL 文件
+```bash
+# 连接到数据库后执行
+mysql -h your-host -P your-port -u your-username -p family_accounting < scripts/create-tables.sql
+```
+
+### SQL 文件包含
+- **9 个核心表**: users, families, family_members, categories, records, budgets, splits, split_members, system_configs
+- **默认分类数据**: 13 个默认分类
+- **系统配置数据**: 4 个基础系统配置
+
+详细说明请查看 [SQL 文件使用说明](./scripts/README-SQL.md)
+
+## 测试工具
+
+### 测试启动脚本
 ```bash
 npm run test:startup
 ```
 
-### 测试内容
-- 检查启动脚本是否存在
-- 验证脚本执行权限
-- 确认必要文件存在
-- 显示可用的 npm 脚本
+### 测试系统变量识别
+```bash
+npm run test:env-vars
+```
+
+### 测试数据库功能
+```bash
+npm run test:db
+```
+
+### 手动创建数据库
+```bash
+npm run db:create
+```
 
 ## 环境变量配置
 
@@ -142,13 +169,19 @@ PORT=3000
 🔍 尝试连接数据库 (1/30)...
 🔧 数据库配置: { host: 'your-mysql-host', port: '3306', user: 'your-mysql-username', database: 'family_accounting' }
 ✅ 数据库已就绪
-🔧 开始数据库初始化...
-✅ 表 users 已存在，跳过创建
-✅ 表 categories 创建成功
-✅ 插入 13 个默认分类
-✅ 数据库初始化成功
-📊 检查数据库状态...
-✅ 数据库状态检查完成
+🔧 确保数据库存在...
+🚀 开始创建数据库...
+🔧 数据库配置: { host: 'your-mysql-host', port: '3306', user: 'your-mysql-username', database: 'family_accounting' }
+🔧 创建临时连接...
+🔍 检查数据库 family_accounting 是否存在...
+📊 数据库 family_accounting 不存在，开始创建...
+✅ 数据库 family_accounting 创建成功
+🔍 测试连接到新数据库...
+✅ 数据库连接测试成功
+📊 当前数据库: family_accounting
+🔤 数据库字符集: utf8mb4
+🎉 数据库创建和测试完成
+✅ 数据库检查/创建成功
 🚀 启动应用服务...
 📍 服务地址: http://0.0.0.0:80
 🔍 健康检查: http://0.0.0.0:80/health
@@ -169,7 +202,7 @@ PORT=3000
    - 验证数据库服务是否启动
    - 确认网络连接
 
-3. **初始化失败**
+3. **数据库创建失败**
    - 检查数据库用户权限
    - 查看详细错误日志
    - 确认数据库字符集设置
@@ -179,6 +212,11 @@ PORT=3000
    - 检查变量名是否正确
    - 查看启动日志中的配置信息
 
+5. **表不存在错误**
+   - 启动脚本只创建数据库，不创建表
+   - 需要手动执行 `scripts/create-tables.sql` 创建表
+   - 查看 [SQL 文件使用说明](./scripts/README-SQL.md)
+
 ### 调试模式
 
 可以通过修改启动脚本中的 `set -e` 为 `set -ex` 来启用调试模式，显示详细的执行过程。
@@ -187,15 +225,30 @@ PORT=3000
 
 - [快速启动指南](./QUICKSTART.md)
 - [数据库初始化指南](./README-DATABASE.md)
+- [微信云托管配置说明](./WECHAT_CLOUD_SETUP.md)
+- [SQL 文件使用说明](./scripts/README-SQL.md)
 - [API 文档](./docs/API.md)
 
 ## 更新日志
+
+### v1.3.0
+- 移除数据库初始化操作
+- 新增 SQL 文件用于手动创建表
+- 简化启动脚本流程
+- 添加 SQL 文件使用说明
+
+### v1.2.0
+- 修复数据库不存在的问题
+- 新增专门的数据库创建脚本
+- 启动脚本自动创建数据库
+- 优化数据库初始化流程
 
 ### v1.1.0
 - 支持微信云托管系统变量
 - 自动识别 MYSQL_ADDRESS、MYSQL_USERNAME、MYSQL_PASSWORD
 - 优化数据库配置优先级
 - 增加配置信息日志输出
+- 添加系统变量测试工具
 
 ### v1.0.0
 - 新增智能启动脚本 `start.sh`

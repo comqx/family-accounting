@@ -12,7 +12,6 @@
     "test:startup": "./test-startup.sh",
     "test:env-vars": "./test-env-vars.sh",
     "db:create": "node scripts/create-database.js",
-    "db:init": "node scripts/db-manager.js init",
     "db:status": "node scripts/db-manager.js status",
     "db:reset": "node scripts/db-manager.js reset",
     "db:backup": "node scripts/db-manager.js backup",

@@ -82,32 +82,6 @@ ensure_database_exists() {
     fi
 }
 
-# 初始化数据库
-init_database() {
-    echo "🔧 开始数据库初始化..."
-    
-    if node scripts/init-database.js; then
-        echo "✅ 数据库初始化成功"
-        return 0
-    else
-        echo "❌ 数据库初始化失败"
-        return 1
-    fi
-}
-
-# 检查数据库状态
-check_database_status() {
-    echo "📊 检查数据库状态..."
-    
-    if node scripts/db-manager.js status; then
-        echo "✅ 数据库状态检查完成"
-        return 0
-    else
-        echo "⚠️  数据库状态检查失败，但继续启动"
-        return 0
-    fi
-}
-
 # 主启动流程
 main() {
     echo "=========================================="
@@ -126,16 +100,7 @@ main() {
         exit 1
     fi
     
-    # 3. 初始化数据库
-    if ! init_database; then
-        echo "💥 数据库初始化失败，退出启动"
-        exit 1
-    fi
-    
-    # 4. 检查数据库状态
-    check_database_status
-    
-    # 5. 启动应用
+    # 3. 启动应用
     echo "🚀 启动应用服务..."
     echo "📍 服务地址: http://0.0.0.0:${PORT:-80}"
     echo "🔍 健康检查: http://0.0.0.0:${PORT:-80}/health"

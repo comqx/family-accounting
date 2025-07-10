@@ -11,15 +11,17 @@
 当使用 Docker 启动服务时，启动脚本 `start.sh` 会自动执行以下步骤：
 
 1. **等待数据库启动**: 检查数据库连接，最多等待 30 次（每次间隔 5 秒）
-2. **数据库初始化**: 调用 `scripts/init-database.js` 创建表和初始数据
-3. **状态检查**: 调用 `scripts/db-manager.js status` 检查数据库状态
-4. **启动应用**: 启动 Node.js 应用服务
+2. **创建数据库**: 如果数据库不存在，自动创建数据库
+3. **数据库初始化**: 调用 `scripts/init-database.js` 创建表和初始数据
+4. **状态检查**: 调用 `scripts/db-manager.js status` 检查数据库状态
+5. **启动应用**: 启动 Node.js 应用服务
 
 ### 启动脚本功能
 
 启动脚本 (`start.sh`) 包含以下功能：
 
 - **数据库连接检测**: 自动等待数据库服务就绪
+- **数据库创建**: 如果数据库不存在，自动创建数据库
 - **自动初始化**: 如果表不存在，自动创建表结构和初始数据
 - **状态验证**: 启动前验证数据库状态
 - **错误处理**: 如果初始化失败，会停止启动并显示错误信息
@@ -80,6 +82,9 @@ users (1) ←→ (N) split_members
 ### 使用 npm 脚本
 
 ```bash
+# 创建数据库
+npm run db:create
+
 # 初始化数据库
 npm run db:init
 
@@ -99,6 +104,9 @@ npm run db:restore
 ### 直接使用脚本
 
 ```bash
+# 创建数据库
+node scripts/create-database.js
+
 # 初始化数据库
 node scripts/db-manager.js init
 
@@ -235,6 +243,11 @@ npm run docker:down
    chmod +x start.sh
    ```
 
+5. **数据库不存在错误**
+   - 启动脚本现在会自动创建数据库
+   - 检查数据库用户是否有创建数据库的权限
+   - 查看启动日志中的数据库创建过程
+
 ### 日志查看
 
 服务启动时会输出详细的初始化日志：
@@ -246,6 +259,19 @@ npm run docker:down
 ⏳ 等待数据库启动...
 🔍 尝试连接数据库 (1/30)...
 ✅ 数据库已就绪
+🔧 确保数据库存在...
+🚀 开始创建数据库...
+🔧 数据库配置: { host: 'mysql.example.com', port: '3306', user: 'username', database: 'family_accounting' }
+🔧 创建临时连接...
+🔍 检查数据库 family_accounting 是否存在...
+📊 数据库 family_accounting 不存在，开始创建...
+✅ 数据库 family_accounting 创建成功
+🔍 测试连接到新数据库...
+✅ 数据库连接测试成功
+📊 当前数据库: family_accounting
+🔤 数据库字符集: utf8mb4
+🎉 数据库创建和测试完成
+✅ 数据库检查/创建成功
 🔧 开始数据库初始化...
 ✅ 表 users 已存在，跳过创建
 ✅ 表 categories 创建成功
@@ -276,4 +302,25 @@ npm run docker:down
 npm run db:reset
 ```
 
-⚠️ **警告**: 此操作会删除所有数据，仅用于开发环境！ 
+⚠️ **警告**: 此操作会删除所有数据，仅用于开发环境！
+
+## 更新日志
+
+### v1.2.0
+- 修复数据库不存在的问题
+- 新增专门的数据库创建脚本
+- 启动脚本自动创建数据库
+- 优化数据库初始化流程
+
+### v1.1.0
+- 支持微信云托管系统变量
+- 自动识别 MYSQL_ADDRESS、MYSQL_USERNAME、MYSQL_PASSWORD
+- 优化数据库配置优先级
+- 增加配置信息日志输出
+
+### v1.0.0
+- 新增智能启动脚本 `start.sh`
+- 自动数据库初始化和状态检查
+- 简化 `index.js` 中的数据库初始化逻辑
+- 更新 Dockerfile 使用启动脚本
+- 添加启动脚本测试工具 

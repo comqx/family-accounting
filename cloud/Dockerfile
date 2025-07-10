@@ -24,9 +24,6 @@ COPY . .
 # 创建上传目录
 RUN mkdir -p uploads
 
-# 给启动脚本添加执行权限
-RUN chmod +x start.sh
-
 # 设置环境变量
 ENV NODE_ENV=production
 ENV PORT=80
@@ -38,6 +35,6 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:80/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# 使用启动脚本启动应用
-CMD ["./start.sh"] 
+# 启动应用
+CMD ["node", "index.js"] 
 
