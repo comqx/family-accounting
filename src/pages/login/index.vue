@@ -139,15 +139,28 @@ const handleWechatLogin = async () => {
       const { useFamilyStore } = await import('../../stores/modules/family')
       const familyStore = useFamilyStore()
       
-      // 如果用户有家庭ID，尝试获取家庭信息
+      // 检查登录响应中是否直接包含家庭信息
+      if (userStore.user?.familyId || familyStore.hasFamily) {
+        // 有家庭，直接进入主页
+        Taro.reLaunch({
+          url: '/pages/index/index'
+        })
+        return
+      }
+      
+      // 如果用户有家庭ID但没有家庭信息，尝试获取家庭信息
       if (userStore.user?.familyId) {
-        const hasFamily = await familyStore.getFamilyInfo()
-        if (hasFamily) {
-          // 有家庭，直接进入主页
-          Taro.reLaunch({
-            url: '/pages/index/index'
-          })
-          return
+        try {
+          const hasFamily = await familyStore.getFamilyInfo()
+          if (hasFamily) {
+            // 有家庭，直接进入主页
+            Taro.reLaunch({
+              url: '/pages/index/index'
+            })
+            return
+          }
+        } catch (error) {
+          console.error('获取家庭信息失败:', error)
         }
       }
       
@@ -187,15 +200,28 @@ const checkLoginStatus = async () => {
     const { useFamilyStore } = await import('../../stores/modules/family')
     const familyStore = useFamilyStore()
     
-    // 如果用户有家庭ID，尝试获取家庭信息
-    if (userStore.user?.familyId) {
-      const hasFamily = await familyStore.getFamilyInfo()
-      if (hasFamily) {
-        // 有家庭，直接进入主页
-        Taro.reLaunch({
-          url: '/pages/index/index'
+    // 检查是否已经有家庭信息
+    if (userStore.user?.familyId || familyStore.hasFamily) {
+      // 有家庭，直接进入主页
+      Taro.reLaunch({
+        url: '/pages/index/index'
         })
-        return
+      return
+    }
+    
+    // 如果用户有家庭ID但没有家庭信息，尝试获取家庭信息
+    if (userStore.user?.familyId) {
+      try {
+        const hasFamily = await familyStore.getFamilyInfo()
+        if (hasFamily) {
+          // 有家庭，直接进入主页
+          Taro.reLaunch({
+            url: '/pages/index/index'
+          })
+          return
+        }
+      } catch (error) {
+        console.error('获取家庭信息失败:', error)
       }
     }
     

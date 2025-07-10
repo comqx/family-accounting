@@ -22,8 +22,9 @@ router.post('/wechat-login', [
     // const wxResponse = await getWechatSession(code);
     
     // 模拟微信登录响应
+    // 使用固定的 openid 来模拟真实微信登录行为
     const mockWxResponse = {
-      openid: `mock_openid_${Date.now()}`,
+      openid: userInfo.unionId || `mock_openid_${userInfo.nickName}`,
       session_key: `mock_session_${Date.now()}`,
       unionid: userInfo.unionId || null
     };
@@ -50,7 +51,7 @@ router.post('/wechat-login', [
         // 如果有家庭ID，查询家庭信息
         if (familyId) {
           const [families] = await pool.execute(
-            'SELECT id, name, description, avatar FROM families WHERE id = ?',
+            'SELECT id, name, description, avatar, admin_id FROM families WHERE id = ?',
             [familyId]
           );
           

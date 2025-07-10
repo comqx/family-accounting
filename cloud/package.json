@@ -12,6 +12,7 @@
     "test:env-vars": "./test-env-vars.sh",
     "test:family-create": "node test-family-create.js",
     "test:login-fix": "node test-login-fix.js",
+    "test:login-family-flow": "node test-login-family-flow.js",
     "db:create": "node scripts/create-database.js",
     "db:status": "node scripts/db-manager.js status",
     "db:reset": "node scripts/db-manager.js reset",
