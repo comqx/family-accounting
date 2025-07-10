@@ -69,6 +69,19 @@ wait_for_database() {
     return 1
 }
 
+# 确保数据库存在
+ensure_database_exists() {
+    echo "🔧 确保数据库存在..."
+    
+    if node scripts/create-database.js; then
+        echo "✅ 数据库检查/创建成功"
+        return 0
+    else
+        echo "❌ 数据库检查/创建失败"
+        return 1
+    fi
+}
+
 # 初始化数据库
 init_database() {
     echo "🔧 开始数据库初始化..."
@@ -107,16 +120,22 @@ main() {
         exit 1
     fi
     
-    # 2. 初始化数据库
+    # 2. 确保数据库存在
+    if ! ensure_database_exists; then
+        echo "💥 数据库创建失败，退出启动"
+        exit 1
+    fi
+    
+    # 3. 初始化数据库
     if ! init_database; then
         echo "💥 数据库初始化失败，退出启动"
         exit 1
     fi
     
-    # 3. 检查数据库状态
+    # 4. 检查数据库状态
     check_database_status
     
-    # 4. 启动应用
+    # 5. 启动应用
     echo "🚀 启动应用服务..."
     echo "📍 服务地址: http://0.0.0.0:${PORT:-80}"
     echo "🔍 健康检查: http://0.0.0.0:${PORT:-80}/health"

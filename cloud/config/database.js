@@ -60,9 +60,17 @@ const testConnection = async () => {
 // 检查数据库是否存在，不存在则创建
 const ensureDatabase = async () => {
   try {
+    console.log('🔧 检查数据库是否存在:', dbConfig.database);
+    
     // 创建不指定数据库的连接
     const tempConfig = { ...dbConfig };
     delete tempConfig.database;
+    
+    console.log('🔧 临时连接配置:', {
+      host: tempConfig.host,
+      port: tempConfig.port,
+      user: tempConfig.user
+    });
     
     const tempPool = mysql.createPool(tempConfig);
     const connection = await tempPool.getConnection();
@@ -75,8 +83,9 @@ const ensureDatabase = async () => {
     
     if (rows.length === 0) {
       // 数据库不存在，创建数据库
+      console.log(`📊 数据库 ${dbConfig.database} 不存在，开始创建...`);
       await connection.execute(`CREATE DATABASE \`${dbConfig.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-      console.log(`📊 数据库 ${dbConfig.database} 创建成功`);
+      console.log(`✅ 数据库 ${dbConfig.database} 创建成功`);
     } else {
       console.log(`📊 数据库 ${dbConfig.database} 已存在`);
     }
@@ -86,6 +95,7 @@ const ensureDatabase = async () => {
     return true;
   } catch (error) {
     console.error('❌ 确保数据库存在失败:', error.message);
+    console.error('❌ 错误详情:', error);
     return false;
   }
 };
