@@ -24,6 +24,24 @@
 4. **状态检查**: 验证数据库状态
 5. **应用启动**: 启动 Node.js 应用服务
 
+## 微信云托管系统变量
+
+启动脚本会自动识别并使用微信云托管提供的系统变量：
+
+### 数据库配置
+- `MYSQL_ADDRESS`: MySQL 数据库地址（格式：host:port）
+- `MYSQL_USERNAME`: MySQL 用户名
+- `MYSQL_PASSWORD`: MySQL 密码
+
+### 对象存储配置
+- `COS_BUCKET`: 腾讯云对象存储桶名称
+- `COS_REGION`: 腾讯云对象存储地域
+
+### 变量优先级
+1. 微信云托管系统变量（生产环境）
+2. `.env` 文件中的配置（开发环境）
+3. 默认配置
+
 ## 文件结构
 
 ```
@@ -84,8 +102,18 @@ npm run test:startup
 
 ## 环境变量配置
 
-启动脚本会读取以下环境变量：
+### 微信云托管环境（生产环境）
+系统会自动注入以下变量，无需手动配置：
+```env
+MYSQL_ADDRESS=your-mysql-host:3306
+MYSQL_USERNAME=your-mysql-username
+MYSQL_PASSWORD=your-mysql-password
+COS_BUCKET=your-cos-bucket-name
+COS_REGION=your-cos-region
+```
 
+### 开发环境配置
+在 `.env` 文件中配置：
 ```env
 # 数据库配置
 DB_HOST=localhost
@@ -95,8 +123,8 @@ DB_USER=family_user
 DB_PASSWORD=family_pass_2024
 
 # 服务配置
-NODE_ENV=production
-PORT=80
+NODE_ENV=development
+PORT=3000
 ```
 
 ## 启动日志示例
@@ -105,8 +133,14 @@ PORT=80
 ==========================================
 🏠 家账通云托管服务启动脚本
 ==========================================
+🚀 家账通云托管服务启动中...
+📍 当前目录: /app
+🌍 环境: production
+📊 数据库: your-mysql-host:3306/family_accounting
+👤 数据库用户: your-mysql-username
 ⏳ 等待数据库启动...
 🔍 尝试连接数据库 (1/30)...
+🔧 数据库配置: { host: 'your-mysql-host', port: '3306', user: 'your-mysql-username', database: 'family_accounting' }
 ✅ 数据库已就绪
 🔧 开始数据库初始化...
 ✅ 表 users 已存在，跳过创建
@@ -131,14 +165,19 @@ PORT=80
    ```
 
 2. **数据库连接失败**
-   - 检查数据库服务是否启动
-   - 验证环境变量配置
+   - 检查微信云托管系统变量是否正确注入
+   - 验证数据库服务是否启动
    - 确认网络连接
 
 3. **初始化失败**
    - 检查数据库用户权限
    - 查看详细错误日志
    - 确认数据库字符集设置
+
+4. **系统变量未识别**
+   - 确认在微信云托管环境中运行
+   - 检查变量名是否正确
+   - 查看启动日志中的配置信息
 
 ### 调试模式
 
@@ -151,6 +190,12 @@ PORT=80
 - [API 文档](./docs/API.md)
 
 ## 更新日志
+
+### v1.1.0
+- 支持微信云托管系统变量
+- 自动识别 MYSQL_ADDRESS、MYSQL_USERNAME、MYSQL_PASSWORD
+- 优化数据库配置优先级
+- 增加配置信息日志输出
 
 ### v1.0.0
 - 新增智能启动脚本 `start.sh`

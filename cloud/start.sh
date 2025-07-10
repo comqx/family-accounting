@@ -8,7 +8,16 @@ set -e
 echo "🚀 家账通云托管服务启动中..."
 echo "📍 当前目录: $(pwd)"
 echo "🌍 环境: ${NODE_ENV:-production}"
+
+# 设置数据库配置（使用微信云托管系统变量）
+export DB_HOST=${MYSQL_ADDRESS%:*}
+export DB_PORT=${MYSQL_ADDRESS#*:}
+export DB_USER=${MYSQL_USERNAME}
+export DB_PASSWORD=${MYSQL_PASSWORD}
+export DB_NAME=family_accounting
+
 echo "📊 数据库: ${DB_HOST}:${DB_PORT}/${DB_NAME}"
+echo "👤 数据库用户: ${DB_USER}"
 
 # 等待数据库启动
 wait_for_database() {
@@ -28,6 +37,13 @@ wait_for_database() {
                 password: process.env.DB_PASSWORD || 'family_pass_2024',
                 database: process.env.DB_NAME || 'family_accounting'
             };
+            
+            console.log('🔧 数据库配置:', {
+                host: config.host,
+                port: config.port,
+                user: config.user,
+                database: config.database
+            });
             
             mysql.createConnection(config)
                 .then(conn => {

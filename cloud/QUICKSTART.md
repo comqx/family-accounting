@@ -140,6 +140,55 @@ npm run start:with-init
 docker run family-accounting-cloud
 ```
 
+## 🌐 微信云托管部署
+
+### 系统变量配置
+
+微信云托管会自动注入以下系统变量：
+
+```env
+# 数据库配置（自动注入）
+MYSQL_ADDRESS=your-mysql-host:3306
+MYSQL_USERNAME=your-mysql-username
+MYSQL_PASSWORD=your-mysql-password
+
+# 对象存储配置（自动注入）
+COS_BUCKET=your-cos-bucket-name
+COS_REGION=your-cos-region
+```
+
+### 部署步骤
+
+1. **上传代码到微信云托管**
+2. **配置环境变量**（可选，系统会自动注入）
+3. **构建并部署**
+4. **查看启动日志**
+
+### 启动日志示例
+
+```
+==========================================
+🏠 家账通云托管服务启动脚本
+==========================================
+🚀 家账通云托管服务启动中...
+📍 当前目录: /app
+🌍 环境: production
+📊 数据库: your-mysql-host:3306/family_accounting
+👤 数据库用户: your-mysql-username
+⏳ 等待数据库启动...
+🔍 尝试连接数据库 (1/30)...
+🔧 数据库配置: { host: 'your-mysql-host', port: '3306', user: 'your-mysql-username', database: 'family_accounting' }
+✅ 数据库已就绪
+🔧 开始数据库初始化...
+✅ 数据库初始化成功
+📊 检查数据库状态...
+✅ 数据库状态检查完成
+🚀 启动应用服务...
+📍 服务地址: http://0.0.0.0:80
+🔍 健康检查: http://0.0.0.0:80/health
+==========================================
+```
+
 ## 📝 环境配置
 
 ### 开发环境配置
@@ -169,12 +218,11 @@ REDIS_PORT=6379
 
 ### 生产环境配置
 
-在生产环境中，请修改以下配置：
+在微信云托管环境中，系统会自动注入以下配置：
 
-1. **数据库密码**: 使用强密码
-2. **JWT_SECRET**: 使用随机生成的密钥
-3. **CORS_ORIGIN**: 限制允许的域名
-4. **RATE_LIMIT**: 调整限流配置
+1. **数据库配置**: 通过 `MYSQL_ADDRESS`、`MYSQL_USERNAME`、`MYSQL_PASSWORD` 自动配置
+2. **对象存储**: 通过 `COS_BUCKET`、`COS_REGION` 自动配置
+3. **其他配置**: 在微信云托管控制台配置
 
 ## 🧪 测试
 
@@ -249,6 +297,17 @@ curl -X POST http://localhost:3000/api/auth/wechat-login \
    chmod +x start.sh
    ```
 
+5. **微信云托管系统变量问题**
+   ```bash
+   # 检查系统变量是否正确注入
+   echo $MYSQL_ADDRESS
+   echo $MYSQL_USERNAME
+   echo $MYSQL_PASSWORD
+   
+   # 查看启动日志中的配置信息
+   docker logs your-container-name | grep "数据库配置"
+   ```
+
 ### 重置环境
 
 如果遇到问题，可以完全重置环境：
@@ -272,11 +331,15 @@ docker logs family-accounting-app
 
 # 查看启动脚本输出
 docker logs family-accounting-app 2>&1 | grep -E "(🚀|🔧|✅|❌|📊)"
+
+# 查看微信云托管日志
+# 在微信云托管控制台查看实时日志
 ```
 
 ## 📚 更多信息
 
 - [数据库初始化指南](./README-DATABASE.md)
+- [启动脚本说明](./README-STARTUP.md)
 - [API 文档](./docs/API.md)
 - [部署指南](./docs/DEPLOYMENT.md)
 

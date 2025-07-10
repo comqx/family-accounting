@@ -1,12 +1,12 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// 数据库配置
+// 数据库配置（优先使用微信云托管系统变量）
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'family_user',
-  password: process.env.DB_PASSWORD || 'family_pass_2024',
+  host: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
+  port: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[1] : (process.env.DB_PORT || 3306),
+  user: process.env.MYSQL_USERNAME || process.env.DB_USER || 'family_user',
+  password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || 'family_pass_2024',
   database: process.env.DB_NAME || 'family_accounting',
   charset: 'utf8mb4',
   timezone: '+08:00',
@@ -26,6 +26,12 @@ const initPool = () => {
   if (!pool) {
     pool = mysql.createPool(dbConfig);
     console.log('📦 数据库连接池已创建');
+    console.log('🔧 数据库配置:', {
+      host: dbConfig.host,
+      port: dbConfig.port,
+      user: dbConfig.user,
+      database: dbConfig.database
+    });
   }
   return pool;
 };

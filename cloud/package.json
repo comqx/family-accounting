@@ -10,6 +10,7 @@
     "build": "echo 'No build step needed'",
     "test": "echo 'No tests specified' && exit 0",
     "test:startup": "./test-startup.sh",
+    "test:env-vars": "./test-env-vars.sh",
     "db:init": "node scripts/db-manager.js init",
     "db:status": "node scripts/db-manager.js status",
     "db:reset": "node scripts/db-manager.js reset",
