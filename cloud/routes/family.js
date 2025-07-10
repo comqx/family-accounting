@@ -63,7 +63,9 @@ router.post('/create', [
     res.json({
       success: true,
       message: '家庭创建成功',
-      data: mockFamily
+      data: {
+        family: mockFamily
+      }
     });
   } catch (error) {
     console.error('创建家庭错误:', error);
@@ -87,7 +89,16 @@ router.post('/join', [
     
     res.json({
       success: true,
-      message: '成功加入家庭'
+      message: '成功加入家庭',
+      data: {
+        family: {
+          id: Date.now(),
+          name: '加入的家庭',
+          memberCount: 2,
+          role: 'member',
+          createdAt: new Date().toISOString()
+        }
+      }
     });
   } catch (error) {
     console.error('加入家庭错误:', error);

@@ -47,6 +47,7 @@ export const useFamilyStore = defineStore('family', () => {
 
   // 创建家庭
   const createFamily = async (familyData) => {
+    console.log('[FamilyStore] createFamily called', familyData)
     try {
       isLoading.value = true;
 

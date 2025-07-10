@@ -120,6 +120,7 @@ const request = (options) => {
   
   // 应用请求拦截器
   const interceptedOptions = requestInterceptor(requestOptions)
+  console.log('[Request]', interceptedOptions)
   
   return Taro.request(interceptedOptions)
     .then(responseInterceptor)

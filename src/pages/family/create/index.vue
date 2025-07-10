@@ -118,6 +118,7 @@ const canCreate = computed(() => {
 
 // 方法
 const handleCreateFamily = async () => {
+  console.log('[Create] click', familyName.value, canCreate.value, isCreating.value)
   if (!canCreate.value || isCreating.value) return
 
   try {
