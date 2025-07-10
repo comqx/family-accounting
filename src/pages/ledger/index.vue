@@ -383,7 +383,7 @@ Taro.useShareAppMessage(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .ledger-page {
   min-height: 100vh;
   background: #f8f9fa;
@@ -391,10 +391,12 @@ Taro.useShareAppMessage(() => {
 
   // 顶部统计
   .stats-header {
-    background: white;
+    background: linear-gradient(135deg, #f7b267 0%, #f4845f 100%);
+    border-radius: $card-radius;
+    box-shadow: $card-shadow;
     display: flex;
-    padding: 30rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+    padding: 40rpx 30rpx;
+    margin: 24rpx 30rpx;
 
     .stats-item {
       flex: 1;
@@ -425,25 +427,24 @@ Taro.useShareAppMessage(() => {
 
   // 筛选栏
   .filter-bar {
-    background: white;
+    background: transparent;
     display: flex;
-    padding: 20rpx 30rpx;
-    border-top: 2rpx solid #f0f0f0;
+    padding: 10rpx 30rpx 0;
 
     .filter-item {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16rpx 20rpx;
-      background: #f8f9fa;
-      border-radius: 20rpx;
+      padding: 18rpx 20rpx;
+      background: #ffffff;
+      border-radius: 40rpx;
+      box-shadow: $card-shadow;
       margin: 0 10rpx;
 
       .filter-text {
-        font-size: 26rpx;
-        color: #333;
-        margin-right: 8rpx;
+        font-size: 28rpx;
+        color: $text-primary;
       }
 
       .filter-arrow {
@@ -455,7 +456,7 @@ Taro.useShareAppMessage(() => {
 
   // 记录列表
   .records-section {
-    padding: 20rpx 30rpx;
+    padding: 20rpx 30rpx 140rpx;
 
     .empty-state {
       text-align: center;
@@ -513,15 +514,16 @@ Taro.useShareAppMessage(() => {
         }
 
         .group-records {
-          background: white;
-          border-radius: 16rpx;
+          background: #ffffff;
+          border-radius: $card-radius;
+          box-shadow: $card-shadow;
           overflow: hidden;
 
           .record-item {
             display: flex;
             align-items: center;
             padding: 30rpx;
-            border-bottom: 2rpx solid #f0f0f0;
+            border-bottom: 1rpx dashed #f0f0f0;
 
             &:last-child {
               border-bottom: none;
@@ -582,12 +584,12 @@ Taro.useShareAppMessage(() => {
     right: 30rpx;
     width: 100rpx;
     height: 100rpx;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 50%;
+    background: linear-gradient(135deg, #f4845f 0%, #f7b267 100%);
+    box-shadow: $card-shadow;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.4);
     z-index: 100;
 
     .add-icon {

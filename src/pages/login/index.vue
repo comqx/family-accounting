@@ -175,10 +175,18 @@ const closeModal = () => {
 // 检查登录状态
 const checkLoginStatus = () => {
   if (userStore.isLoggedIn) {
-    // 已登录，跳转到主页
-    Taro.reLaunch({
-      url: '/pages/index/index'
-    })
+    // 已登录，检查是否有家庭
+    if (userStore.hasFamily) {
+      // 有家庭，直接进入主页
+      Taro.reLaunch({
+        url: '/pages/index/index'
+      })
+    } else {
+      // 没有家庭，引导创建或加入家庭
+      Taro.reLaunch({
+        url: '/pages/family/create/index'
+      })
+    }
   }
 }
 

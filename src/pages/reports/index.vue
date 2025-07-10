@@ -290,7 +290,7 @@ Taro.useShareAppMessage(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .reports-page {
   min-height: 100vh;
   background: #f8f9fa;
@@ -349,13 +349,14 @@ Taro.useShareAppMessage(() => {
 
   // 总览卡片
   .overview-card {
-    background: white;
-    margin: 30rpx;
-    border-radius: 20rpx;
-    padding: 40rpx 30rpx;
+    background: #ffffff;
     display: flex;
     align-items: center;
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+    justify-content: space-between;
+    padding: 40rpx 20rpx;
+    margin: 20rpx 30rpx;
+    border-radius: $card-radius;
+    box-shadow: $card-shadow;
 
     .overview-item {
       flex: 1;
@@ -392,12 +393,13 @@ Taro.useShareAppMessage(() => {
   }
 
   // 分析区域
-  .analysis-section, .trend-section {
-    background: white;
-    margin: 30rpx;
-    border-radius: 20rpx;
-    padding: 30rpx;
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  .analysis-section,
+  .trend-section {
+    margin: 20rpx 30rpx;
+    background: #ffffff;
+    border-radius: $card-radius;
+    box-shadow: $card-shadow;
+    padding: 20rpx 0 30rpx;
 
     .section-header {
       display: flex;
@@ -417,8 +419,9 @@ Taro.useShareAppMessage(() => {
       }
     }
 
-    .chart-container, .trend-chart {
-      margin-bottom: 30rpx;
+    .chart-container,
+    .trend-chart {
+      padding: 40rpx 20rpx;
 
       .chart-placeholder, .trend-placeholder {
         height: 200rpx;
@@ -548,20 +551,21 @@ Taro.useShareAppMessage(() => {
   // 操作按钮
   .action-section {
     display: flex;
-    gap: 20rpx;
-    padding: 0 30rpx;
+    gap: 30rpx;
+    padding: 20rpx 30rpx 140rpx;
 
     .action-btn {
       flex: 1;
-      background: white;
-      border: 2rpx solid #e0e0e0;
+      background: linear-gradient(135deg, #1296db 0%, #56ccf2 100%);
+      color: white;
+      border: none;
       border-radius: 50rpx;
-      padding: 28rpx 0;
+      font-size: 28rpx;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28rpx;
-      color: #333;
+      padding: 20rpx 0;
+      box-shadow: 0 8rpx 16rpx rgba(18, 150, 219, 0.3);
 
       &::after {
         border: none;

@@ -169,7 +169,7 @@ export const useUserStore = defineStore('user', () => {
       }
 
       const response = await request.post('/api/auth/refresh', {
-        refreshToken: currentToken
+        token: currentToken
       });
 
       if (response.data) {

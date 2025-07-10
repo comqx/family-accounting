@@ -277,7 +277,7 @@ Taro.useShareAppMessage(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .family-page {
   min-height: 100vh;
   background: #f8f9fa;
@@ -285,11 +285,12 @@ Taro.useShareAppMessage(() => {
 
   // 家庭信息卡片
   .family-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    margin: 30rpx;
-    border-radius: 20rpx;
+    background: linear-gradient(135deg, #1296db 0%, #56ccf2 100%);
+    margin: 24rpx 30rpx;
+    border-radius: $card-radius;
+    box-shadow: $card-shadow;
     padding: 40rpx 30rpx;
-    color: white;
+    color: #ffffff;
 
     .family-header {
       display: flex;
@@ -366,7 +367,7 @@ Taro.useShareAppMessage(() => {
 
   // 成员列表
   .members-section {
-    margin: 30rpx;
+    margin: 24rpx 30rpx;
 
     .section-header {
       display: flex;
@@ -390,8 +391,9 @@ Taro.useShareAppMessage(() => {
     }
 
     .members-list {
-      background: white;
-      border-radius: 16rpx;
+      background: #ffffff;
+      border-radius: $card-radius;
+      box-shadow: $card-shadow;
       overflow: hidden;
 
       .member-item {
@@ -465,9 +467,10 @@ Taro.useShareAppMessage(() => {
 
   // 功能菜单
   .menu-section {
-    background: white;
-    margin: 30rpx;
-    border-radius: 16rpx;
+    background: #ffffff;
+    margin: 24rpx 30rpx 120rpx;
+    border-radius: $card-radius;
+    box-shadow: $card-shadow;
     overflow: hidden;
 
     .menu-item {

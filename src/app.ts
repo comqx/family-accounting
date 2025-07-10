@@ -40,6 +40,11 @@ const App = createApp({
         const userStore = useUserStore()
         userStore.initUserState()
 
+        // 初始化家庭状态
+        const { useFamilyStore } = await import('./stores/modules/family')
+        const familyStore = useFamilyStore()
+        familyStore.initFamilyState()
+
         // 初始化应用设置
         const appStore = useAppStore()
         appStore.initAppSettings()

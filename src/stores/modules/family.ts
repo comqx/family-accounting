@@ -37,10 +37,11 @@ export const useFamilyStore = defineStore('family', () => {
 
   // 初始化家庭状态
   const initFamilyState = () => {
+    const { getFamilyInfo } = require('../../utils/storage');
     const savedFamily = getFamilyInfo();
     if (savedFamily) {
       if (savedFamily && typeof savedFamily === 'object' && 'id' in savedFamily) {
-        family.value = savedFamily; // 临时类型断言
+        family.value = savedFamily;
       }
     }
   };

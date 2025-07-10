@@ -6,6 +6,9 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// 数据库相关
+const { testConnection, initPool } = require('./config/database');
+
 const app = express();
 const PORT = process.env.PORT || 80;
 
@@ -71,11 +74,33 @@ app.use((err, req, res, next) => {
 });
 
 // 启动服务器
-app.listen(PORT, () => {
-  console.log(`🚀 家账通云托管服务启动成功`);
-  console.log(`📍 服务地址: http://localhost:${PORT}`);
-  console.log(`🔍 健康检查: http://localhost:${PORT}/health`);
-  console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
-});
+const startServer = async () => {
+  try {
+    // 1. 初始化数据库连接池
+    initPool();
+    
+    // 2. 测试数据库连接（启动脚本已经确保数据库可用）
+    const dbConnected = await testConnection();
+    if (!dbConnected) {
+      console.error('❌ 数据库连接失败，服务启动终止');
+      process.exit(1);
+    }
+    
+    // 3. 启动HTTP服务
+    app.listen(PORT, () => {
+      console.log(`🚀 家账通云托管服务启动成功`);
+      console.log(`📍 服务地址: http://localhost:${PORT}`);
+      console.log(`🔍 健康检查: http://localhost:${PORT}/health`);
+      console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`📊 数据库: ${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+    });
+  } catch (error) {
+    console.error('💥 服务启动失败:', error);
+    process.exit(1);
+  }
+};
+
+// 启动服务
+startServer();
 
 module.exports = app; 

@@ -197,5 +197,15 @@ export default {
         throw new Error(data?.error || '上传失败')
       })
       .catch(errorHandler)
+  },
+
+  // 当前登录用户 token，可供外部直接修改
+  token: '',
+
+  // 清除 token，登出时调用
+  clearToken: () => {
+    Taro.removeStorageSync('token')
+    // @ts-ignore - 动态属性
+    request.token = ''
   }
 } 

@@ -223,7 +223,7 @@ Taro.useShareAppMessage(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .profile-page {
   min-height: 100vh;
   background: #f8f9fa;
@@ -231,9 +231,10 @@ Taro.useShareAppMessage(() => {
 
   // 用户信息卡片
   .user-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    margin: 30rpx;
-    border-radius: 20rpx;
+    background: linear-gradient(135deg, #56ccf2 0%, #1296db 100%);
+    margin: 24rpx 30rpx;
+    border-radius: $card-radius;
+    box-shadow: $card-shadow;
     padding: 40rpx 30rpx;
     color: white;
 
@@ -310,11 +311,12 @@ Taro.useShareAppMessage(() => {
 
   // 功能菜单
   .menu-section {
-    margin: 30rpx;
+    margin: 24rpx 30rpx 140rpx;
 
     .menu-group {
-      background: white;
-      border-radius: 16rpx;
+      background: #ffffff;
+      border-radius: $card-radius;
+      box-shadow: $card-shadow;
       margin-bottom: 20rpx;
       overflow: hidden;
 

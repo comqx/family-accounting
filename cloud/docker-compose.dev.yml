@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: family-accounting-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: family_accounting
+      MYSQL_USER: family_user
+      MYSQL_PASSWORD: family_pass_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init-mysql.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - family-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: family-accounting-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - family-network
+
+  # 应用服务
+  app:
+    build: .
+    container_name: family-accounting-app
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: family_accounting
+      DB_USER: family_user
+      DB_PASSWORD: family_pass_2024
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-secret-key-change-in-production
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - family-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  family-network:
+    driver: bridge 

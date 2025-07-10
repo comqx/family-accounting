@@ -5,9 +5,23 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "start:with-init": "./start.sh",
     "dev": "nodemon index.js",
     "build": "echo 'No build step needed'",
-    "test": "echo 'No tests specified' && exit 0"
+    "test": "echo 'No tests specified' && exit 0",
+    "test:startup": "./test-startup.sh",
+    "db:init": "node scripts/db-manager.js init",
+    "db:status": "node scripts/db-manager.js status",
+    "db:reset": "node scripts/db-manager.js reset",
+    "db:backup": "node scripts/db-manager.js backup",
+    "db:restore": "node scripts/db-manager.js restore",
+    "docker:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "docker:down": "docker-compose -f docker-compose.dev.yml down",
+    "docker:logs": "docker-compose -f docker-compose.dev.yml logs -f",
+    "dev:full": "npm run docker:up && sleep 10 && npm run db:status",
+    "test:db": "node scripts/test-db.js",
+    "docker:build": "docker build -t family-accounting-cloud .",
+    "docker:run": "docker run -p 3000:80 --env-file .env family-accounting-cloud"
   },
   "dependencies": {
     "express": "^4.18.2",
