@@ -1,6 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const { getPool } = require('../config/database');
+const { getConnection } = require('../config/database');
 const router = express.Router();
 
 // 获取用户加入的家庭列表
@@ -16,7 +16,7 @@ router.get('/list', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const userId = decoded.userId;
 
-    const pool = getPool();
+    const pool = await getConnection();
     
     try {
       // 查询用户的家庭信息
@@ -104,7 +104,7 @@ router.post('/create', [
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const userId = decoded.userId;
 
-    const pool = getPool();
+    const pool = await getConnection();
     
     try {
       // 开始事务
@@ -114,8 +114,8 @@ router.post('/create', [
       try {
         // 1. 创建家庭记录
         const [familyResult] = await connection.execute(
-          'INSERT INTO families (name, description, avatar, created_at) VALUES (?, ?, ?, NOW())',
-          [name, description || '', 'https://example.com/default-family.jpg']
+          'INSERT INTO families (name, description, avatar, admin_id) VALUES (?, ?, ?, ?)',
+          [name, description || '', 'https://example.com/default-family.jpg', userId]
         );
         
         const familyId = familyResult.insertId;
@@ -128,7 +128,7 @@ router.post('/create', [
         
         // 3. 创建家庭成员关系
         await connection.execute(
-          'INSERT INTO family_members (family_id, user_id, role, joined_at) VALUES (?, ?, ?, NOW())',
+          'INSERT INTO family_members (family_id, user_id, role) VALUES (?, ?, ?)',
           [familyId, userId, 'ADMIN']
         );
         

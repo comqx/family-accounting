@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { getPool } = require('../config/database');
+const { getConnection } = require('../config/database');
 const router = express.Router();
 
 // 微信登录
@@ -28,7 +28,7 @@ router.post('/wechat-login', [
       unionid: userInfo.unionId || null
     };
 
-    const pool = getPool();
+    const pool = await getConnection();
     
     // 查找或创建用户
     let userId;
@@ -61,7 +61,7 @@ router.post('/wechat-login', [
       } else {
         // 用户不存在，创建新用户
         const [result] = await pool.execute(
-          'INSERT INTO users (openid, unionid, nickname, avatar_url, role) VALUES (?, ?, ?, ?, ?)',
+          'INSERT INTO users (openid, unionid, nickname, avatar, role) VALUES (?, ?, ?, ?, ?)',
           [mockWxResponse.openid, mockWxResponse.unionid, userInfo.nickName, userInfo.avatarUrl, 'MEMBER']
         );
         
