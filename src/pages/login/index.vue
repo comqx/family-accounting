@@ -135,18 +135,26 @@ const handleWechatLogin = async () => {
     const success = await userStore.login(userInfo)
 
     if (success) {
-      // 登录成功，跳转到主页
-      if (userStore.hasFamily) {
-        // 有家庭，直接进入主页
-        Taro.reLaunch({
-          url: '/pages/index/index'
-        })
-      } else {
-        // 没有家庭，引导创建或加入家庭
-        Taro.reLaunch({
-          url: '/pages/family/create/index'
-        })
+      // 登录成功后，检查家庭状态
+      const { useFamilyStore } = await import('../../stores/modules/family')
+      const familyStore = useFamilyStore()
+      
+      // 如果用户有家庭ID，尝试获取家庭信息
+      if (userStore.user?.familyId) {
+        const hasFamily = await familyStore.getFamilyInfo()
+        if (hasFamily) {
+          // 有家庭，直接进入主页
+          Taro.reLaunch({
+            url: '/pages/index/index'
+          })
+          return
+        }
       }
+      
+      // 没有家庭，引导创建或加入家庭
+      Taro.reLaunch({
+        url: '/pages/family/create/index'
+      })
     }
   } catch (error) {
     console.error('Login error:', error)
@@ -173,20 +181,28 @@ const closeModal = () => {
 }
 
 // 检查登录状态
-const checkLoginStatus = () => {
+const checkLoginStatus = async () => {
   if (userStore.isLoggedIn) {
     // 已登录，检查是否有家庭
-    if (userStore.hasFamily) {
-      // 有家庭，直接进入主页
-      Taro.reLaunch({
-        url: '/pages/index/index'
-      })
-    } else {
-      // 没有家庭，引导创建或加入家庭
-      Taro.reLaunch({
-        url: '/pages/family/create/index'
-      })
+    const { useFamilyStore } = await import('../../stores/modules/family')
+    const familyStore = useFamilyStore()
+    
+    // 如果用户有家庭ID，尝试获取家庭信息
+    if (userStore.user?.familyId) {
+      const hasFamily = await familyStore.getFamilyInfo()
+      if (hasFamily) {
+        // 有家庭，直接进入主页
+        Taro.reLaunch({
+          url: '/pages/index/index'
+        })
+        return
+      }
     }
+    
+    // 没有家庭，引导创建或加入家庭
+    Taro.reLaunch({
+      url: '/pages/family/create/index'
+    })
   }
 }
 

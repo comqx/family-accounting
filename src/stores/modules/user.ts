@@ -72,6 +72,15 @@ export const useUserStore = defineStore('user', () => {
           const { useFamilyStore } = await import('./family');
           const familyStore = useFamilyStore();
           familyStore.setFamily(family);
+        } else if (userInfo.familyId) {
+          // 如果用户有家庭ID但没有家庭信息，主动获取家庭信息
+          try {
+            const { useFamilyStore } = await import('./family');
+            const familyStore = useFamilyStore();
+            await familyStore.getFamilyInfo();
+          } catch (error) {
+            console.error('获取家庭信息失败:', error);
+          }
         }
 
         return true;

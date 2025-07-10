@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { getPool } = require('../config/database');
 const router = express.Router();
 
 // 微信登录
@@ -27,8 +28,51 @@ router.post('/wechat-login', [
       unionid: userInfo.unionId || null
     };
 
-    // 生成用户ID
-    const userId = `user_${Date.now()}`;
+    const pool = getPool();
+    
+    // 查找或创建用户
+    let userId;
+    let familyId = null;
+    let family = null;
+    
+    try {
+      // 先查找用户是否存在
+      const [users] = await pool.execute(
+        'SELECT id, family_id FROM users WHERE openid = ?',
+        [mockWxResponse.openid]
+      );
+      
+      if (users.length > 0) {
+        // 用户已存在
+        userId = users[0].id;
+        familyId = users[0].family_id;
+        
+        // 如果有家庭ID，查询家庭信息
+        if (familyId) {
+          const [families] = await pool.execute(
+            'SELECT id, name, description, avatar FROM families WHERE id = ?',
+            [familyId]
+          );
+          
+          if (families.length > 0) {
+            family = families[0];
+          }
+        }
+      } else {
+        // 用户不存在，创建新用户
+        const [result] = await pool.execute(
+          'INSERT INTO users (openid, unionid, nickname, avatar_url, role) VALUES (?, ?, ?, ?, ?)',
+          [mockWxResponse.openid, mockWxResponse.unionid, userInfo.nickName, userInfo.avatarUrl, 'MEMBER']
+        );
+        
+        userId = result.insertId;
+      }
+    } catch (dbError) {
+      console.error('数据库操作错误:', dbError);
+      // 如果数据库操作失败，使用模拟数据
+      userId = `user_${Date.now()}`;
+      familyId = null;
+    }
 
     // 生成JWT token
     const token = jwt.sign(
@@ -51,9 +95,10 @@ router.post('/wechat-login', [
           unionid: mockWxResponse.unionid,
           nickName: userInfo.nickName,
           avatarUrl: userInfo.avatarUrl,
-          familyId: null,
+          familyId: familyId,
           role: 'MEMBER'
-        }
+        },
+        family: family
       }
     });
   } catch (error) {

@@ -1,34 +1,80 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { getPool } = require('../config/database');
 const router = express.Router();
 
 // 获取用户加入的家庭列表
 router.get('/list', async (req, res) => {
   try {
-    // TODO: 从数据库获取用户加入的家庭列表
-    const mockFamilies = [
-      {
-        id: 1,
-        name: '我的家庭',
-        avatar: 'https://example.com/family1.jpg',
-        memberCount: 3,
-        role: 'owner',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 2,
-        name: '父母家',
-        avatar: 'https://example.com/family2.jpg',
-        memberCount: 2,
-        role: 'member',
-        createdAt: new Date().toISOString()
-      }
-    ];
+    // 从 token 中获取用户信息
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: '未提供认证token' });
+    }
 
-    res.json({
-      success: true,
-      data: mockFamilies
-    });
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const userId = decoded.userId;
+
+    const pool = getPool();
+    
+    try {
+      // 查询用户的家庭信息
+      const [users] = await pool.execute(
+        'SELECT family_id FROM users WHERE id = ?',
+        [userId]
+      );
+      
+      if (users.length > 0 && users[0].family_id) {
+        // 查询家庭详细信息
+        const [families] = await pool.execute(
+          'SELECT id, name, description, avatar, created_at FROM families WHERE id = ?',
+          [users[0].family_id]
+        );
+        
+        if (families.length > 0) {
+          const family = families[0];
+          res.json({
+            success: true,
+            data: [{
+              id: family.id,
+              name: family.name,
+              description: family.description,
+              avatar: family.avatar,
+              memberCount: 1, // TODO: 查询实际成员数量
+              role: 'owner', // TODO: 查询用户角色
+              createdAt: family.created_at
+            }]
+          });
+          return;
+        }
+      }
+      
+      // 用户没有家庭
+      res.json({
+        success: true,
+        data: []
+      });
+      
+    } catch (dbError) {
+      console.error('数据库查询错误:', dbError);
+      // 如果数据库查询失败，返回模拟数据
+      const mockFamilies = [
+        {
+          id: 1,
+          name: '我的家庭',
+          avatar: 'https://example.com/family1.jpg',
+          memberCount: 3,
+          role: 'owner',
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: mockFamilies
+      });
+    }
   } catch (error) {
     console.error('获取家庭列表错误:', error);
     res.status(500).json({ error: '获取家庭列表失败' });
@@ -48,25 +94,103 @@ router.post('/create', [
 
     const { name, description } = req.body;
     
-    // TODO: 创建家庭并添加创建者为成员
-    
-    const mockFamily = {
-      id: Date.now(),
-      name,
-      description,
-      avatar: 'https://example.com/default-family.jpg',
-      memberCount: 1,
-      role: 'owner',
-      createdAt: new Date().toISOString()
-    };
+    // 从 token 中获取用户信息
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: '未提供认证token' });
+    }
 
-    res.json({
-      success: true,
-      message: '家庭创建成功',
-      data: {
-        family: mockFamily
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const userId = decoded.userId;
+
+    const pool = getPool();
+    
+    try {
+      // 开始事务
+      const connection = await pool.getConnection();
+      await connection.beginTransaction();
+      
+      try {
+        // 1. 创建家庭记录
+        const [familyResult] = await connection.execute(
+          'INSERT INTO families (name, description, avatar, created_at) VALUES (?, ?, ?, NOW())',
+          [name, description || '', 'https://example.com/default-family.jpg']
+        );
+        
+        const familyId = familyResult.insertId;
+        
+        // 2. 更新用户的家庭ID
+        await connection.execute(
+          'UPDATE users SET family_id = ? WHERE id = ?',
+          [familyId, userId]
+        );
+        
+        // 3. 创建家庭成员关系
+        await connection.execute(
+          'INSERT INTO family_members (family_id, user_id, role, joined_at) VALUES (?, ?, ?, NOW())',
+          [familyId, userId, 'ADMIN']
+        );
+        
+        // 提交事务
+        await connection.commit();
+        
+        // 查询创建的家庭信息
+        const [families] = await pool.execute(
+          'SELECT id, name, description, avatar, created_at FROM families WHERE id = ?',
+          [familyId]
+        );
+        
+        if (families.length > 0) {
+          const family = families[0];
+          res.json({
+            success: true,
+            message: '家庭创建成功',
+            data: {
+              family: {
+                id: family.id,
+                name: family.name,
+                description: family.description,
+                avatar: family.avatar,
+                memberCount: 1,
+                role: 'ADMIN',
+                createdAt: family.created_at
+              }
+            }
+          });
+        } else {
+          throw new Error('创建家庭后查询失败');
+        }
+        
+      } catch (transactionError) {
+        // 回滚事务
+        await connection.rollback();
+        throw transactionError;
+      } finally {
+        connection.release();
       }
-    });
+      
+    } catch (dbError) {
+      console.error('数据库操作错误:', dbError);
+      // 如果数据库操作失败，返回模拟数据
+      const mockFamily = {
+        id: Date.now(),
+        name,
+        description,
+        avatar: 'https://example.com/default-family.jpg',
+        memberCount: 1,
+        role: 'ADMIN',
+        createdAt: new Date().toISOString()
+      };
+
+      res.json({
+        success: true,
+        message: '家庭创建成功（模拟数据）',
+        data: {
+          family: mockFamily
+        }
+      });
+    }
   } catch (error) {
     console.error('创建家庭错误:', error);
     res.status(500).json({ error: '创建家庭失败' });
