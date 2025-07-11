@@ -23,7 +23,12 @@ router.get('/list', async (req, res) => {
     }
 
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (err) {
+      return res.status(401).json({ error: 'token无效或已过期' });
+    }
     const userId = decoded.userId;
 
     const pool = await getConnection();
@@ -151,7 +156,12 @@ router.post('/create', [
     }
 
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (err) {
+      return res.status(401).json({ error: 'token无效或已过期' });
+    }
     const userId = decoded.userId;
 
     const pool = await getConnection();
@@ -257,7 +267,12 @@ router.put('/:recordId', [
     }
 
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (err) {
+      return res.status(401).json({ error: 'token无效或已过期' });
+    }
     const userId = decoded.userId;
 
     const pool = await getConnection();
@@ -374,7 +389,12 @@ router.delete('/:recordId', async (req, res) => {
     }
 
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (err) {
+      return res.status(401).json({ error: 'token无效或已过期' });
+    }
     const userId = decoded.userId;
 
     const pool = await getConnection();
@@ -423,7 +443,12 @@ router.get('/:recordId', async (req, res) => {
     }
 
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (err) {
+      return res.status(401).json({ error: 'token无效或已过期' });
+    }
     const userId = decoded.userId;
 
     const pool = await getConnection();

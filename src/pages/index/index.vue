@@ -169,6 +169,7 @@ import { useUserStore, useCategoryStore, useRecordStore, useFamilyStore } from '
 import { useRealTimeSync } from '../../hooks/useRealTimeSync'
 import { formatAmount, formatDate, formatRelativeTime } from '../../utils/format'
 import './index.scss'
+import request from '../../utils/request'
 
 // Store
 const userStore = useUserStore()
@@ -349,18 +350,14 @@ const loadMonthStats = async () => {
     const now = new Date()
     const startDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-01`
     const endDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-31`
-    const res = await Taro.request({
-      url: `/api/report/statistics`,
-      method: 'GET',
-      data: {
-        familyId: familyStore.familyId,
-        startDate,
-        endDate
-      }
+    const res = await request.get('/api/report/statistics', {
+      familyId: familyStore.familyId,
+      startDate,
+      endDate
     })
-    if (res.data && res.data.data) {
-      monthExpense.value = res.data.data.totalExpense || 0
-      monthIncome.value = res.data.data.totalIncome || 0
+    if (res.data) {
+      monthExpense.value = res.data.totalExpense || 0
+      monthIncome.value = res.data.totalIncome || 0
     }
   } catch (error) {
     console.error('加载月统计失败:', error)
