@@ -60,6 +60,9 @@ router.get('/list', async (req, res) => {
       
       const whereClause = whereConditions.join(' AND ');
       
+      // 兜底：所有SQL参数undefined转为null
+      queryParams = queryParams.map(v => v === undefined ? null : v);
+      
       // 获取总记录数
       const [countResult] = await pool.execute(
         `SELECT COUNT(*) as total FROM records r WHERE ${whereClause}`,
