@@ -70,9 +70,7 @@ router.post('/wechat-login', [
       }
     } catch (dbError) {
       console.error('数据库操作错误:', dbError);
-      // 如果数据库操作失败，使用模拟数据
-      userId = `user_${Date.now()}`;
-      familyId = null;
+      res.status(500).json({ error: '登录失败，请重试' });
     }
 
     // 生成JWT token

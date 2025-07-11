@@ -161,12 +161,8 @@ class SplitService {
   async getSplitRecords(familyId, status) {
     try {
       const params = { familyId, status };
-      const response = await request.get('/api/split/list', { params });
-      if (response.data) {
-        return response.data;
-      }
-      // 返回空
-      return [];
+      const response = await request.get('/api/split/list', params);
+      return response.data || [];
     } catch (error) {
       console.error('Get split records error:', error);
       return [];
@@ -188,17 +184,7 @@ class SplitService {
   async createSplitTemplate(template) {
     try {
       const response = await request.post('/api/split/template/create', template);
-      
-      if (response.data) {
-        return response.data;
-      }
-
-      // 返回模拟数据
-      return {
-        ...template,
-        id: Date.now().toString(),
-        createTime: new Date()
-      };
+      return response.data || null;
     } catch (error) {
       console.error('Create split template error:', error);
       throw error;
@@ -208,16 +194,9 @@ class SplitService {
   // 获取分摊模板列表
   async getSplitTemplates(familyId) {
     try {
-      const response = await request.get('/api/split/template/list', { 
-        params: { familyId } 
-      });
-      
-      if (response.data) {
-        return response.data;
-      }
-
-      // 返回模拟数据
-      return [];
+      const params = { familyId };
+      const response = await request.get('/api/split/template/list', params);
+      return response.data || [];
     } catch (error) {
       console.error('Get split templates error:', error);
       return [];

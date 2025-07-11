@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { getConnection } = require('../config/database');
 const router = express.Router();
 
 // 获取分类列表
@@ -7,65 +8,50 @@ router.get('/list', async (req, res) => {
   try {
     const { familyId, type } = req.query;
     
-    // TODO: 从数据库获取分类列表
-    const mockCategories = [
-      {
-        id: 1,
-        name: '餐饮',
-        icon: '🍽️',
-        type: 'expense',
-        color: '#FF6B6B',
-        isDefault: true,
-        sort: 1
-      },
-      {
-        id: 2,
-        name: '交通',
-        icon: '🚗',
-        type: 'expense',
-        color: '#4ECDC4',
-        isDefault: true,
-        sort: 2
-      },
-      {
-        id: 3,
-        name: '购物',
-        icon: '🛒',
-        type: 'expense',
-        color: '#45B7D1',
-        isDefault: true,
-        sort: 3
-      },
-      {
-        id: 4,
-        name: '工资',
-        icon: '💰',
-        type: 'income',
-        color: '#96CEB4',
-        isDefault: true,
-        sort: 1
-      },
-      {
-        id: 5,
-        name: '奖金',
-        icon: '🎁',
-        type: 'income',
-        color: '#FFEAA7',
-        isDefault: true,
-        sort: 2
-      }
-    ];
-
-    let filteredCategories = mockCategories;
+    const pool = await getConnection();
     
-    if (type) {
-      filteredCategories = mockCategories.filter(cat => cat.type === type);
-    }
+    try {
+      let whereConditions = ['1=1']; // 默认条件
+      let queryParams = [];
+      
+      if (type) {
+        whereConditions.push('type = ?');
+        queryParams.push(type);
+      }
+      
+      const whereClause = whereConditions.join(' AND ');
+      
+      // 从数据库获取分类列表
+      const [categories] = await pool.execute(
+        `SELECT id, name, icon, type, color, is_default, sort, family_id, created_at
+         FROM categories 
+         WHERE ${whereClause}
+         ORDER BY sort ASC, created_at ASC`,
+        queryParams
+      );
+      
+      const formattedCategories = categories.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        icon: cat.icon,
+        type: cat.type,
+        color: cat.color,
+        isDefault: cat.is_default === 1,
+        sort: cat.sort,
+        familyId: cat.family_id,
+        createdAt: cat.created_at
+      }));
 
-    res.json({
-      success: true,
-      data: filteredCategories
-    });
+      res.json({
+        success: true,
+        data: formattedCategories
+      });
+      
+    } catch (dbError) {
+      console.error('数据库查询错误:', dbError);
+      res.status(500).json({ error: '获取分类列表失败' });
+    }
+    
   } catch (error) {
     console.error('获取分类列表错误:', error);
     res.status(500).json({ error: '获取分类列表失败' });
@@ -88,25 +74,64 @@ router.post('/create', [
 
     const { name, type, icon, color, familyId } = req.body;
     
-    // TODO: 保存分类到数据库
+    const pool = await getConnection();
     
-    const mockCategory = {
-      id: Date.now(),
-      name,
-      type,
-      icon: icon || '📝',
-      color: color || '#666666',
-      isDefault: false,
-      sort: 999,
-      familyId,
-      createdAt: new Date().toISOString()
-    };
-
-    res.json({
-      success: true,
-      message: '分类创建成功',
-      data: mockCategory
-    });
+    try {
+      // 检查分类名称是否已存在
+      const [existingCategories] = await pool.execute(
+        'SELECT id FROM categories WHERE name = ? AND type = ? AND (family_id = ? OR family_id IS NULL)',
+        [name, type, familyId]
+      );
+      
+      if (existingCategories.length > 0) {
+        return res.status(400).json({ error: '分类名称已存在' });
+      }
+      
+      // 获取最大排序值
+      const [maxSortResult] = await pool.execute(
+        'SELECT MAX(sort) as maxSort FROM categories WHERE type = ?',
+        [type]
+      );
+      
+      const nextSort = (maxSortResult[0].maxSort || 0) + 1;
+      
+      // 保存分类到数据库
+      const [result] = await pool.execute(
+        'INSERT INTO categories (name, type, icon, color, is_default, sort, family_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [name, type, icon || '📝', color || '#666666', 0, nextSort, familyId]
+      );
+      
+      const categoryId = result.insertId;
+      
+      // 获取新创建的分类
+      const [newCategory] = await pool.execute(
+        'SELECT id, name, icon, type, color, is_default, sort, family_id, created_at FROM categories WHERE id = ?',
+        [categoryId]
+      );
+      
+      const category = newCategory[0];
+      
+      res.json({
+        success: true,
+        message: '分类创建成功',
+        data: {
+          id: category.id,
+          name: category.name,
+          icon: category.icon,
+          type: category.type,
+          color: category.color,
+          isDefault: category.is_default === 1,
+          sort: category.sort,
+          familyId: category.family_id,
+          createdAt: category.created_at
+        }
+      });
+      
+    } catch (dbError) {
+      console.error('数据库操作错误:', dbError);
+      res.status(500).json({ error: '创建分类失败' });
+    }
+    
   } catch (error) {
     console.error('创建分类错误:', error);
     res.status(500).json({ error: '创建分类失败' });
@@ -129,12 +154,70 @@ router.put('/:categoryId', [
     const { categoryId } = req.params;
     const updateData = req.body;
     
-    // TODO: 更新数据库中的分类
+    const pool = await getConnection();
     
-    res.json({
-      success: true,
-      message: '分类更新成功'
-    });
+    try {
+      // 检查分类是否存在
+      const [existingCategory] = await pool.execute(
+        'SELECT id, is_default FROM categories WHERE id = ?',
+        [categoryId]
+      );
+      
+      if (existingCategory.length === 0) {
+        return res.status(404).json({ error: '分类不存在' });
+      }
+      
+      // 如果是默认分类，不允许修改
+      if (existingCategory[0].is_default === 1) {
+        return res.status(400).json({ error: '默认分类不允许修改' });
+      }
+      
+      // 构建更新字段
+      const updateFields = [];
+      const updateValues = [];
+      
+      if (updateData.name !== undefined) {
+        updateFields.push('name = ?');
+        updateValues.push(updateData.name);
+      }
+      
+      if (updateData.icon !== undefined) {
+        updateFields.push('icon = ?');
+        updateValues.push(updateData.icon);
+      }
+      
+      if (updateData.color !== undefined) {
+        updateFields.push('color = ?');
+        updateValues.push(updateData.color);
+      }
+      
+      if (updateData.sort !== undefined) {
+        updateFields.push('sort = ?');
+        updateValues.push(updateData.sort);
+      }
+      
+      if (updateFields.length === 0) {
+        return res.status(400).json({ error: '没有提供要更新的字段' });
+      }
+      
+      updateValues.push(categoryId);
+      
+      // 更新数据库中的分类
+      await pool.execute(
+        `UPDATE categories SET ${updateFields.join(', ')} WHERE id = ?`,
+        updateValues
+      );
+      
+      res.json({
+        success: true,
+        message: '分类更新成功'
+      });
+      
+    } catch (dbError) {
+      console.error('数据库操作错误:', dbError);
+      res.status(500).json({ error: '更新分类失败' });
+    }
+    
   } catch (error) {
     console.error('更新分类错误:', error);
     res.status(500).json({ error: '更新分类失败' });
@@ -146,13 +229,50 @@ router.delete('/:categoryId', async (req, res) => {
   try {
     const { categoryId } = req.params;
     
-    // TODO: 检查分类是否被使用，如果被使用则不允许删除
-    // TODO: 从数据库删除分类
+    const pool = await getConnection();
     
-    res.json({
-      success: true,
-      message: '分类删除成功'
-    });
+    try {
+      // 检查分类是否存在
+      const [existingCategory] = await pool.execute(
+        'SELECT id, is_default FROM categories WHERE id = ?',
+        [categoryId]
+      );
+      
+      if (existingCategory.length === 0) {
+        return res.status(404).json({ error: '分类不存在' });
+      }
+      
+      // 如果是默认分类，不允许删除
+      if (existingCategory[0].is_default === 1) {
+        return res.status(400).json({ error: '默认分类不允许删除' });
+      }
+      
+      // 检查分类是否被使用
+      const [usedRecords] = await pool.execute(
+        'SELECT COUNT(*) as count FROM records WHERE category_id = ?',
+        [categoryId]
+      );
+      
+      if (usedRecords[0].count > 0) {
+        return res.status(400).json({ error: '分类正在使用中，无法删除' });
+      }
+      
+      // 从数据库删除分类
+      await pool.execute(
+        'DELETE FROM categories WHERE id = ?',
+        [categoryId]
+      );
+      
+      res.json({
+        success: true,
+        message: '分类删除成功'
+      });
+      
+    } catch (dbError) {
+      console.error('数据库操作错误:', dbError);
+      res.status(500).json({ error: '删除分类失败' });
+    }
+    
   } catch (error) {
     console.error('删除分类错误:', error);
     res.status(500).json({ error: '删除分类失败' });
@@ -164,38 +284,69 @@ router.get('/stats', async (req, res) => {
   try {
     const { familyId, startDate, endDate, type } = req.query;
     
-    // TODO: 从数据库获取分类统计信息
-    const mockStats = [
-      {
-        categoryId: 1,
-        categoryName: '餐饮',
-        categoryIcon: '🍽️',
-        count: 45,
-        amount: 3200.50,
-        percentage: 25.4
-      },
-      {
-        categoryId: 2,
-        categoryName: '交通',
-        categoryIcon: '🚗',
-        count: 23,
-        amount: 890.30,
-        percentage: 7.1
-      },
-      {
-        categoryId: 3,
-        categoryName: '购物',
-        categoryIcon: '🛒',
-        count: 34,
-        amount: 2100.80,
-        percentage: 16.7
+    const pool = await getConnection();
+    
+    try {
+      // 构建查询条件
+      let whereConditions = ['r.family_id = ?'];
+      let queryParams = [familyId];
+      
+      if (startDate) {
+        whereConditions.push('r.date >= ?');
+        queryParams.push(startDate);
       }
-    ];
+      
+      if (endDate) {
+        whereConditions.push('r.date <= ?');
+        queryParams.push(endDate);
+      }
+      
+      if (type) {
+        whereConditions.push('r.type = ?');
+        queryParams.push(type);
+      }
+      
+      const whereClause = whereConditions.join(' AND ');
+      
+      // 获取总金额用于计算百分比
+      const [totalResult] = await pool.execute(
+        `SELECT SUM(amount) as totalAmount FROM records r WHERE ${whereClause}`,
+        queryParams
+      );
+      
+      const totalAmount = parseFloat(totalResult[0].totalAmount) || 0;
+      
+      // 从数据库获取分类统计信息
+      const [categoryStats] = await pool.execute(
+        `SELECT c.id as categoryId, c.name as categoryName, c.icon as categoryIcon,
+                COUNT(r.id) as count, SUM(r.amount) as amount
+         FROM records r
+         LEFT JOIN categories c ON r.category_id = c.id
+         WHERE ${whereClause}
+         GROUP BY c.id, c.name, c.icon
+         ORDER BY amount DESC`,
+        queryParams
+      );
+      
+      const stats = categoryStats.map(stat => ({
+        categoryId: stat.categoryId,
+        categoryName: stat.categoryName,
+        categoryIcon: stat.categoryIcon,
+        count: stat.count,
+        amount: parseFloat(stat.amount) || 0,
+        percentage: totalAmount > 0 ? Math.round((parseFloat(stat.amount) / totalAmount) * 1000) / 10 : 0
+      }));
 
-    res.json({
-      success: true,
-      data: mockStats
-    });
+      res.json({
+        success: true,
+        data: stats
+      });
+      
+    } catch (dbError) {
+      console.error('数据库查询错误:', dbError);
+      res.status(500).json({ error: '获取分类统计失败' });
+    }
+    
   } catch (error) {
     console.error('获取分类统计错误:', error);
     res.status(500).json({ error: '获取分类统计失败' });

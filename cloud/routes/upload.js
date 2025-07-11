@@ -125,21 +125,15 @@ router.post('/bill', upload.single('bill'), async (req, res) => {
       url: `/uploads/${req.file.filename}`
     };
 
-    // TODO: 调用OCR服务识别账单内容
-    const mockOcrResult = {
-      amount: 25.50,
-      date: '2024-01-15',
-      merchant: '星巴克咖啡',
-      category: '餐饮',
-      confidence: 0.95
-    };
+    // TODO: 实现OCR服务识别账单内容
+    // 目前只返回文件信息，OCR功能待实现
 
     res.json({
       success: true,
       message: '账单图片上传成功',
       data: {
         file: billInfo,
-        ocrResult: mockOcrResult
+        ocrResult: null // OCR功能暂未实现
       }
     });
   } catch (error) {

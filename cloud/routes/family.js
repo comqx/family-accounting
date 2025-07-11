@@ -58,22 +58,7 @@ router.get('/list', async (req, res) => {
       
     } catch (dbError) {
       console.error('数据库查询错误:', dbError);
-      // 如果数据库查询失败，返回模拟数据
-      const mockFamilies = [
-        {
-          id: 1,
-          name: '我的家庭',
-          avatar: 'https://example.com/family1.jpg',
-          memberCount: 3,
-          role: 'owner',
-          createdAt: new Date().toISOString()
-        }
-      ];
-
-      res.json({
-        success: true,
-        data: mockFamilies
-      });
+      res.status(500).json({ error: '获取家庭列表失败' });
     }
   } catch (error) {
     console.error('获取家庭列表错误:', error);
@@ -172,24 +157,7 @@ router.post('/create', [
       
     } catch (dbError) {
       console.error('数据库操作错误:', dbError);
-      // 如果数据库操作失败，返回模拟数据
-      const mockFamily = {
-        id: Date.now(),
-        name,
-        description,
-        avatar: 'https://example.com/default-family.jpg',
-        memberCount: 1,
-        role: 'ADMIN',
-        createdAt: new Date().toISOString()
-      };
-
-      res.json({
-        success: true,
-        message: '家庭创建成功（模拟数据）',
-        data: {
-          family: mockFamily
-        }
-      });
+      res.status(500).json({ error: '创建家庭失败' });
     }
   } catch (error) {
     console.error('创建家庭错误:', error);

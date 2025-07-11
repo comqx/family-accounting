@@ -165,7 +165,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { useUserStore, useRecordStore, useAppStore } from '../../../stores'
+import { useUserStore, useRecordStore, useAppStore, useFamilyStore } from '../../../stores'
 import { useRealTimeSync } from '../../../hooks/useRealTimeSync'
 import { formatAmount, formatDate } from '../../../utils/format'
 
@@ -173,6 +173,7 @@ import { formatAmount, formatDate } from '../../../utils/format'
 const userStore = useUserStore()
 const recordStore = useRecordStore()
 const appStore = useAppStore()
+const familyStore = useFamilyStore()
 
 // 实时同步
 const { syncRecordChange } = useRealTimeSync()
@@ -289,22 +290,23 @@ const confirmImport = async () => {
   try {
     isImporting.value = true
 
-    // 模拟导入过程
+    // 调用后端API创建记录
     for (const record of selectedRecords.value) {
       // 创建记录数据
       const recordData = {
-        id: Date.now().toString() + Math.random(),
+        familyId: familyStore.familyId,
         type: record.type,
         amount: record.amount,
-        categoryId: 'expense_0', // 默认分类，实际应该智能匹配
+        categoryId: record.categoryId || 1, // 默认分类，实际应该智能匹配
         description: record.description || record.merchant,
-        date: record.date,
-        createTime: new Date(),
-        updateTime: new Date()
+        date: record.date
       }
 
-      // 同步到其他设备
-      syncRecordChange('create', recordData)
+      // 调用后端API保存记录
+      const success = await recordStore.createRecord(recordData)
+      if (!success) {
+        throw new Error('保存记录失败')
+      }
 
       // 模拟延迟
       await new Promise(resolve => setTimeout(resolve, 200))

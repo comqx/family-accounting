@@ -112,62 +112,7 @@ router.get('/list', async (req, res) => {
       
     } catch (dbError) {
       console.error('数据库查询错误:', dbError);
-      // 如果数据库查询失败，返回模拟数据
-      const mockRecords = [
-        {
-          id: 1,
-          familyId: 1,
-          userId: 1,
-          type: 'expense',
-          amount: 25.50,
-          category: {
-            id: 1,
-            name: '餐饮',
-            icon: '🍽️'
-          },
-          description: '午餐',
-          date: '2024-01-15',
-          createdAt: new Date().toISOString(),
-          user: {
-            id: 1,
-            nickname: '张三',
-            avatar: 'https://example.com/avatar1.jpg'
-          }
-        },
-        {
-          id: 2,
-          familyId: 1,
-          userId: 2,
-          type: 'income',
-          amount: 5000.00,
-          category: {
-            id: 2,
-            name: '工资',
-            icon: '💰'
-          },
-          description: '月薪',
-          date: '2024-01-15',
-          createdAt: new Date().toISOString(),
-          user: {
-            id: 2,
-            nickname: '李四',
-            avatar: 'https://example.com/avatar2.jpg'
-          }
-        }
-      ];
-
-      res.json({
-        success: true,
-        data: {
-          records: mockRecords,
-          pagination: {
-            page: parseInt(page),
-            pageSize: parseInt(pageSize),
-            total: 156,
-            totalPages: 8
-          }
-        }
-      });
+      res.status(500).json({ error: '获取记账记录失败' });
     }
   } catch (error) {
     console.error('获取记账记录错误:', error);
@@ -280,24 +225,7 @@ router.post('/create', [
       
     } catch (dbError) {
       console.error('数据库操作错误:', dbError);
-      // 如果数据库操作失败，返回模拟数据
-      const mockRecord = {
-        id: Date.now(),
-        familyId,
-        userId,
-        type,
-        amount: parseFloat(amount),
-        categoryId,
-        description,
-        date,
-        createdAt: new Date().toISOString()
-      };
-
-      res.json({
-        success: true,
-        message: '记账记录创建成功（模拟数据）',
-        data: mockRecord
-      });
+      res.status(500).json({ error: '创建记账记录失败' });
     }
   } catch (error) {
     console.error('创建记账记录错误:', error);
@@ -542,33 +470,7 @@ router.get('/:recordId', async (req, res) => {
       
     } catch (dbError) {
       console.error('数据库查询错误:', dbError);
-      // 如果数据库查询失败，返回模拟数据
-      const mockRecord = {
-        id: parseInt(recordId),
-        familyId: 1,
-        userId: 1,
-        type: 'expense',
-        amount: 25.50,
-        category: {
-          id: 1,
-          name: '餐饮',
-          icon: '🍽️'
-        },
-        description: '午餐',
-        date: '2024-01-15',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        user: {
-          id: 1,
-          nickname: '张三',
-          avatar: 'https://example.com/avatar1.jpg'
-        }
-      };
-
-      res.json({
-        success: true,
-        data: mockRecord
-      });
+      res.status(500).json({ error: '获取记账记录详情失败' });
     }
   } catch (error) {
     console.error('获取记账记录详情错误:', error);

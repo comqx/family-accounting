@@ -19,15 +19,25 @@ class OCRService {
         return nativeResult;
       }
 
-      // 方案3: 降级到模拟数据
-      console.warn('OCR服务不可用，使用模拟数据');
-      return this.getMockOCRResult();
+      // 方案3: 降级到空数据
+      console.warn('OCR服务不可用，返回空数据');
+      return {
+        text: '',
+        words: [],
+        regions: [],
+        confidence: 0
+      };
 
     } catch (error) {
       console.error('OCR recognition error:', error);
 
-      // 降级到模拟数据
-      return this.getMockOCRResult();
+      // 降级到空数据
+      return {
+        text: '',
+        words: [],
+        regions: [],
+        confidence: 0
+      };
     }
   }
 

@@ -147,63 +147,27 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { useUserStore, useAppStore } from '../../stores'
+import { useUserStore, useAppStore, useFamilyStore } from '../../stores'
 import { formatAmount } from '../../utils/format'
 
 // Store
 const userStore = useUserStore()
 const appStore = useAppStore()
+const familyStore = useFamilyStore()
 
 // 响应式数据
 const selectedPeriod = ref('month')
 const customDate = ref(new Date().toISOString().split('T')[0].substring(0, 7))
 const showTimePicker = ref(false)
 
-// 模拟数据
-const totalExpense = ref(1250.80)
-const totalIncome = ref(5000.00)
-const avgDailyExpense = ref(178.69)
-const maxDailyExpense = ref(356.50)
-const recordDays = ref(7)
+// 真实数据
+const totalExpense = ref(0)
+const totalIncome = ref(0)
+const avgDailyExpense = ref(0)
+const maxDailyExpense = ref(0)
+const recordDays = ref(0)
 
-const categoryStats = ref([
-  {
-    categoryId: '1',
-    name: '餐饮',
-    icon: '🍽️',
-    color: '#ff6b6b',
-    amount: 450.50,
-    count: 15,
-    percentage: 36
-  },
-  {
-    categoryId: '2',
-    name: '交通',
-    icon: '🚗',
-    color: '#4ecdc4',
-    amount: 280.30,
-    count: 8,
-    percentage: 22
-  },
-  {
-    categoryId: '3',
-    name: '购物',
-    icon: '🛍️',
-    color: '#45b7d1',
-    amount: 320.00,
-    count: 6,
-    percentage: 26
-  },
-  {
-    categoryId: '4',
-    name: '娱乐',
-    icon: '🎮',
-    color: '#96ceb4',
-    amount: 200.00,
-    count: 4,
-    percentage: 16
-  }
-])
+const categoryStats = ref([])
 
 // 时间选项
 const timeTabs = [
@@ -242,12 +206,88 @@ const onCustomDateChange = (e) => {
   loadReportData()
 }
 
-const loadReportData = () => {
-  // 根据选择的时间段加载数据
-  console.log('Loading report data for period:', selectedPeriod.value)
+const getDateRange = () => {
+  const now = new Date()
+  let startDate = '', endDate = ''
   
-  // 这里应该调用API获取对应时间段的数据
-  // 暂时使用模拟数据
+  if (selectedPeriod.value === 'week') {
+    const day = now.getDay() || 7
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - day + 1)
+    startDate = monday.toISOString().split('T')[0]
+    endDate = now.toISOString().split('T')[0]
+  } else if (selectedPeriod.value === 'month') {
+    startDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-01`
+    endDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-31`
+  } else if (selectedPeriod.value === 'year') {
+    startDate = `${now.getFullYear()}-01-01`
+    endDate = `${now.getFullYear()}-12-31`
+  } else if (selectedPeriod.value === 'custom') {
+    startDate = `${customDate.value}-01`
+    endDate = `${customDate.value}-31`
+  }
+  
+  return { startDate, endDate }
+}
+
+const loadReportData = async () => {
+  try {
+    const { startDate, endDate } = getDateRange()
+    const familyId = familyStore.familyId
+    
+    // 1. 获取统计数据
+    const statsRes = await Taro.request({
+      url: `/api/report/statistics`,
+      method: 'GET',
+      data: { familyId, startDate, endDate }
+    })
+    
+    if (statsRes.data && statsRes.data.data) {
+      const stats = statsRes.data.data
+      totalExpense.value = stats.totalExpense || 0
+      totalIncome.value = stats.totalIncome || 0
+      recordDays.value = stats.totalRecords || 0
+      
+      // 计算平均每日支出
+      const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1
+      avgDailyExpense.value = days > 0 ? totalExpense.value / days : 0
+    }
+    
+    // 2. 获取分类统计
+    const catRes = await Taro.request({
+      url: `/api/report/categories`,
+      method: 'GET',
+      data: { familyId, startDate, endDate, type: 'expense' }
+    })
+    
+    if (catRes.data && catRes.data.data) {
+      categoryStats.value = catRes.data.data.map(cat => ({
+        categoryId: cat.categoryId,
+        name: cat.categoryName,
+        icon: cat.categoryIcon,
+        color: cat.categoryColor,
+        amount: cat.amount,
+        count: cat.count,
+        percentage: totalExpense.value > 0 ? Math.round((cat.amount / totalExpense.value) * 100) : 0
+      }))
+    }
+    
+    // 3. 获取趋势数据计算最大日支出
+    const trendRes = await Taro.request({
+      url: `/api/report/trends`,
+      method: 'GET',
+      data: { familyId, startDate, endDate, type: 'expense', period: 'day' }
+    })
+    
+    if (trendRes.data && trendRes.data.data) {
+      const maxExpense = Math.max(...trendRes.data.data.map(item => item.expense))
+      maxDailyExpense.value = maxExpense || 0
+    }
+    
+  } catch (error) {
+    console.error('加载报表数据失败:', error)
+    appStore.showToast('加载数据失败', 'none')
+  }
 }
 
 const exportReport = () => {

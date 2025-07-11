@@ -53,6 +53,7 @@ app.use('/api/record', require('./routes/record'));
 app.use('/api/category', require('./routes/category'));
 app.use('/api/report', require('./routes/report'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/split', require('./routes/split'));
 
 // 404处理
 app.use('*', (req, res) => {
