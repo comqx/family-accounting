@@ -7,12 +7,20 @@ const router = express.Router();
 router.get('/list', async (req, res) => {
   try {
     const { familyId, type } = req.query;
+    console.log('📝 获取分类列表请求:', { familyId, type });
     
     const pool = await getConnection();
+    console.log('✅ 数据库连接成功');
     
     try {
       let whereConditions = ['1=1']; // 默认条件
       let queryParams = [];
+      
+      // 如果有familyId，优先查询该家庭的分类，否则查询默认分类
+      if (familyId) {
+        whereConditions.push('(family_id = ? OR family_id IS NULL)');
+        queryParams.push(familyId);
+      }
       
       if (type) {
         whereConditions.push('type = ?');
@@ -20,15 +28,19 @@ router.get('/list', async (req, res) => {
       }
       
       const whereClause = whereConditions.join(' AND ');
+      console.log('🔍 SQL查询条件:', whereClause);
+      console.log('🔍 查询参数:', queryParams);
       
       // 从数据库获取分类列表
       const [categories] = await pool.execute(
-        `SELECT id, name, icon, type, color, is_default, sort, family_id, created_at
+        `SELECT id, name, icon, type, color, is_default, sort_order, family_id, created_at
          FROM categories 
          WHERE ${whereClause}
-         ORDER BY sort ASC, created_at ASC`,
+         ORDER BY sort_order ASC, created_at ASC`,
         queryParams
       );
+      
+      console.log(`✅ 查询成功，返回 ${categories.length} 个分类`);
       
       const formattedCategories = categories.map(cat => ({
         id: cat.id,
@@ -37,7 +49,7 @@ router.get('/list', async (req, res) => {
         type: cat.type,
         color: cat.color,
         isDefault: cat.is_default === 1,
-        sort: cat.sort,
+        sort: cat.sort_order,
         familyId: cat.family_id,
         createdAt: cat.created_at
       }));
@@ -48,12 +60,18 @@ router.get('/list', async (req, res) => {
       });
       
     } catch (dbError) {
-      console.error('数据库查询错误:', dbError);
-      res.status(500).json({ error: '获取分类列表失败' });
+      console.error('❌ 数据库查询错误:', dbError);
+      console.error('错误详情:', {
+        code: dbError.code,
+        errno: dbError.errno,
+        sqlState: dbError.sqlState,
+        sqlMessage: dbError.sqlMessage
+      });
+      res.status(500).json({ error: '获取分类列表失败', dbError: dbError.message, sql: dbError.sql });
     }
     
   } catch (error) {
-    console.error('获取分类列表错误:', error);
+    console.error('❌ 获取分类列表错误:', error);
     res.status(500).json({ error: '获取分类列表失败' });
   }
 });
@@ -89,7 +107,7 @@ router.post('/create', [
       
       // 获取最大排序值
       const [maxSortResult] = await pool.execute(
-        'SELECT MAX(sort) as maxSort FROM categories WHERE type = ?',
+        'SELECT MAX(sort_order) as maxSort FROM categories WHERE type = ?',
         [type]
       );
       
@@ -97,7 +115,7 @@ router.post('/create', [
       
       // 保存分类到数据库
       const [result] = await pool.execute(
-        'INSERT INTO categories (name, type, icon, color, is_default, sort, family_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO categories (name, type, icon, color, is_default, sort_order, family_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [name, type, icon || '📝', color || '#666666', 0, nextSort, familyId]
       );
       
@@ -105,7 +123,7 @@ router.post('/create', [
       
       // 获取新创建的分类
       const [newCategory] = await pool.execute(
-        'SELECT id, name, icon, type, color, is_default, sort, family_id, created_at FROM categories WHERE id = ?',
+        'SELECT id, name, icon, type, color, is_default, sort_order, family_id, created_at FROM categories WHERE id = ?',
         [categoryId]
       );
       
@@ -121,7 +139,7 @@ router.post('/create', [
           type: category.type,
           color: category.color,
           isDefault: category.is_default === 1,
-          sort: category.sort,
+          sort: category.sort_order,
           familyId: category.family_id,
           createdAt: category.created_at
         }
@@ -192,7 +210,7 @@ router.put('/:categoryId', [
       }
       
       if (updateData.sort !== undefined) {
-        updateFields.push('sort = ?');
+        updateFields.push('sort_order = ?');
         updateValues.push(updateData.sort);
       }
       

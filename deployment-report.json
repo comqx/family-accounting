@@ -1,0 +1,8 @@
+{
+  "timestamp": "2025-07-11T07:12:59.807Z",
+  "environment": "production",
+  "version": "1.0.0",
+  "serviceName": "family-accounting",
+  "imageTag": "latest",
+  "status": "success"
+}
