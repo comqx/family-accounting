@@ -247,6 +247,15 @@ const onDateChange = (e) => {
 const saveRecord = async () => {
   if (!canSave.value || saving.value) return
 
+  // 检查家庭ID
+  if (!familyStore.familyId) {
+    Taro.showToast({
+      title: '请先加入或创建家庭',
+      icon: 'none'
+    })
+    return
+  }
+
   try {
     saving.value = true
 
@@ -259,6 +268,13 @@ const saveRecord = async () => {
       description: recordForm.value.description,
       date: recordForm.value.date
     }
+    
+    // 调试：打印发送的数据
+    console.log('发送记账数据:', {
+      familyId: familyStore.familyId,
+      familyStore: familyStore,
+      recordData: recordData
+    })
 
     // 调用后端 API 保存记录
     const success = await recordStore.createRecord(recordData)
@@ -371,7 +387,7 @@ const loadData = async () => {
 }
 
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   // 检查登录状态
   if (!userStore.isLoggedIn) {
     Taro.reLaunch({
@@ -379,6 +395,15 @@ onMounted(() => {
     })
     return
   }
+  
+  // 初始化家庭状态
+  familyStore.initFamilyState()
+  
+  // 如果没有家庭信息，尝试获取
+  if (!familyStore.hasFamily) {
+    await familyStore.getFamilyInfo()
+  }
+  
   loadData()
 })
 

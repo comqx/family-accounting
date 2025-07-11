@@ -147,6 +147,38 @@ router.post('/create', [
       description 
     } = req.body;
     
+    // 调试：打印接收到的原始数据
+    console.log('接收到的请求数据:', {
+      body: req.body,
+      headers: req.headers,
+      familyId: familyId,
+      type: type,
+      amount: amount,
+      categoryId: categoryId,
+      date: date,
+      description: description
+    });
+    
+    // 验证必需参数不为undefined或空字符串
+    if (familyId === undefined || familyId === null || familyId === '' ||
+        type === undefined || type === null || type === '' ||
+        amount === undefined || amount === null || amount === '' ||
+        categoryId === undefined || categoryId === null || categoryId === '' ||
+        date === undefined || date === null || date === '') {
+      console.error('参数验证失败:', { familyId, type, amount, categoryId, date, description });
+      return res.status(400).json({ error: '缺少必需参数' });
+    }
+    
+    // 确保数值类型正确
+    const parsedFamilyId = parseInt(familyId);
+    const parsedCategoryId = parseInt(categoryId);
+    const parsedAmount = parseFloat(amount);
+    
+    if (isNaN(parsedFamilyId) || isNaN(parsedCategoryId) || isNaN(parsedAmount)) {
+      console.error('数值转换失败:', { familyId, categoryId, amount, parsedFamilyId, parsedCategoryId, parsedAmount });
+      return res.status(400).json({ error: '参数格式错误' });
+    }
+    
     // 从 token 中获取用户信息
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) {
@@ -157,10 +189,20 @@ router.post('/create', [
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      console.log('JWT解码成功:', decoded);
     } catch (err) {
+      console.error('JWT验证失败:', err);
       return res.status(401).json({ error: 'token无效或已过期' });
     }
     const userId = decoded.userId;
+    
+    // 验证userId不为undefined
+    if (userId === undefined) {
+      console.error('userId验证失败:', { userId, decoded });
+      return res.status(401).json({ error: '用户ID无效' });
+    }
+    
+    console.log('用户ID验证成功:', userId);
 
     const pool = await getConnection();
     
@@ -168,7 +210,7 @@ router.post('/create', [
       // 验证家庭和分类是否存在
       const [families] = await pool.execute(
         'SELECT id FROM families WHERE id = ?',
-        [familyId]
+        [parsedFamilyId]
       );
       
       if (families.length === 0) {
@@ -177,7 +219,7 @@ router.post('/create', [
 
       const [categories] = await pool.execute(
         'SELECT id FROM categories WHERE id = ?',
-        [categoryId]
+        [parsedCategoryId]
       );
       
       if (categories.length === 0) {
@@ -185,9 +227,12 @@ router.post('/create', [
       }
 
       // 插入记账记录
+      const insertParams = [parsedFamilyId, userId, parsedCategoryId, type, parsedAmount, description || '', date];
+      console.log('插入记录参数:', insertParams);
+      
       const [result] = await pool.execute(
         'INSERT INTO records (family_id, user_id, category_id, type, amount, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [familyId, userId, categoryId, type, amount, description || '', date]
+        insertParams
       );
       
       const recordId = result.insertId;
