@@ -6,7 +6,7 @@ import { useRecordStore } from '../stores/modules/record';
 import { useCategoryStore } from '../stores/modules/category';
 import { useFamilyStore } from '../stores/modules/family';
 import { useAppStore } from '../stores/modules/app';
-import wsService from '../services/websocket';
+import wsService from '../services/websocket/index.js';
 
 export function useRealTimeSync() {
   const userStore = useUserStore();

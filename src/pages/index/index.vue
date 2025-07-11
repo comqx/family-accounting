@@ -165,7 +165,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { useUserStore, useCategoryStore, useRecordStore } from '../../stores'
+import { useUserStore, useCategoryStore, useRecordStore, useFamilyStore } from '../../stores'
 import { useRealTimeSync } from '../../hooks/useRealTimeSync'
 import { formatAmount, formatDate, formatRelativeTime } from '../../utils/format'
 import './index.scss'
@@ -174,6 +174,7 @@ import './index.scss'
 const userStore = useUserStore()
 const categoryStore = useCategoryStore()
 const recordStore = useRecordStore()
+const familyStore = useFamilyStore()
 
 // 实时同步
 const { isConnected, syncRecordChange } = useRealTimeSync()
@@ -228,7 +229,7 @@ const onRemarkInput = (e) => {
 }
 
 const selectCategory = (category) => {
-  recordForm.value.categoryId = category.id
+  recordForm.value.categoryId = Number(category.id)
 }
 
 const showDatePicker = () => {
@@ -248,33 +249,38 @@ const saveRecord = async () => {
 
     // 创建记录数据
     const recordData = {
-      id: Date.now().toString(),
+      familyId: familyStore.familyId,
       type: recordForm.value.type,
       amount: parseFloat(recordForm.value.amount),
-      categoryId: recordForm.value.categoryId,
+      categoryId: Number(recordForm.value.categoryId), // 强制转为数字
       description: recordForm.value.description,
-      date: new Date(recordForm.value.date),
-      createTime: new Date(),
-      updateTime: new Date()
+      date: recordForm.value.date
     }
 
-    // 模拟保存记录
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    console.log('保存记录数据:', recordData)
 
-    // 同步到其他设备
-    syncRecordChange('create', recordData)
+    // 调用后端 API 保存记录
+    const success = await recordStore.createRecord(recordData)
 
-    Taro.showToast({
-      title: '保存成功',
-      icon: 'success'
-    })
+    if (success) {
+      // 同步到其他设备
+      syncRecordChange('create', recordData)
 
-    // 重置表单
-    resetForm()
+      Taro.showToast({
+        title: '保存成功',
+        icon: 'success'
+      })
 
-    // 刷新数据
-    loadData()
+      // 重置表单
+      resetForm()
+
+      // 刷新数据
+      loadData()
+    } else {
+      throw new Error('保存失败')
+    }
   } catch (error) {
+    console.error('保存记录错误:', error)
     Taro.showToast({
       title: error.message || '保存失败',
       icon: 'none'

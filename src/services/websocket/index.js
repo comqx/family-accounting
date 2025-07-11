@@ -1,7 +1,6 @@
 // WebSocket实时通信服务
 
 import Taro from '@tarojs/taro';
-// import { WSMessage } from '../../types/api'; // 移除类型依赖
 
 class WebSocketService {
   constructor() {
@@ -18,14 +17,15 @@ class WebSocketService {
   }
 
   init() {
+    // 暂时禁用 WebSocket，使用 HTTP 轮询替代
     // 根据环境设置WebSocket URL
     const accountInfo = Taro.getAccountInfoSync();
     if (accountInfo.miniProgram.envVersion === 'develop') {
-      this.url = 'wss://dev-ws.example.com';
+      this.url = ''; // 暂时禁用 WebSocket
     } else if (accountInfo.miniProgram.envVersion === 'trial') {
-      this.url = 'wss://test-ws.example.com';
+      this.url = ''; // 暂时禁用 WebSocket
     } else {
-      this.url = 'wss://ws.example.com';
+      this.url = ''; // 暂时禁用 WebSocket
     }
   }
 
@@ -33,6 +33,14 @@ class WebSocketService {
   connect(token, familyId) {
     return new Promise((resolve, reject) => {
       if (this.isConnected) {
+        resolve(true);
+        return;
+      }
+
+      // 如果 WebSocket URL 为空，暂时禁用 WebSocket 功能
+      if (!this.url) {
+        console.log('WebSocket is disabled, using HTTP polling instead');
+        this.isConnected = false; // 标记为未连接，但不会报错
         resolve(true);
         return;
       }
@@ -251,7 +259,7 @@ class WebSocketService {
     return this.send(message);
   }
 
-  // 请求数据同步
+  // 请求同步
   requestSync(lastSyncTime, familyId, userId) {
     const message = {
       type: 'sync_request',
@@ -277,4 +285,4 @@ class WebSocketService {
 // 创建WebSocket服务实例
 const wsService = new WebSocketService();
 
-export default wsService;
+export default wsService; 
