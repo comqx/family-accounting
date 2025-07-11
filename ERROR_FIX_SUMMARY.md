@@ -337,4 +337,32 @@ curl -X GET "https://express-9o49-171950-8-1322802786.sh.run.tcloudbase.com/api/
 - ✅ 空值和 undefined 值被正确拦截
 - ✅ 调试日志提供详细的错误信息
 - ✅ 家庭状态正确初始化
-- ✅ 用户友好的错误提示 
+- ✅ 用户友好的错误提示
+
+### 2024-07-11 - 前端request导入错误修复
+
+**问题描述**：
+- 账本页面报错：`ReferenceError: request is not defined`
+- 报表页面可能也存在类似问题
+
+**问题原因**：
+- 账本页面和报表页面使用了 `request.get()` 但没有导入 `request` 模块
+- 导致运行时找不到 request 对象
+
+**解决方案**：
+在所有使用 `request` 的页面中添加正确的导入语句：
+
+```javascript
+import request from '../../utils/request'  // 账本页面
+import request from '../../../utils/request'  // 报表页面
+```
+
+**修改文件**：
+- `src/pages/ledger/index.vue` - 添加 request 导入
+- `src/pages/reports/index.vue` - 添加 request 导入  
+- `src/pages/reports/advanced/index.vue` - 添加 request 导入
+
+**测试结果**：
+- ✅ 账本页面可以正常加载数据
+- ✅ 报表页面可以正常调用API
+- ✅ 所有页面都正确导入了request模块 

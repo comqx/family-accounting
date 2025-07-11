@@ -163,6 +163,7 @@ import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useCategoryStore, useAppStore, useRecordStore } from '../../stores'
 import { formatAmount, formatDate } from '../../utils/format'
+import request from '../../utils/request'
 
 // Store
 const userStore = useUserStore()
