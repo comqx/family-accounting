@@ -43,12 +43,12 @@ router.get('/list', async (req, res) => {
         queryParams.push(endDate);
       }
       
-      if (categoryId) {
+      if (categoryId !== undefined && categoryId !== null && categoryId !== '') {
         whereConditions.push('r.category_id = ?');
         queryParams.push(categoryId);
       }
       
-      if (type) {
+      if (type !== undefined && type !== null && type !== '') {
         whereConditions.push('r.type = ?');
         queryParams.push(type);
       }
