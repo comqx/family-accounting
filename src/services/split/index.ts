@@ -32,19 +32,11 @@ class SplitService {
 
       // 发送到后端创建
       const response = await request.post('/api/split/create', splitRecord);
-      
       if (response.data) {
         return response.data;
       }
-
-      // 如果后端不可用，返回模拟数据
-      return {
-        ...splitRecord,
-        id: Date.now().toString(),
-        createTime: new Date(),
-        updateTime: new Date()
-      };
-
+      // 如果后端不可用，返回空
+      return null;
     } catch (error) {
       console.error('Create split record error:', error);
       throw error;
@@ -170,13 +162,11 @@ class SplitService {
     try {
       const params = { familyId, status };
       const response = await request.get('/api/split/list', { params });
-      
       if (response.data) {
         return response.data;
       }
-
-      // 返回模拟数据
-      return this.getMockSplitRecords();
+      // 返回空
+      return [];
     } catch (error) {
       console.error('Get split records error:', error);
       return [];
@@ -307,43 +297,6 @@ class SplitService {
     }
 
     return { valid: true };
-  }
-
-  // 获取模拟分摊记录
-  getMockSplitRecords() {
-    return [
-      {
-        id: '1',
-        originalRecordId: 'record_1',
-        familyId: 'family_1',
-        totalAmount: 100.00,
-        splitType: 'EQUAL',
-        participants: [
-          {
-            userId: 'user_1',
-            nickName: '张三',
-            avatarUrl: '',
-            amount: 50.00,
-            percentage: 50,
-            status: 'CONFIRMED',
-            confirmTime: new Date()
-          },
-          {
-            userId: 'user_2',
-            nickName: '李四',
-            avatarUrl: '',
-            amount: 50.00,
-            percentage: 50,
-            status: 'PENDING'
-          }
-        ],
-        description: '午餐分摊',
-        status: 'PENDING',
-        createdBy: 'user_1',
-        createTime: new Date(),
-        updateTime: new Date()
-      }
-    ];
   }
 }
 

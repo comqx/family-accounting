@@ -413,20 +413,24 @@ class OCRService {
     };
   }
 
-  // 获取模拟OCR结果
-  getMockOCRResult() {
-    return {
-      text: '模拟OCR识别结果\n2024-01-15 14:30:00 超市购物 -50.00\n2024-01-16 09:15:00 工资收入 +5000.00',
-      words: [
-        { text: '模拟OCR识别结果', confidence: 0.9 },
-        { text: '2024-01-15', confidence: 0.95 },
-        { text: '超市购物', confidence: 0.8 },
-        { text: '-50.00', confidence: 0.9 }
-      ],
-      regions: [
-        { text: '模拟OCR识别结果', confidence: 0.9, boundingBox: { x: 0, y: 0, width: 200, height: 30 } }
-      ]
-    };
+  // 识别图片（通过 cloud 接口）
+  async recognizeImage(filePath, platform) {
+    try {
+      const formData = { platform };
+      const response = await Taro.uploadFile({
+        url: '/api/ocr/recognize',
+        filePath,
+        name: 'file',
+        formData
+      });
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return JSON.parse(response.data);
+      }
+      throw new Error('OCR识别失败');
+    } catch (error) {
+      console.error('OCR识别失败:', error);
+      throw error;
+    }
   }
 
   // 识别多张图片

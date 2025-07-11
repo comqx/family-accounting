@@ -210,6 +210,8 @@ const canSave = computed(() => {
 const switchType = (type) => {
   recordForm.value.type = type
   recordForm.value.categoryId = '' // 清空分类选择
+  // 重新加载分类
+  loadCategories()
 }
 
 const onAmountInput = (e) => {
@@ -252,12 +254,10 @@ const saveRecord = async () => {
       familyId: familyStore.familyId,
       type: recordForm.value.type,
       amount: parseFloat(recordForm.value.amount),
-      categoryId: Number(recordForm.value.categoryId), // 强制转为数字
+      categoryId: Number(recordForm.value.categoryId),
       description: recordForm.value.description,
       date: recordForm.value.date
     }
-
-    console.log('保存记录数据:', recordData)
 
     // 调用后端 API 保存记录
     const success = await recordStore.createRecord(recordData)
@@ -324,65 +324,53 @@ const goToImport = () => {
   })
 }
 
-const loadData = async () => {
+// 加载分类
+const loadCategories = async () => {
   try {
-    // 初始化默认分类（如果没有分类数据）
-    if (categoryStore.categories.length === 0) {
-      categoryStore.initDefaultCategories()
-    }
-
-    // 加载最近记录
-    await loadRecentRecords()
-
-    // 加载月度统计
-    await loadMonthStats()
+    await categoryStore.loadCategories(familyStore.familyId)
   } catch (error) {
-    console.error('Load data error:', error)
+    console.error('加载分类失败:', error)
   }
 }
 
+// 加载最近记录
 const loadRecentRecords = async () => {
   try {
-    // 模拟一些最近记录数据
-    recentRecords.value = [
-      {
-        id: '1',
-        type: 'expense',
-        amount: 25.50,
-        categoryId: 'expense_0',
-        categoryName: '餐饮',
-        categoryIcon: '🍽️',
-        categoryColor: '#ff6b6b',
-        description: '午餐',
-        date: new Date(),
-        createTime: new Date()
-      },
-      {
-        id: '2',
-        type: 'expense',
-        amount: 12.00,
-        categoryId: 'expense_1',
-        categoryName: '交通',
-        categoryIcon: '🚗',
-        categoryColor: '#4ecdc4',
-        description: '地铁',
-        date: new Date(),
-        createTime: new Date()
-      }
-    ]
+    const res = await recordStore.getRecentRecords(10)
+    recentRecords.value = res || []
   } catch (error) {
-    console.error('Load recent records error:', error)
+    console.error('加载最近记录失败:', error)
   }
 }
 
+// 加载月统计
 const loadMonthStats = async () => {
   try {
-    // 模拟月度统计数据
-    monthExpense.value = 1250.80
-    monthIncome.value = 5000.00
+    const now = new Date()
+    const startDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-01`
+    const endDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-31`
+    const res = await Taro.request({
+      url: `/api/report/statistics`,
+      method: 'GET',
+      data: {
+        familyId: familyStore.familyId,
+        startDate,
+        endDate
+      }
+    })
+    if (res.data && res.data.data) {
+      monthExpense.value = res.data.data.totalExpense || 0
+      monthIncome.value = res.data.data.totalIncome || 0
+    }
   } catch (error) {
-    console.error('Load month stats error:', error)
+    console.error('加载月统计失败:', error)
   }
+}
+
+const loadData = async () => {
+  await loadCategories()
+  await loadRecentRecords()
+  await loadMonthStats()
 }
 
 // 生命周期
@@ -394,12 +382,9 @@ onMounted(() => {
     })
     return
   }
-
-  // 加载数据
   loadData()
 })
 
-// 页面显示时刷新数据
 Taro.useDidShow(() => {
   if (userStore.isLoggedIn) {
     loadData()

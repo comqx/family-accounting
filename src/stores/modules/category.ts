@@ -21,29 +21,18 @@ export const useCategoryStore = defineStore('category', () => {
     categories.value.filter(cat => cat.type === RecordType.INCOME && cat.isActive)
   );
 
-  const defaultCategories = computed(() => 
-    categories.value.filter(cat => cat.isDefault)
-  );
-
-  const customCategories = computed(() => 
-    categories.value.filter(cat => !cat.isDefault)
-  );
-
   // 获取分类列表
   const loadCategories = async (familyId) => {
     try {
       isLoading.value = true;
-
-      const response = await request.get('/categories', {
-        familyId,
-        includeDefault: true
+      // cloud接口：/api/category/list
+      const response = await request.get('/api/category/list', {
+        familyId
       });
-
       if (response.data?.categories) {
         categories.value = response.data.categories.sort((a, b) => a.sort - b.sort);
         return true;
       }
-
       return false;
     } catch (error) {
       console.error('Load categories error:', error);
@@ -206,60 +195,6 @@ export const useCategoryStore = defineStore('category', () => {
     );
   };
 
-  // 初始化默认分类
-  const initDefaultCategories = () => {
-    const defaultExpenseCategories = [
-      { name: '餐饮', icon: '🍽️', color: '#ff6b6b' },
-      { name: '交通', icon: '🚗', color: '#4ecdc4' },
-      { name: '购物', icon: '🛍️', color: '#45b7d1' },
-      { name: '娱乐', icon: '🎮', color: '#96ceb4' },
-      { name: '医疗', icon: '🏥', color: '#feca57' },
-      { name: '教育', icon: '📚', color: '#ff9ff3' },
-      { name: '住房', icon: '🏠', color: '#54a0ff' },
-      { name: '通讯', icon: '📱', color: '#5f27cd' },
-      { name: '其他', icon: '💰', color: '#999999' }
-    ];
-
-    const defaultIncomeCategories = [
-      { name: '工资', icon: '💼', color: '#00d2d3' },
-      { name: '奖金', icon: '🎁', color: '#ff9f43' },
-      { name: '投资', icon: '📈', color: '#10ac84' },
-      { name: '兼职', icon: '💻', color: '#ee5a24' },
-      { name: '红包', icon: '🧧', color: '#ff3838' },
-      { name: '其他', icon: '💰', color: '#999999' }
-    ];
-
-    // 支出分类
-    defaultExpenseCategories.forEach((cat, index) => {
-      categories.value.push({
-        id: `expense_${index}`,
-        name: cat.name,
-        icon: cat.icon,
-        color: cat.color,
-        type: RecordType.EXPENSE,
-        isDefault: true,
-        sort: index,
-        isActive: true,
-        createTime: new Date()
-      });
-    });
-
-    // 收入分类
-    defaultIncomeCategories.forEach((cat, index) => {
-      categories.value.push({
-        id: `income_${index}`,
-        name: cat.name,
-        icon: cat.icon,
-        color: cat.color,
-        type: RecordType.INCOME,
-        isDefault: true,
-        sort: index,
-        isActive: true,
-        createTime: new Date()
-      });
-    });
-  };
-
   // 重置状态
   const $reset = () => {
     categories.value = [];
@@ -274,8 +209,6 @@ export const useCategoryStore = defineStore('category', () => {
     // 计算属性
     expenseCategories,
     incomeCategories,
-    defaultCategories,
-    customCategories,
 
     // 方法
     loadCategories,
@@ -287,7 +220,6 @@ export const useCategoryStore = defineStore('category', () => {
     getCategoryById,
     getCategoriesByType,
     searchCategories,
-    initDefaultCategories,
     $reset
   };
 });

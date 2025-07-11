@@ -241,10 +241,24 @@ const appStore = useAppStore()
 const selectedRange = ref('month')
 const customStartDate = ref('')
 const customEndDate = ref('')
-const analysisView = ref('list')
+const analysisView = ref('category')
 const trendType = ref('daily')
+const metrics = ref({
+  totalExpense: 0,
+  totalIncome: 0,
+  balance: 0,
+  expenseChange: 0,
+  incomeChange: 0,
+  balanceChange: 0
+})
+const categoryAnalysis = ref([])
+const trendInsights = ref({
+  avgExpense: 0,
+  maxExpense: 0,
+  volatility: 0
+})
+const memberAnalysis = ref([])
 
-// 时间范围选项
 const timeRanges = [
   { label: '本周', value: 'week' },
   { label: '本月', value: 'month' },
@@ -252,76 +266,6 @@ const timeRanges = [
   { label: '本年', value: 'year' },
   { label: '自定义', value: 'custom' }
 ]
-
-// 模拟数据
-const metrics = ref({
-  totalExpense: 2580.50,
-  totalIncome: 8000.00,
-  balance: 5419.50,
-  expenseChange: 12.5,
-  incomeChange: -3.2,
-  balanceChange: -8.7
-})
-
-const categoryAnalysis = ref([
-  {
-    id: '1',
-    name: '餐饮',
-    icon: '🍽️',
-    color: '#ff6b6b',
-    amount: 856.30,
-    count: 25,
-    percentage: 33.2,
-    trend: 15.6
-  },
-  {
-    id: '2',
-    name: '交通',
-    icon: '🚗',
-    color: '#4ecdc4',
-    amount: 420.80,
-    count: 18,
-    percentage: 16.3,
-    trend: -8.2
-  },
-  {
-    id: '3',
-    name: '购物',
-    icon: '🛍️',
-    color: '#45b7d1',
-    amount: 680.90,
-    count: 12,
-    percentage: 26.4,
-    trend: 22.1
-  }
-])
-
-const trendInsights = ref({
-  avgExpense: 86.2,
-  maxExpense: 256.8,
-  volatility: 18.5
-})
-
-const memberAnalysis = ref([
-  {
-    userId: '1',
-    nickName: '张三',
-    avatarUrl: '',
-    recordCount: 35,
-    totalExpense: 1580.30,
-    totalIncome: 5000.00,
-    expensePercentage: 61.2
-  },
-  {
-    userId: '2',
-    nickName: '李四',
-    avatarUrl: '',
-    recordCount: 20,
-    totalExpense: 1000.20,
-    totalIncome: 3000.00,
-    expensePercentage: 38.8
-  }
-])
 
 // 方法
 const selectTimeRange = (range) => {
@@ -354,9 +298,75 @@ const switchTrendType = (type) => {
   loadTrendData()
 }
 
-const loadReportData = () => {
-  // 模拟加载报表数据
-  console.log('Loading report data for range:', selectedRange.value)
+const getDateRange = () => {
+  const now = new Date()
+  let startDate = '', endDate = ''
+  if (selectedRange.value === 'week') {
+    const day = now.getDay() || 7
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - day + 1)
+    startDate = monday.toISOString().split('T')[0]
+    endDate = now.toISOString().split('T')[0]
+  } else if (selectedRange.value === 'month') {
+    startDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-01`
+    endDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-31`
+  } else if (selectedRange.value === 'quarter') {
+    const quarter = Math.floor(now.getMonth() / 3)
+    startDate = `${now.getFullYear()}-${(quarter*3+1).toString().padStart(2,'0')}-01`
+    endDate = `${now.getFullYear()}-${(quarter*3+3).toString().padStart(2,'0')}-31`
+  } else if (selectedRange.value === 'year') {
+    startDate = `${now.getFullYear()}-01-01`
+    endDate = `${now.getFullYear()}-12-31`
+  } else if (selectedRange.value === 'custom') {
+    startDate = customStartDate.value
+    endDate = customEndDate.value
+  }
+  return { startDate, endDate }
+}
+
+const loadReportData = async () => {
+  try {
+    const { startDate, endDate } = getDateRange()
+    const familyId = userStore.user?.familyId
+    // 1. 获取统计数据
+    const statsRes = await Taro.request({
+      url: `/api/report/statistics`,
+      method: 'GET',
+      data: { familyId, startDate, endDate }
+    })
+    if (statsRes.data && statsRes.data.data) {
+      metrics.value = {
+        totalExpense: statsRes.data.data.totalExpense || 0,
+        totalIncome: statsRes.data.data.totalIncome || 0,
+        balance: (statsRes.data.data.totalIncome || 0) - (statsRes.data.data.totalExpense || 0),
+        expenseChange: statsRes.data.data.expenseChange || 0,
+        incomeChange: statsRes.data.data.incomeChange || 0,
+        balanceChange: statsRes.data.data.balanceChange || 0
+      }
+    }
+    // 2. 获取分类统计
+    const catRes = await Taro.request({
+      url: `/api/report/categories`,
+      method: 'GET',
+      data: { familyId, type: 'expense', period: selectedRange.value, startDate, endDate }
+    })
+    if (catRes.data && catRes.data.data) {
+      categoryAnalysis.value = catRes.data.data
+    }
+    // 3. 获取趋势数据
+    const trendRes = await Taro.request({
+      url: `/api/report/trends`,
+      method: 'GET',
+      data: { familyId, period: selectedRange.value, days: 30 }
+    })
+    if (trendRes.data && trendRes.data.data) {
+      trendInsights.value = trendRes.data.data
+    }
+    // 4. 获取成员分析（如有接口）
+    // TODO: 如果 cloud 没有成员分析接口，可补充实现
+  } catch (error) {
+    console.error('加载报表数据失败:', error)
+  }
 }
 
 const loadTrendData = () => {

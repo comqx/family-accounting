@@ -163,61 +163,24 @@ import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useCategoryStore, useAppStore } from '../../stores'
 import { formatAmount, formatDate } from '../../utils/format'
+import { useRecordStore } from '../../stores/recordStore'
 
 // Store
 const userStore = useUserStore()
 const categoryStore = useCategoryStore()
 const appStore = useAppStore()
+const recordStore = useRecordStore()
 
 // 响应式数据
-const monthExpense = ref(1250.80)
-const monthIncome = ref(5000.00)
+const monthExpense = ref(0)
+const monthIncome = ref(0)
 const selectedDate = ref(new Date().toISOString().split('T')[0].substring(0, 7))
 const typeFilter = ref('')
 const categoryFilter = ref('')
 const showDatePickerModal = ref(false)
 const showTypeModal = ref(false)
 const showCategoryModal = ref(false)
-
-// 模拟记录数据
-const mockRecords = ref([
-  {
-    id: '1',
-    type: 'expense',
-    amount: 25.50,
-    categoryId: 'expense_0',
-    categoryName: '餐饮',
-    categoryIcon: '🍽️',
-    categoryColor: '#ff6b6b',
-    description: '午餐',
-    date: new Date(),
-    createTime: new Date()
-  },
-  {
-    id: '2',
-    type: 'expense',
-    amount: 12.00,
-    categoryId: 'expense_1',
-    categoryName: '交通',
-    categoryIcon: '🚗',
-    categoryColor: '#4ecdc4',
-    description: '地铁',
-    date: new Date(),
-    createTime: new Date()
-  },
-  {
-    id: '3',
-    type: 'income',
-    amount: 5000.00,
-    categoryId: 'income_0',
-    categoryName: '工资',
-    categoryIcon: '💼',
-    categoryColor: '#00d2d3',
-    description: '月薪',
-    date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    createTime: new Date(Date.now() - 24 * 60 * 60 * 1000)
-  }
-])
+const records = ref([])
 
 // 类型选项
 const typeOptions = [
@@ -251,27 +214,22 @@ const currentCategories = computed(() => {
 })
 
 const filteredRecords = computed(() => {
-  let records = mockRecords.value
-
+  let filtered = records.value
   // 按类型筛选
   if (typeFilter.value) {
-    records = records.filter(record => record.type === typeFilter.value)
+    filtered = filtered.filter(record => record.type === typeFilter.value)
   }
-
   // 按分类筛选
   if (categoryFilter.value) {
-    records = records.filter(record => record.categoryId === categoryFilter.value)
+    filtered = filtered.filter(record => record.categoryId === Number(categoryFilter.value))
   }
-
-  return records
+  return filtered
 })
 
 const groupedRecords = computed(() => {
   const groups = {}
-
   filteredRecords.value.forEach(record => {
     const dateKey = formatDate(record.date, 'MM-DD')
-
     if (!groups[dateKey]) {
       groups[dateKey] = {
         date: dateKey,
@@ -280,16 +238,13 @@ const groupedRecords = computed(() => {
         totalIncome: 0
       }
     }
-
     groups[dateKey].records.push(record)
-
     if (record.type === 'expense') {
       groups[dateKey].totalExpense += record.amount
     } else {
       groups[dateKey].totalIncome += record.amount
     }
   })
-
   return Object.values(groups).sort((a, b) => b.date.localeCompare(a.date))
 })
 
@@ -301,7 +256,6 @@ const showDatePicker = () => {
 const onDateChange = (e) => {
   selectedDate.value = e.detail.value
   showDatePickerModal.value = false
-  // 重新加载数据
   loadData()
 }
 
@@ -317,6 +271,7 @@ const selectTypeFilter = (value) => {
   typeFilter.value = value
   categoryFilter.value = '' // 重置分类筛选
   closeTypeModal()
+  loadData()
 }
 
 const showCategoryFilter = () => {
@@ -330,6 +285,7 @@ const closeCategoryModal = () => {
 const selectCategoryFilter = (value) => {
   categoryFilter.value = value
   closeCategoryModal()
+  loadData()
 }
 
 const goToRecordDetail = (recordId) => {
@@ -344,10 +300,40 @@ const goToAddRecord = () => {
   })
 }
 
-const loadData = () => {
-  // 初始化默认分类
-  if (categoryStore.categories.length === 0) {
-    categoryStore.initDefaultCategories()
+const loadData = async () => {
+  try {
+    // 获取分类
+    await categoryStore.loadCategories(userStore.user?.familyId)
+    // 获取账单记录
+    const [year, month] = selectedDate.value.split('-')
+    const startDate = `${year}-${month}-01`
+    const endDate = `${year}-${month}-31`
+    const res = await recordStore.loadRecords({
+      familyId: userStore.user?.familyId,
+      startDate,
+      endDate,
+      type: typeFilter.value || undefined,
+      categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined,
+      page: 1,
+      pageSize: 100
+    })
+    records.value = recordStore.records
+    // 获取月统计
+    const statsRes = await Taro.request({
+      url: `/api/report/statistics`,
+      method: 'GET',
+      data: {
+        familyId: userStore.user?.familyId,
+        startDate,
+        endDate
+      }
+    })
+    if (statsRes.data && statsRes.data.data) {
+      monthExpense.value = statsRes.data.data.totalExpense || 0
+      monthIncome.value = statsRes.data.data.totalIncome || 0
+    }
+  } catch (error) {
+    console.error('账本页加载数据失败:', error)
   }
 }
 
@@ -367,11 +353,16 @@ onMounted(() => {
   loadData()
 })
 
-// 页面配置
 Taro.useLoad(() => {
   Taro.setNavigationBarTitle({
     title: '账本'
   })
+})
+
+Taro.useDidShow(() => {
+  if (userStore.isLoggedIn) {
+    loadData()
+  }
 })
 
 // 页面分享
