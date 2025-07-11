@@ -1,10 +1,8 @@
-// 记录状态管理
+// 记录状态管理 - JavaScript版本
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import Taro from '@tarojs/taro';
-import { AccountRecord, RecordType } from '../../types/business';
-import { RecordAPI } from '../../types/api';
 import request from '../../utils/request';
 
 export const useRecordStore = defineStore('record', () => {
@@ -18,13 +16,13 @@ export const useRecordStore = defineStore('record', () => {
   // 计算属性
   const totalIncome = computed(() => 
     records.value
-      .filter(record => record.type === RecordType.INCOME)
+      .filter(record => record.type === 'income')
       .reduce((sum, record) => sum + record.amount, 0)
   );
 
   const totalExpense = computed(() => 
     records.value
-      .filter(record => record.type === RecordType.EXPENSE)
+      .filter(record => record.type === 'expense')
       .reduce((sum, record) => sum + record.amount, 0)
   );
 
@@ -32,7 +30,7 @@ export const useRecordStore = defineStore('record', () => {
 
   const recentRecords = computed(() => 
     records.value
-      .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())
+      .sort((a, b) => new Date(b.createTime || b.createdAt).getTime() - new Date(a.createTime || a.createdAt).getTime())
       .slice(0, 10)
   );
 
@@ -40,14 +38,28 @@ export const useRecordStore = defineStore('record', () => {
   const createRecord = async (recordData) => {
     try {
       isLoading.value = true;
+      console.log('Creating record with data:', recordData);
 
-      const response = await request.post<RecordAPI.CreateRecordResponse>('/api/record/create', recordData);
+      const response = await request.post('/api/record/create', recordData);
+      console.log('Create record response:', response);
 
+      // 兼容不同的响应格式
+      let record = null;
       if (response.data?.record) {
-        records.value.unshift(response.data.record);
+        // 格式：{ data: { record: {...} } }
+        record = response.data.record;
+      } else if (response.data) {
+        // 格式：{ data: {...} }
+        record = response.data;
+      }
+
+      if (record) {
+        records.value.unshift(record);
+        console.log('Record created successfully:', record);
         return true;
       }
 
+      console.warn('No record data in response');
       return false;
     } catch (error) {
       console.error('Create record error:', error);
@@ -62,20 +74,28 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.put<RecordAPI.UpdateRecordResponse>(`/api/record/${id}`, {
+      const response = await request.put(`/api/record/${id}`, {
         id,
         ...recordData
       });
 
+      // 兼容不同的响应格式
+      let record = null;
       if (response.data?.record) {
+        record = response.data.record;
+      } else if (response.data) {
+        record = response.data;
+      }
+
+      if (record) {
         const index = records.value.findIndex(record => record.id === id);
         if (index !== -1) {
-          records.value[index] = response.data.record;
+          records.value[index] = record;
         }
         
         // 更新当前记录
         if (currentRecord.value?.id === id) {
-          currentRecord.value = response.data.record;
+          currentRecord.value = record;
         }
         
         return true;
@@ -121,7 +141,7 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.post<RecordAPI.BatchDeleteResponse>('/api/record/batch-delete', {
+      const response = await request.post('/api/record/batch-delete', {
         ids
       });
 
@@ -150,28 +170,51 @@ export const useRecordStore = defineStore('record', () => {
   const loadRecords = async (params) => {
     try {
       isLoading.value = true;
+      console.log('Loading records with params:', params);
 
       const page = params?.refresh ? 1 : (params?.page || currentPage.value);
       
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
+      const response = await request.get('/api/record/list', {
         ...params,
         page,
         pageSize: params?.pageSize || 20
       });
 
-      if (response.data) {
+      console.log('Load records response:', response);
+
+      // 兼容不同的响应格式
+      let recordsData = null;
+      let paginationData = null;
+      
+      if (response.data?.records) {
+        // 格式：{ data: { records: [...], pagination: {...} } }
+        recordsData = response.data.records;
+        paginationData = response.data.pagination;
+      } else if (response.data?.list) {
+        // 格式：{ data: { list: [...], hasMore: boolean } }
+        recordsData = response.data.list;
+        paginationData = { hasMore: response.data.hasMore };
+      } else if (Array.isArray(response.data)) {
+        // 格式：{ data: [...] }
+        recordsData = response.data;
+        paginationData = { hasMore: false };
+      }
+
+      if (recordsData) {
         if (params?.refresh || page === 1) {
-          records.value = response.data.list;
+          records.value = recordsData;
         } else {
-          records.value.push(...response.data.list);
+          records.value.push(...recordsData);
         }
         
-        hasMore.value = response.data.hasMore;
+        hasMore.value = paginationData?.hasMore || false;
         currentPage.value = page;
         
+        console.log('Records loaded successfully:', recordsData.length);
         return true;
       }
 
+      console.warn('No records data in response');
       return false;
     } catch (error) {
       console.error('Load records error:', error);
@@ -186,10 +229,18 @@ export const useRecordStore = defineStore('record', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.get<RecordAPI.GetRecordDetailResponse>(`/api/record/${id}`);
+      const response = await request.get(`/api/record/${id}`);
 
+      // 兼容不同的响应格式
+      let record = null;
       if (response.data?.record) {
-        currentRecord.value = response.data.record;
+        record = response.data.record;
+      } else if (response.data) {
+        record = response.data;
+      }
+
+      if (record) {
+        currentRecord.value = record;
         return true;
       }
 
@@ -205,13 +256,23 @@ export const useRecordStore = defineStore('record', () => {
   // 获取最近记录
   const getRecentRecords = async (limit = 10) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
+      const response = await request.get('/api/record/list', {
         page: 1,
         pageSize: limit
       });
 
+      // 兼容不同的响应格式
+      let recordsData = null;
       if (response.data?.list) {
-        return response.data.list;
+        recordsData = response.data.list;
+      } else if (response.data?.records) {
+        recordsData = response.data.records;
+      } else if (Array.isArray(response.data)) {
+        recordsData = response.data;
+      }
+
+      if (recordsData) {
+        return recordsData;
       }
 
       return [];
@@ -224,28 +285,37 @@ export const useRecordStore = defineStore('record', () => {
   // 获取统计数据
   const getStatsByDateRange = async (startDate, endDate) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
+      const response = await request.get('/api/record/list', {
         startDate,
         endDate,
         page: 1,
         pageSize: 1000 // 获取所有记录用于统计
       });
 
+      // 兼容不同的响应格式
+      let recordsData = null;
       if (response.data?.list) {
-        const records = response.data.list;
-        const totalIncome = records
-          .filter(record => record.type === RecordType.INCOME)
+        recordsData = response.data.list;
+      } else if (response.data?.records) {
+        recordsData = response.data.records;
+      } else if (Array.isArray(response.data)) {
+        recordsData = response.data;
+      }
+
+      if (recordsData) {
+        const totalIncome = recordsData
+          .filter(record => record.type === 'income')
           .reduce((sum, record) => sum + record.amount, 0);
         
-        const totalExpense = records
-          .filter(record => record.type === RecordType.EXPENSE)
+        const totalExpense = recordsData
+          .filter(record => record.type === 'expense')
           .reduce((sum, record) => sum + record.amount, 0);
-
+        
         return {
           totalIncome,
           totalExpense,
           balance: totalIncome - totalExpense,
-          recordCount: records.length
+          count: recordsData.length
         };
       }
 
@@ -253,7 +323,7 @@ export const useRecordStore = defineStore('record', () => {
         totalIncome: 0,
         totalExpense: 0,
         balance: 0,
-        recordCount: 0
+        count: 0
       };
     } catch (error) {
       console.error('Get stats by date range error:', error);
@@ -261,7 +331,7 @@ export const useRecordStore = defineStore('record', () => {
         totalIncome: 0,
         totalExpense: 0,
         balance: 0,
-        recordCount: 0
+        count: 0
       };
     }
   };
@@ -269,19 +339,28 @@ export const useRecordStore = defineStore('record', () => {
   // 按分类统计
   const getStatsByCategory = async (startDate, endDate) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
+      const response = await request.get('/api/record/list', {
         startDate,
         endDate,
         page: 1,
         pageSize: 1000
       });
 
+      // 兼容不同的响应格式
+      let recordsData = null;
       if (response.data?.list) {
-        const records = response.data.list;
+        recordsData = response.data.list;
+      } else if (response.data?.records) {
+        recordsData = response.data.records;
+      } else if (Array.isArray(response.data)) {
+        recordsData = response.data;
+      }
+
+      if (recordsData) {
         const categoryStats = new Map();
         let totalAmount = 0;
 
-        records.forEach(record => {
+        recordsData.forEach(record => {
           const categoryId = record.categoryId;
           const current = categoryStats.get(categoryId) || { amount: 0, count: 0 };
           current.amount += record.amount;
@@ -309,14 +388,24 @@ export const useRecordStore = defineStore('record', () => {
   // 搜索记录
   const searchRecords = async (keyword) => {
     try {
-      const response = await request.get<RecordAPI.GetRecordsResponse>('/api/record/list', {
+      const response = await request.get('/api/record/list', {
         keyword,
         page: 1,
         pageSize: 100
       });
 
+      // 兼容不同的响应格式
+      let recordsData = null;
       if (response.data?.list) {
-        return response.data.list;
+        recordsData = response.data.list;
+      } else if (response.data?.records) {
+        recordsData = response.data.records;
+      } else if (Array.isArray(response.data)) {
+        recordsData = response.data;
+      }
+
+      if (recordsData) {
+        return recordsData;
       }
 
       return [];
@@ -382,4 +471,4 @@ export const useRecordStore = defineStore('record', () => {
     refreshRecords,
     $reset
   };
-});
+}); 

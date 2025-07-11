@@ -70,6 +70,5 @@ export default defineAppConfig({
     'scope.userLocation': {
       desc: '用于记录消费地点信息'
     }
-  },
-  requiredBackgroundModes: ['audio']
+  }
 })

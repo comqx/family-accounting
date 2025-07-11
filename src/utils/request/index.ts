@@ -137,9 +137,19 @@ class RequestManager {
         result = interceptor(result);
       }
 
-      // 检查业务状态码
-      if (result.code !== 200) {
+      // 检查业务状态码 - 兼容不同的响应格式
+      if (result.code && result.code !== 200) {
         throw new Error(result.message || '请求失败');
+      }
+      
+      // 如果没有code字段，检查success字段
+      if (result.success === false) {
+        throw new Error(result.error || result.message || '请求失败');
+      }
+      
+      // 如果响应直接是数组，包装成标准格式
+      if (Array.isArray(result)) {
+        return { data: result };
       }
 
       // 缓存GET请求结果

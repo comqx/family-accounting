@@ -108,13 +108,8 @@ router.get('/list', async (req, res) => {
       res.json({
         success: true,
         data: {
-          records: formattedRecords,
-          pagination: {
-            page: parseInt(page),
-            pageSize: parseInt(pageSize),
-            total: total,
-            totalPages: Math.ceil(total / parseInt(pageSize))
-          }
+          list: formattedRecords,
+          hasMore: parseInt(page) < Math.ceil(total / parseInt(pageSize))
         }
       });
       

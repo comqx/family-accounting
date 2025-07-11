@@ -318,14 +318,10 @@ const loadData = async () => {
     })
     records.value = recordStore.records
     // 获取月统计
-    const statsRes = await Taro.request({
-      url: `/api/report/statistics`,
-      method: 'GET',
-      data: {
-        familyId: userStore.user?.familyId,
-        startDate,
-        endDate
-      }
+    const statsRes = await request.get('/api/report/statistics', {
+      familyId: userStore.user?.familyId,
+      startDate,
+      endDate
     })
     if (statsRes.data && statsRes.data.data) {
       monthExpense.value = statsRes.data.data.totalExpense || 0

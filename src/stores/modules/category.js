@@ -1,10 +1,8 @@
-// 分类状态管理
+// 分类状态管理 - JavaScript版本
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import Taro from '@tarojs/taro';
-import { Category, RecordType } from '../../types/business';
-import { CategoryAPI } from '../../types/api';
 import request from '../../utils/request';
 
 export const useCategoryStore = defineStore('category', () => {
@@ -14,28 +12,57 @@ export const useCategoryStore = defineStore('category', () => {
 
   // 计算属性
   const expenseCategories = computed(() => 
-    categories.value.filter(cat => cat.type === RecordType.EXPENSE && cat.isActive)
+    categories.value.filter(cat => cat.type === 'expense' && cat.isActive !== false)
   );
 
   const incomeCategories = computed(() => 
-    categories.value.filter(cat => cat.type === RecordType.INCOME && cat.isActive)
+    categories.value.filter(cat => cat.type === 'income' && cat.isActive !== false)
   );
 
   // 获取分类列表
   const loadCategories = async (familyId) => {
     try {
       isLoading.value = true;
+      console.log('Loading categories for familyId:', familyId);
+      
       // cloud接口：/api/category/list
       const response = await request.get('/api/category/list', {
         familyId
       });
+      
+      console.log('Category API response:', response);
+      
+      // 兼容不同的数据格式
+      let categoriesData = [];
       if (response.data?.categories) {
-        categories.value = response.data.categories.sort((a, b) => a.sort - b.sort);
+        // 格式：{ data: { categories: [...] } }
+        categoriesData = response.data.categories;
+      } else if (Array.isArray(response.data)) {
+        // 格式：{ data: [...] }
+        categoriesData = response.data;
+      } else if (response.data && typeof response.data === 'object') {
+        // 格式：{ data: [...] } (直接是数组)
+        categoriesData = response.data;
+      }
+      
+      console.log('Parsed categories data:', categoriesData);
+      
+      if (categoriesData.length > 0) {
+        categories.value = categoriesData.sort((a, b) => (a.sort || 0) - (b.sort || 0));
+        console.log('Categories loaded successfully:', categories.value.length);
         return true;
       }
+      
+      console.warn('No categories found');
       return false;
     } catch (error) {
       console.error('Load categories error:', error);
+      // 显示用户友好的错误信息
+      Taro.showToast({
+        title: '获取分类失败，请检查网络连接',
+        icon: 'none',
+        duration: 2000
+      });
       return false;
     } finally {
       isLoading.value = false;
@@ -47,7 +74,7 @@ export const useCategoryStore = defineStore('category', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.post('/categories', categoryData);
+      const response = await request.post('/api/category/create', categoryData);
 
       if (response.data?.category) {
         categories.value.push(response.data.category);
@@ -79,7 +106,7 @@ export const useCategoryStore = defineStore('category', () => {
     try {
       isLoading.value = true;
 
-      const response = await request.put(`/categories/${id}`, categoryData);
+      const response = await request.put(`/api/category/${id}`, categoryData);
 
       if (response.data?.category) {
         const index = categories.value.findIndex(cat => cat.id === id);
@@ -113,7 +140,7 @@ export const useCategoryStore = defineStore('category', () => {
     try {
       isLoading.value = true;
 
-      await request.delete(`/categories/${id}`);
+      await request.delete(`/api/category/${id}`);
 
       const index = categories.value.findIndex(cat => cat.id === id);
       if (index !== -1) {
@@ -147,18 +174,18 @@ export const useCategoryStore = defineStore('category', () => {
       
       // 按类型排序
       if (a.type !== b.type) {
-        return a.type === RecordType.EXPENSE ? -1 : 1;
+        return a.type === 'expense' ? -1 : 1;
       }
       
       // 按排序字段排序
-      return a.sort - b.sort;
+      return (a.sort || 0) - (b.sort || 0);
     });
   };
 
   // 更新分类排序
   const updateCategoriesSort = async (categoryIds) => {
     try {
-      const response = await request.put('/categories/sort', {
+      const response = await request.put('/api/category/sort', {
         categoryIds
       });
 
@@ -181,7 +208,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   // 根据类型获取分类
   const getCategoriesByType = (type) => {
-    return categories.value.filter(cat => cat.type === type && cat.isActive);
+    return categories.value.filter(cat => cat.type === type && cat.isActive !== false);
   };
 
   // 搜索分类
@@ -191,7 +218,7 @@ export const useCategoryStore = defineStore('category', () => {
     }
     
     return categories.value.filter(cat => 
-      cat.name.toLowerCase().includes(keyword.toLowerCase()) && cat.isActive
+      cat.name.toLowerCase().includes(keyword.toLowerCase()) && cat.isActive !== false
     );
   };
 
@@ -222,4 +249,4 @@ export const useCategoryStore = defineStore('category', () => {
     searchCategories,
     $reset
   };
-});
+}); 

@@ -51,6 +51,20 @@ const responseInterceptor = (response) => {
   const { statusCode, data } = response
   
   if (statusCode >= 200 && statusCode < 300) {
+    // 兼容不同的响应格式
+    if (data.code && data.code !== 200) {
+      throw new Error(data.message || '请求失败')
+    }
+    
+    if (data.success === false) {
+      throw new Error(data.error || data.message || '请求失败')
+    }
+    
+    // 如果响应直接是数组，包装成标准格式
+    if (Array.isArray(data)) {
+      return { data: data }
+    }
+    
     return data
   }
   

@@ -329,10 +329,8 @@ const loadReportData = async () => {
     const { startDate, endDate } = getDateRange()
     const familyId = userStore.user?.familyId
     // 1. 获取统计数据
-    const statsRes = await Taro.request({
-      url: `/api/report/statistics`,
-      method: 'GET',
-      data: { familyId, startDate, endDate }
+    const statsRes = await request.get('/api/report/statistics', {
+      familyId, startDate, endDate
     })
     if (statsRes.data && statsRes.data.data) {
       metrics.value = {
@@ -345,19 +343,15 @@ const loadReportData = async () => {
       }
     }
     // 2. 获取分类统计
-    const catRes = await Taro.request({
-      url: `/api/report/categories`,
-      method: 'GET',
-      data: { familyId, type: 'expense', period: selectedRange.value, startDate, endDate }
+    const catRes = await request.get('/api/report/categories', {
+      familyId, type: 'expense', period: selectedRange.value, startDate, endDate
     })
     if (catRes.data && catRes.data.data) {
       categoryAnalysis.value = catRes.data.data
     }
     // 3. 获取趋势数据
-    const trendRes = await Taro.request({
-      url: `/api/report/trends`,
-      method: 'GET',
-      data: { familyId, period: selectedRange.value, days: 30 }
+    const trendRes = await request.get('/api/report/trends', {
+      familyId, period: selectedRange.value, days: 30
     })
     if (trendRes.data && trendRes.data.data) {
       trendInsights.value = trendRes.data.data

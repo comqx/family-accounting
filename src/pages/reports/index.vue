@@ -236,10 +236,8 @@ const loadReportData = async () => {
     const familyId = familyStore.familyId
     
     // 1. 获取统计数据
-    const statsRes = await Taro.request({
-      url: `/api/report/statistics`,
-      method: 'GET',
-      data: { familyId, startDate, endDate }
+    const statsRes = await request.get('/api/report/statistics', {
+      familyId, startDate, endDate
     })
     
     if (statsRes.data && statsRes.data.data) {
@@ -254,10 +252,8 @@ const loadReportData = async () => {
     }
     
     // 2. 获取分类统计
-    const catRes = await Taro.request({
-      url: `/api/report/categories`,
-      method: 'GET',
-      data: { familyId, startDate, endDate, type: 'expense' }
+    const catRes = await request.get('/api/report/categories', {
+      familyId, startDate, endDate, type: 'expense'
     })
     
     if (catRes.data && catRes.data.data) {
@@ -273,10 +269,8 @@ const loadReportData = async () => {
     }
     
     // 3. 获取趋势数据计算最大日支出
-    const trendRes = await Taro.request({
-      url: `/api/report/trends`,
-      method: 'GET',
-      data: { familyId, startDate, endDate, type: 'expense', period: 'day' }
+    const trendRes = await request.get('/api/report/trends', {
+      familyId, startDate, endDate, type: 'expense', period: 'day'
     })
     
     if (trendRes.data && trendRes.data.data) {
