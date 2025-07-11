@@ -14,7 +14,8 @@ router.get('/list', async (req, res) => {
 
     const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    const userId = decoded.userId;
+    // 兼容不同的字段名
+    const userId = decoded.userId || decoded.user_id || decoded.id;
 
     const pool = await getConnection();
     
@@ -87,7 +88,8 @@ router.post('/create', [
 
     const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    const userId = decoded.userId;
+    // 兼容不同的字段名
+    const userId = decoded.userId || decoded.user_id || decoded.id;
 
     const pool = await getConnection();
     

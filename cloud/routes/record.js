@@ -29,7 +29,8 @@ router.get('/list', async (req, res) => {
     } catch (err) {
       return res.status(401).json({ error: 'token无效或已过期' });
     }
-    const userId = decoded.userId;
+    // 兼容不同的字段名
+    const userId = decoded.userId || decoded.user_id || decoded.id;
 
     const pool = await getConnection();
     
@@ -194,11 +195,13 @@ router.post('/create', [
       console.error('JWT验证失败:', err);
       return res.status(401).json({ error: 'token无效或已过期' });
     }
-    const userId = decoded.userId;
+    
+    // 兼容不同的字段名
+    const userId = decoded.userId || decoded.user_id || decoded.id;
     
     // 验证userId不为undefined
-    if (userId === undefined) {
-      console.error('userId验证失败:', { userId, decoded });
+    if (userId === undefined || userId === null) {
+      console.error('userId验证失败:', { userId, decoded, availableFields: Object.keys(decoded) });
       return res.status(401).json({ error: '用户ID无效' });
     }
     
@@ -316,7 +319,8 @@ router.put('/:recordId', [
     } catch (err) {
       return res.status(401).json({ error: 'token无效或已过期' });
     }
-    const userId = decoded.userId;
+    // 兼容不同的字段名
+    const userId = decoded.userId || decoded.user_id || decoded.id;
 
     const pool = await getConnection();
     
@@ -438,7 +442,8 @@ router.delete('/:recordId', async (req, res) => {
     } catch (err) {
       return res.status(401).json({ error: 'token无效或已过期' });
     }
-    const userId = decoded.userId;
+    // 兼容不同的字段名
+    const userId = decoded.userId || decoded.user_id || decoded.id;
 
     const pool = await getConnection();
     
@@ -492,7 +497,8 @@ router.get('/:recordId', async (req, res) => {
     } catch (err) {
       return res.status(401).json({ error: 'token无效或已过期' });
     }
-    const userId = decoded.userId;
+    // 兼容不同的字段名
+    const userId = decoded.userId || decoded.user_id || decoded.id;
 
     const pool = await getConnection();
     

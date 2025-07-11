@@ -253,4 +253,88 @@ curl -X GET "https://express-9o49-171950-8-1322802786.sh.run.tcloudbase.com/api/
 - `src/pages/reports/advanced/index.vue` - 高级报表页面
 - `cloud/routes/category.js` - 分类API接口
 - `cloud/routes/record.js` - 记录API接口
-- `cloud/config/database.js` - 数据库配置 
+- `cloud/config/database.js` - 数据库配置
+
+## 🆕 最新修复记录
+
+### 2024-07-11 - 数据库绑定参数错误修复
+
+**问题描述**：
+- 后端服务报错：`Bind parameters must not contain undefined. To pass SQL NULL specify JS null`
+- 记账创建接口返回 500 错误
+- 用户在首页输入记账信息后点击保存，没有任何反应
+
+**问题原因**：
+1. **前端参数问题**：`familyStore.familyId` 可能为空字符串或 undefined
+2. **后端验证不足**：没有处理空字符串和 undefined 值
+3. **家庭状态未初始化**：familyStore 没有正确初始化
+4. **数值转换错误**：空字符串转换为 NaN
+
+**解决方案**：
+1. **增强后端参数验证**：
+   ```javascript
+   // 验证必需参数不为undefined或空字符串
+   if (familyId === undefined || familyId === null || familyId === '' ||
+       type === undefined || type === null || type === '' ||
+       amount === undefined || amount === null || amount === '' ||
+       categoryId === undefined || categoryId === null || categoryId === '' ||
+       date === undefined || date === null || date === '') {
+     return res.status(400).json({ error: '缺少必需参数' });
+   }
+   ```
+
+2. **添加详细调试日志**：
+   ```javascript
+   // 调试：打印接收到的原始数据
+   console.log('接收到的请求数据:', {
+     body: req.body,
+     headers: req.headers,
+     familyId: familyId,
+     type: type,
+     amount: amount,
+     categoryId: categoryId,
+     date: date,
+     description: description
+   });
+   ```
+
+3. **前端家庭状态初始化**：
+   ```javascript
+   onMounted(async () => {
+     // 初始化家庭状态
+     familyStore.initFamilyState()
+     
+     // 如果没有家庭信息，尝试获取
+     if (!familyStore.hasFamily) {
+       await familyStore.getFamilyInfo()
+     }
+     
+     loadData()
+   })
+   ```
+
+4. **前端家庭ID验证**：
+   ```javascript
+   const saveRecord = async () => {
+     // 检查家庭ID
+     if (!familyStore.familyId) {
+       Taro.showToast({
+         title: '请先加入或创建家庭',
+         icon: 'none'
+       })
+       return
+     }
+     // ... 其他逻辑
+   }
+   ```
+
+**修改文件**：
+- `cloud/routes/record.js` - 增强参数验证和调试日志
+- `src/pages/index/index.vue` - 添加家庭ID验证和调试日志
+
+**测试结果**：
+- ✅ 参数验证正常工作
+- ✅ 空值和 undefined 值被正确拦截
+- ✅ 调试日志提供详细的错误信息
+- ✅ 家庭状态正确初始化
+- ✅ 用户友好的错误提示 
