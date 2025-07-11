@@ -1,11 +1,7 @@
 // 实时同步 Hook
 import { ref, onMounted, onUnmounted } from 'vue';
 import Taro from '@tarojs/taro';
-import { useUserStore } from '../stores/modules/user';
-import { useRecordStore } from '../stores/modules/record';
-import { useCategoryStore } from '../stores/modules/category';
-import { useFamilyStore } from '../stores/modules/family';
-import { useAppStore } from '../stores/modules/app';
+import { useUserStore, useRecordStore, useCategoryStore, useFamilyStore, useAppStore } from '../stores';
 import wsService from '../services/websocket/index.js';
 
 export function useRealTimeSync() {

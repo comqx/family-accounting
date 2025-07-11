@@ -161,9 +161,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { useUserStore, useCategoryStore, useAppStore } from '../../stores'
+import { useUserStore, useCategoryStore, useAppStore, useRecordStore } from '../../stores'
 import { formatAmount, formatDate } from '../../utils/format'
-import { useRecordStore } from '../../stores/recordStore'
 
 // Store
 const userStore = useUserStore()
