@@ -81,7 +81,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { useCategoryStore } from '@/stores/modules/category'
+import { useCategoryStore } from '../../stores/modules/category'
 import { useFamilyStore } from '@/stores'
 
 const categoryStore = useCategoryStore()

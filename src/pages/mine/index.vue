@@ -83,7 +83,7 @@
 import { ref, onMounted, computed } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore } from '@/stores'
-import { useRecordStore } from '@/stores/modules/record'
+import { useRecordStore } from '../../stores/modules/record'
 
 const userStore = useUserStore()
 const familyStore = useFamilyStore()

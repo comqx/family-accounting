@@ -175,7 +175,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
 import Taro from '@tarojs/taro'
-import QRCode from 'qrcode'
+import drawQrcode from 'weapp-qrcode'
 import { formatDate } from '../../../utils/format'
 
 const userStore = useUserStore()
@@ -281,16 +281,15 @@ const showQRCode = async () => {
   showQRCodeModal.value = true
   // 生成二维码内容：小程序路径+邀请码
   const qrContent = `/pages/family/join/index?code=${currentInviteCode.value}`
-  // 生成二维码图片
   setTimeout(() => {
-    QRCode.toCanvas(
-      document.getElementById('invite-qrcode'),
-      qrContent,
-      { width: 200, margin: 1 },
-      (error) => {
-        if (error) console.error(error)
-      }
-    )
+    drawQrcode({
+      width: 320,
+      height: 320,
+      canvasId: 'invite-qrcode',
+      text: qrContent,
+      // 兼容Taro3，需传入this
+      _this: getCurrentInstance().proxy
+    })
   }, 100)
 }
 const closeQRCodeModal = () => {
