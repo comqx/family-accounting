@@ -48,10 +48,16 @@
       </view>
 
       <view class="chart-container">
-        <!-- 这里可以集成图表库，暂时用简单的进度条代替 -->
-        <view class="chart-placeholder">
+        <!-- 简单的数据可视化 -->
+        <view v-if="categoryStats.length > 0" class="chart-content">
+          <view class="chart-summary">
+            <text class="summary-text">共 {{ categoryStats.length }} 个分类</text>
+            <text class="summary-text">总支出 ¥{{ formatAmount(totalExpense) }}</text>
+          </view>
+        </view>
+        <view v-else class="chart-placeholder">
           <view class="chart-icon">📊</view>
-          <text class="chart-text">图表功能开发中</text>
+          <text class="chart-text">暂无支出数据</text>
         </view>
       </view>
 
@@ -95,9 +101,15 @@
       </view>
 
       <view class="trend-chart">
-        <view class="trend-placeholder">
+        <view v-if="maxDailyExpense > 0" class="trend-content">
+          <view class="trend-summary">
+            <text class="summary-text">最高单日支出 ¥{{ formatAmount(maxDailyExpense) }}</text>
+            <text class="summary-text">平均每日支出 ¥{{ formatAmount(avgDailyExpense) }}</text>
+          </view>
+        </view>
+        <view v-else class="trend-placeholder">
           <view class="trend-icon">📈</view>
-          <text class="trend-text">趋势图表开发中</text>
+          <text class="trend-text">暂无趋势数据</text>
         </view>
       </view>
 
@@ -218,15 +230,30 @@ const getDateRange = () => {
     startDate = monday.toISOString().split('T')[0]
     endDate = now.toISOString().split('T')[0]
   } else if (selectedPeriod.value === 'month') {
-    startDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-01`
-    endDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-31`
+    const year = now.getFullYear()
+    const month = (now.getMonth() + 1).toString().padStart(2, '0')
+    startDate = `${year}-${month}-01`
+    // 获取当月最后一天
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
+    endDate = `${year}-${month}-${lastDay}`
   } else if (selectedPeriod.value === 'year') {
-    startDate = `${now.getFullYear()}-01-01`
-    endDate = `${now.getFullYear()}-12-31`
+    const year = now.getFullYear()
+    startDate = `${year}-01-01`
+    endDate = `${year}-12-31`
   } else if (selectedPeriod.value === 'custom') {
     startDate = `${customDate.value}-01`
-    endDate = `${customDate.value}-31`
+    // 获取自定义月份的最后一天
+    const [year, month] = customDate.value.split('-')
+    const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
+    endDate = `${customDate.value}-${lastDay}`
   }
+  
+  console.log('📅 计算日期范围:', { 
+    period: selectedPeriod.value, 
+    startDate, 
+    endDate,
+    customDate: customDate.value 
+  })
   
   return { startDate, endDate }
 }
@@ -251,11 +278,14 @@ const loadReportData = async () => {
     
     console.log('📊 统计数据响应:', statsRes)
     
-    if (statsRes.data && statsRes.data.data) {
-      const stats = statsRes.data.data
-      totalExpense.value = stats.totalExpense || 0
-      totalIncome.value = stats.totalIncome || 0
-      recordDays.value = stats.totalRecords || 0
+    // 兼容不同的响应格式
+    const stats = statsRes.data || statsRes
+    console.log('📊 解析的统计数据:', stats)
+    
+    if (stats) {
+      totalExpense.value = parseFloat(stats.totalExpense) || 0
+      totalIncome.value = parseFloat(stats.totalIncome) || 0
+      recordDays.value = parseInt(stats.totalRecords) || 0
       
       // 计算平均每日支出
       const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1
@@ -264,7 +294,8 @@ const loadReportData = async () => {
       console.log('📊 统计数据已更新:', { 
         totalExpense: totalExpense.value, 
         totalIncome: totalIncome.value, 
-        recordDays: recordDays.value 
+        recordDays: recordDays.value,
+        avgDailyExpense: avgDailyExpense.value
       })
     }
     
@@ -275,14 +306,18 @@ const loadReportData = async () => {
     
     console.log('📈 分类统计响应:', catRes)
     
-    if (catRes.data && catRes.data.data) {
-      categoryStats.value = catRes.data.data.map(cat => ({
+    // 兼容不同的响应格式
+    const categories = catRes.data || catRes
+    console.log('📈 解析的分类数据:', categories)
+    
+    if (categories && Array.isArray(categories)) {
+      categoryStats.value = categories.map(cat => ({
         categoryId: cat.categoryId,
         name: cat.categoryName,
         icon: cat.categoryIcon,
         color: cat.categoryColor,
-        amount: cat.amount,
-        count: cat.count,
+        amount: parseFloat(cat.amount) || 0,
+        count: parseInt(cat.count) || 0,
         percentage: totalExpense.value > 0 ? Math.round((cat.amount / totalExpense.value) * 100) : 0
       }))
       
@@ -296,11 +331,18 @@ const loadReportData = async () => {
     
     console.log('📉 趋势数据响应:', trendRes)
     
-    if (trendRes.data && trendRes.data.data) {
-      const maxExpense = Math.max(...trendRes.data.data.map(item => item.expense))
+    // 兼容不同的响应格式
+    const trends = trendRes.data || trendRes
+    console.log('📉 解析的趋势数据:', trends)
+    
+    if (trends && Array.isArray(trends) && trends.length > 0) {
+      const maxExpense = Math.max(...trends.map(item => parseFloat(item.expense) || 0))
       maxDailyExpense.value = maxExpense || 0
       
-      console.log('📉 趋势数据已更新:', { maxDailyExpense: maxDailyExpense.value })
+      console.log('📉 趋势数据已更新:', { 
+        maxDailyExpense: maxDailyExpense.value,
+        trendCount: trends.length
+      })
     }
     
   } catch (error) {
@@ -543,6 +585,27 @@ Taro.useShareAppMessage(() => {
         .chart-text, .trend-text {
           font-size: 26rpx;
           color: #999;
+        }
+      }
+
+      .chart-content, .trend-content {
+        height: 200rpx;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+
+        .chart-summary, .trend-summary {
+          text-align: center;
+
+          .summary-text {
+            display: block;
+            font-size: 28rpx;
+            margin-bottom: 10rpx;
+            font-weight: 500;
+          }
         }
       }
     }
