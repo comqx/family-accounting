@@ -59,6 +59,129 @@ export const useFamilyStore = defineStore('family', () => {
     members.value.filter(member => member.role === 'OBSERVER')
   );
 
+  // 家庭预算相关
+  const budget = ref(null)
+
+  // 获取家庭预算
+  const getBudget = async (year = new Date().getFullYear(), month = new Date().getMonth() + 1) => {
+    if (!family.value?.id) return null
+    try {
+      isLoading.value = true
+      const response = await request.get(`/api/budget/${family.value.id}`, { year, month })
+      if (response.success && response.data) {
+        budget.value = {
+          amount: response.data.monthlyBudget,
+          used: response.data.totalExpense,
+          remaining: response.data.remainingBudget,
+          progress: response.data.budgetProgress,
+          alerts_enabled: response.data.budgetAlerts,
+          alert_threshold: response.data.alertThreshold,
+          daily_budget: response.data.dailyBudget
+        }
+        return budget.value
+      }
+      return null
+    } catch (error) {
+      console.error('获取预算失败:', error)
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 设置家庭预算
+  const setBudget = async ({ year = new Date().getFullYear(), month = new Date().getMonth() + 1, amount, alerts_enabled = true, alert_threshold = 80 }) => {
+    if (!family.value?.id) throw new Error('未加入家庭')
+    try {
+      isLoading.value = true
+      const response = await request.post(`/api/budget/${family.value.id}`, {
+        year,
+        month,
+        amount,
+        alertsEnabled: alerts_enabled,
+        alertThreshold: alert_threshold
+      })
+      if (response.success) {
+        await getBudget(year, month)
+        return true
+      }
+      throw new Error(response.error || '设置预算失败')
+    } catch (error) {
+      console.error('设置预算失败:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 获取分类预算
+  const getCategoryBudgets = async (year = new Date().getFullYear(), month = new Date().getMonth() + 1) => {
+    if (!family.value?.id) return []
+    try {
+      isLoading.value = true
+      const response = await request.get(`/api/budget/${family.value.id}/categories`, { year, month })
+      if (response.success && Array.isArray(response.data)) {
+        return response.data.map(cat => ({
+          id: cat.categoryId,
+          name: cat.name,
+          icon: cat.icon,
+          color: cat.color,
+          budget: cat.budget,
+          used: cat.used,
+          remaining: cat.remaining,
+          progress: cat.progress
+        }))
+      }
+      return []
+    } catch (error) {
+      console.error('获取分类预算失败:', error)
+      return []
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 设置分类预算
+  const setCategoryBudget = async ({ category_id, year = new Date().getFullYear(), month = new Date().getMonth() + 1, amount }) => {
+    if (!family.value?.id) throw new Error('未加入家庭')
+    try {
+      isLoading.value = true
+      const response = await request.post(`/api/budget/${family.value.id}/categories`, {
+        categoryId: category_id,
+        year,
+        month,
+        amount
+      })
+      if (response.success) {
+        return true
+      }
+      throw new Error(response.error || '设置分类预算失败')
+    } catch (error) {
+      console.error('设置分类预算失败:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 获取预算历史
+  const getBudgetHistory = async () => {
+    if (!family.value?.id) return []
+    try {
+      isLoading.value = true
+      const response = await request.get(`/api/budget/${family.value.id}/history`)
+      if (response.success && Array.isArray(response.data)) {
+        return response.data
+      }
+      return []
+    } catch (error) {
+      console.error('获取预算历史失败:', error)
+      return []
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   // 初始化家庭状态
   const initFamilyState = () => {
     const { getFamilyInfo } = require('../../utils/storage');
@@ -452,6 +575,7 @@ export const useFamilyStore = defineStore('family', () => {
     adminMember,
     regularMembers,
     observers,
+    budget,
     
     // 方法
     initFamilyState,
@@ -467,6 +591,11 @@ export const useFamilyStore = defineStore('family', () => {
     dissolveFamily,
     setFamily,
     checkMemberPermission,
+    getBudget,
+    setBudget,
+    getCategoryBudgets,
+    setCategoryBudget,
+    getBudgetHistory,
     $reset
   };
 }); 
