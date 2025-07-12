@@ -32,15 +32,19 @@
     </view>
 
     <!-- 账本统计卡片 -->
-    <view class="card stats-card">
-      <view class="stat-item">
+    <view class="card stats-card-new">
+      <view class="stat-col expense">
         <text class="stat-label">本月支出</text>
-        <text class="stat-value">¥{{ monthExpense }}</text>
+        <text class="stat-value expense">¥{{ monthExpense.toFixed(2) }}</text>
       </view>
-      <view class="stat-item">
+      <view class="divider"></view>
+      <view class="stat-col income">
         <text class="stat-label">本月收入</text>
-        <text class="stat-value">¥{{ monthIncome }}</text>
+        <text class="stat-value income">¥{{ monthIncome.toFixed(2) }}</text>
       </view>
+    </view>
+    <!-- 记账笔数单独卡片 -->
+    <view class="card record-count-card">
       <view class="stat-item">
         <text class="stat-label">记账笔数</text>
         <text class="stat-value">{{ recordCount }}</text>
@@ -51,23 +55,23 @@
     <view class="card menu-card-grid">
       <view class="menu-grid">
         <view class="menu-item" @tap="goToExport">
-          <image src="/assets/icons/export.png" class="menu-icon" mode="aspectFit" />
+          <image :src="exportPng" class="menu-icon" mode="aspectFit" />
           <text>数据导出</text>
         </view>
         <view class="menu-item" @tap="goToImport">
-          <image src="/assets/icons/import.png" class="menu-icon" mode="aspectFit" />
+          <image :src="importPng" class="menu-icon" mode="aspectFit" />
           <text>数据导入</text>
         </view>
         <view class="menu-item" @tap="goToSecurity">
-          <image src="/assets/icons/security.png" class="menu-icon" mode="aspectFit" />
+          <image :src="securityPng" class="menu-icon" mode="aspectFit" />
           <text>账号安全</text>
         </view>
         <view class="menu-item" @tap="goToHelp">
-          <image src="/assets/icons/help.png" class="menu-icon" mode="aspectFit" />
+          <image :src="helpPng" class="menu-icon" mode="aspectFit" />
           <text>帮助中心</text>
         </view>
         <view class="menu-item" @tap="goToFeedback">
-          <image src="/assets/icons/feedback.png" class="menu-icon" mode="aspectFit" />
+          <image :src="feedbackPng" class="menu-icon" mode="aspectFit" />
           <text>意见反馈</text>
         </view>
       </view>
@@ -84,6 +88,12 @@ import { ref, onMounted, computed } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore } from '@/stores'
 import { useRecordStore } from '../../stores/modules/record'
+import profilePng from '../../assets/icons/profile.png'
+import exportPng from '../../assets/icons/export.png'
+import importPng from '../../assets/icons/import.png'
+import helpPng from '../../assets/icons/help.png'
+import feedbackPng from '../../assets/icons/feedback.png'
+import securityPng from '../../assets/icons/security.png'
 
 const userStore = useUserStore()
 const familyStore = useFamilyStore()
@@ -96,7 +106,7 @@ const monthExpense = ref(0)
 const monthIncome = ref(0)
 const recordCount = ref(0)
 const familyList = ref([])
-const defaultAvatar = '/assets/icons/profile.png'
+const defaultAvatar = profilePng
 
 const myRole = computed(() => {
   const me = familyStore.members.find(m => m.id === user.value.id)
@@ -129,8 +139,8 @@ const loadData = async () => {
   // 获取本月统计
   const { startDate, endDate } = getMonthRange()
   const stats = await recordStore.getStatsByDateRange(startDate, endDate)
-  monthExpense.value = stats.totalExpense || 0
-  monthIncome.value = stats.totalIncome || 0
+  monthExpense.value = parseFloat(stats.totalExpense) || 0
+  monthIncome.value = parseFloat(stats.totalIncome) || 0
   recordCount.value = stats.count || 0
 }
 onMounted(loadData)
@@ -139,7 +149,6 @@ onMounted(loadData)
 const onGetWechatProfile = async () => {
   const wxInfo = await userStore.getWechatUserInfo?.()
   if (wxInfo) {
-    // 更新本地
     if (!user.value.avatar) user.value.avatar = wxInfo.avatarUrl
     if (!user.value.nickname) user.value.nickname = wxInfo.nickName
     // 同步到后端
@@ -147,7 +156,8 @@ const onGetWechatProfile = async () => {
       avatar: user.value.avatar,
       nickname: user.value.nickname
     })
-    // 重新拉取用户信息，确保本地和后端一致
+    // 强制刷新本地和后端数据
+    await userStore.getUserProfile?.()
     user.value = await userStore.getUserInfo() || user.value
   }
 }
@@ -216,8 +226,50 @@ const getRoleText = (role) => {
       button { flex: 1; font-size: 28rpx; background: #f4f8fb; color: #1296db; border-radius: 12rpx; padding: 16rpx 0; }
     }
   }
-  .stats-card { display: flex; justify-content: space-between;
-    .stat-item { flex: 1; text-align: center;
+  .stats-card-new {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    background: #fff;
+    border-radius: 20rpx;
+    margin: 32rpx 30rpx 0 30rpx;
+    padding: 0;
+    box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+    overflow: hidden;
+    .stat-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 36rpx 0;
+      .stat-label {
+        font-size: 28rpx;
+        color: #888;
+        margin-bottom: 10rpx;
+      }
+      .stat-value {
+        font-size: 48rpx;
+        font-weight: bold;
+        &.expense { color: #ff4d4f; }
+        &.income { color: #52c41a; }
+      }
+    }
+    .divider {
+      width: 2rpx;
+      background: #f0f0f0;
+      margin: 24rpx 0;
+    }
+  }
+  .record-count-card {
+    margin: 18rpx 30rpx 0 30rpx;
+    background: #fff;
+    border-radius: 20rpx;
+    box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+    .stat-item {
+      text-align: center;
+      padding: 28rpx 0;
       .stat-label { font-size: 26rpx; color: #888; margin-bottom: 8rpx; display: block; }
       .stat-value { font-size: 38rpx; font-weight: bold; color: #1296db; }
     }
