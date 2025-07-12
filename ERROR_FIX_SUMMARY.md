@@ -485,4 +485,225 @@ import request from '../../../utils/request'  // 报表页面
 - ✅ 后端API测试正常，返回9条记录
 - ✅ 前端方法已添加familyId参数
 - ✅ 添加了详细的调试日志
-- ⏳ 需要重新测试前端显示效果 
+- ⏳ 需要重新测试前端显示效果
+
+### 2024-07-11 - 账本页面数据加载问题修复
+
+**问题描述**：
+- 记账-查看更多，没有数据
+- 进入的账本界面，本月支出、本月收入、结余、记录信息都没有数据
+- 账本页面使用错误的familyId来源
+
+**问题原因**：
+1. **错误的familyId来源**：账本页面使用 `userStore.user?.familyId` 而不是 `familyStore.familyId`
+2. **统计API响应格式处理错误**：前端期望 `statsRes.data.data.totalExpense` 但实际是 `statsRes.data.totalExpense`
+3. **缺少家庭信息初始化**：没有确保家庭信息已加载
+
+**解决方案**：
+1. **修复账本页面的familyId来源**：
+   ```javascript
+   // 确保家庭信息已加载
+   if (!familyStore.hasFamily) {
+     await familyStore.getFamilyInfo()
+   }
+   
+   const familyId = familyStore.familyId
+   if (!familyId) {
+     console.error('没有家庭ID，无法加载数据')
+     return
+   }
+   ```
+
+2. **修复统计API响应格式处理**：
+   ```javascript
+   // 统计API返回格式：{ success: true, data: { totalExpense: 174, totalIncome: 3000 } }
+   if (statsRes.data) {
+     monthExpense.value = statsRes.data.totalExpense || 0
+     monthIncome.value = statsRes.data.totalIncome || 0
+   }
+   ```
+
+3. **添加详细调试日志**：
+   ```javascript
+   console.log('使用家庭ID:', familyId)
+   console.log('统计响应:', statsRes)
+   console.log('月统计:', { expense: monthExpense.value, income: monthIncome.value })
+   ```
+
+**修改文件**：
+- `src/pages/ledger/index.vue` - 修复familyId来源和统计数据处理
+- `src/stores/modules/record.js` - 已修复所有记录方法的familyId参数
+
+**测试结果**：
+- ✅ 统计API测试正常，返回正确的数据格式
+- ✅ 账本页面已修复familyId来源
+- ✅ 统计数据处理已修复
+- ✅ 添加了详细的调试日志
+- ⏳ 需要重新测试账本页面显示效果
+
+### 2024-07-11 - 记账界面日期选择问题修复
+
+**问题描述**：
+- 记账界面的记账日期不能选择
+- 点击日期选择区域没有反应
+
+**问题原因**：
+1. **响应式数据绑定错误**：模板中使用了 `recordForm.date` 而不是 `recordForm.value.date`
+2. **日期选择器绑定错误**：picker组件的value绑定使用了错误的路径
+3. **备注输入框绑定错误**：同样使用了错误的响应式数据路径
+
+**解决方案**：
+1. **修复日期显示绑定**：
+   ```vue
+   <!-- 修复前 -->
+   <text class="date-value">{{ formatDate(recordForm.date) }}</text>
+   
+   <!-- 修复后 -->
+   <text class="date-value">{{ formatDate(recordForm.value.date) }}</text>
+   ```
+
+2. **修复日期选择器绑定**：
+   ```vue
+   <!-- 修复前 -->
+   <picker :value="recordForm.date" @change="onDateChange">
+   
+   <!-- 修复后 -->
+   <picker :value="recordForm.value.date" @change="onDateChange">
+   ```
+
+3. **修复备注输入框绑定**：
+   ```vue
+   <!-- 修复前 -->
+   <input :value="recordForm.description" @input="onRemarkInput">
+   
+   <!-- 修复后 -->
+   <input :value="recordForm.value.description" @input="onRemarkInput">
+   ```
+
+4. **添加调试日志**：
+   ```javascript
+   const showDatePicker = () => {
+     console.log('显示日期选择器，当前日期:', recordForm.value.date)
+     showDatePickerModal.value = true
+   }
+   
+   const onDateChange = (e) => {
+     console.log('日期选择变化:', e.detail.value)
+     recordForm.value.date = e.detail.value
+     showDatePickerModal.value = false
+     console.log('更新后的日期:', recordForm.value.date)
+   }
+   ```
+
+**修改文件**：
+- `src/pages/index/index.vue` - 修复所有响应式数据绑定错误
+
+**测试结果**：
+- ✅ 修复了响应式数据绑定错误
+- ✅ 添加了详细的调试日志
+- ⏳ 需要重新测试日期选择功能
+
+### 2024-07-11 - 家庭管理权限和成员数据问题修复
+
+**问题描述**：
+- 在家庭界面，第一个创建家庭的用户应该是管理员，但邀请成员时提示"我不是管理员"
+- 家庭成员显示假数据，有好几个人，但实际应该只有当前用户
+
+**问题原因**：
+1. **管理员权限检查逻辑错误**：家庭store中的 `isAdmin` 计算属性逻辑不完整
+2. **使用假数据**：家庭页面使用了 `mockMembers` 假数据而不是真实API数据
+3. **角色字段不匹配**：后端返回的角色是 `owner`，但前端期望的是 `ADMIN`
+4. **TypeScript类型错误**：家庭store有复杂的TypeScript类型问题
+
+**解决方案**：
+1. **创建JavaScript版本的家庭store**：
+   ```javascript
+   // 修复管理员权限检查逻辑
+   const isAdmin = computed(() => {
+     const { useUserStore } = require('./user');
+     const userStore = useUserStore();
+     
+     if (!userStore.user || !family.value) {
+       return false;
+     }
+     
+     // 检查用户是否是家庭管理员
+     // 1. 检查家庭信息中的role字段
+     if (family.value.role === 'owner' || family.value.role === 'admin') {
+       return true;
+     }
+     
+     // 2. 检查用户ID是否匹配adminId
+     if (userStore.user.id === family.value.adminId) {
+       return true;
+     }
+     
+     // 3. 检查家庭成员列表中的角色
+     const currentMember = members.value.find(member => member.id === userStore.user.id);
+     if (currentMember && (currentMember.role === 'owner' || currentMember.role === 'admin')) {
+       return true;
+     }
+     
+     return false;
+   });
+   ```
+
+2. **修复家庭页面使用真实数据**：
+   ```javascript
+   // 移除假数据
+   // const mockMembers = ref([...])
+   
+   // 使用真实数据
+   const memberCount = computed(() => familyStore.members.length)
+   ```
+
+3. **修复角色文本显示**：
+   ```javascript
+   const getRoleText = (role) => {
+     switch (role) {
+       case 'owner':
+         return '管理员'
+       case 'admin':
+         return '管理员'
+       case 'member':
+         return '成员'
+       case 'observer':
+         return '观察员'
+       default:
+         return '成员'
+     }
+   }
+   ```
+
+4. **添加数据加载逻辑**：
+   ```javascript
+   const loadData = async () => {
+     try {
+       // 确保家庭信息已加载
+       if (!familyStore.hasFamily) {
+         await familyStore.getFamilyInfo()
+       }
+       
+       // 加载家庭成员
+       await familyStore.loadMembers()
+       
+       console.log('家庭信息:', familyStore.family)
+       console.log('家庭成员:', familyStore.members)
+       console.log('是否管理员:', familyStore.isAdmin)
+     } catch (error) {
+       console.error('加载家庭数据失败:', error)
+     }
+   }
+   ```
+
+**修改文件**：
+- `src/stores/modules/family.js` - 新建JavaScript版本的家庭store
+- `src/stores/modules/family.ts` - 删除有问题的TypeScript版本
+- `src/pages/family/index.vue` - 修复使用真实数据和权限检查
+
+**测试结果**：
+- ✅ 创建了JavaScript版本的家庭store，避免TypeScript类型错误
+- ✅ 修复了管理员权限检查逻辑，支持多种角色格式
+- ✅ 移除了假数据，使用真实API数据
+- ✅ 添加了详细的数据加载和调试日志
+- ⏳ 需要重新测试家庭管理功能 

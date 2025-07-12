@@ -161,7 +161,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { useUserStore, useCategoryStore, useAppStore, useRecordStore } from '../../stores'
+import { useUserStore, useCategoryStore, useAppStore, useRecordStore, useFamilyStore } from '../../stores'
 import { formatAmount, formatDate } from '../../utils/format'
 import request from '../../utils/request'
 
@@ -170,6 +170,7 @@ const userStore = useUserStore()
 const categoryStore = useCategoryStore()
 const appStore = useAppStore()
 const recordStore = useRecordStore()
+const familyStore = useFamilyStore()
 
 // 响应式数据
 const monthExpense = ref(0)
@@ -303,21 +304,35 @@ const goToAddRecord = () => {
 const loadData = async () => {
   try {
     console.log('账本页开始加载数据...')
+    
+    // 确保家庭信息已加载
+    if (!familyStore.hasFamily) {
+      await familyStore.getFamilyInfo()
+    }
+    
+    const familyId = familyStore.familyId
+    if (!familyId) {
+      console.error('没有家庭ID，无法加载数据')
+      return
+    }
+    
+    console.log('使用家庭ID:', familyId)
+    
     // 获取分类
-    await categoryStore.loadCategories(userStore.user?.familyId)
+    await categoryStore.loadCategories(familyId)
     // 获取账单记录
     const [year, month] = selectedDate.value.split('-')
     const startDate = `${year}-${month}-01`
     const endDate = `${year}-${month}-31`
     console.log('加载记录参数:', {
-      familyId: userStore.user?.familyId,
+      familyId: familyId,
       startDate,
       endDate,
       type: typeFilter.value || undefined,
       categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined
     })
     const res = await recordStore.loadRecords({
-      familyId: userStore.user?.familyId,
+      familyId: familyId,
       startDate,
       endDate,
       type: typeFilter.value || undefined,
@@ -330,14 +345,16 @@ const loadData = async () => {
     console.log('records.value:', records.value)
     // 获取月统计
     const statsRes = await request.get('/api/report/statistics', {
-      familyId: userStore.user?.familyId,
+      familyId: familyId,
       startDate,
       endDate
     })
-    if (statsRes.data && statsRes.data.data) {
-      monthExpense.value = statsRes.data.data.totalExpense || 0
-      monthIncome.value = statsRes.data.data.totalIncome || 0
+    console.log('统计响应:', statsRes)
+    if (statsRes.data) {
+      monthExpense.value = statsRes.data.totalExpense || 0
+      monthIncome.value = statsRes.data.totalIncome || 0
     }
+    console.log('月统计:', { expense: monthExpense.value, income: monthIncome.value })
   } catch (error) {
     console.error('账本页加载数据失败:', error)
   }

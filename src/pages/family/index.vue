@@ -35,20 +35,20 @@
 
       <view class="members-list">
         <view
-          v-for="member in mockMembers"
+          v-for="member in familyStore.members"
           :key="member.id"
           class="member-item"
         >
           <view class="member-avatar">
-            <text class="avatar-text">{{ member.nickName.charAt(0) }}</text>
+            <text class="avatar-text">{{ member.nickname ? member.nickname.charAt(0) : '用' }}</text>
           </view>
           <view class="member-info">
-            <text class="member-name">{{ member.nickName }}</text>
+            <text class="member-name">{{ member.nickname || '微信用户' }}</text>
             <text class="member-role">{{ getRoleText(member.role) }}</text>
           </view>
           <view class="member-status">
-            <text class="status-dot" :class="{ online: member.isOnline }"></text>
-            <text class="status-text">{{ member.isOnline ? '在线' : '离线' }}</text>
+            <text class="status-dot" :class="{ online: true }"></text>
+            <text class="status-text">在线</text>
           </view>
         </view>
       </view>
@@ -134,40 +134,20 @@ const inviteCode = ref('ABC123')
 const monthExpense = ref(1250.80)
 const monthIncome = ref(5000.00)
 
-// 模拟成员数据
-const mockMembers = ref([
-  {
-    id: '1',
-    nickName: '张爸爸',
-    role: 'ADMIN',
-    isOnline: true
-  },
-  {
-    id: '2',
-    nickName: '李妈妈',
-    role: 'MEMBER',
-    isOnline: true
-  },
-  {
-    id: '3',
-    nickName: '小明',
-    role: 'OBSERVER',
-    isOnline: false
-  }
-])
-
 // 计算属性
 const familyName = computed(() => familyStore.familyName || '我的家庭')
-const memberCount = computed(() => mockMembers.value.length)
+const memberCount = computed(() => familyStore.members.length)
 
 // 方法
 const getRoleText = (role) => {
   switch (role) {
-    case 'ADMIN':
+    case 'owner':
       return '管理员'
-    case 'MEMBER':
+    case 'admin':
+      return '管理员'
+    case 'member':
       return '成员'
-    case 'OBSERVER':
+    case 'observer':
       return '观察员'
     default:
       return '成员'
@@ -256,9 +236,35 @@ const checkUserStatus = () => {
   }
 }
 
+// 加载数据
+const loadData = async () => {
+  try {
+    // 确保家庭信息已加载
+    if (!familyStore.hasFamily) {
+      await familyStore.getFamilyInfo()
+    }
+    
+    // 加载家庭成员
+    await familyStore.loadMembers()
+    
+    console.log('家庭信息:', familyStore.family)
+    console.log('家庭成员:', familyStore.members)
+    console.log('是否管理员:', familyStore.isAdmin)
+  } catch (error) {
+    console.error('加载家庭数据失败:', error)
+  }
+}
+
 // 生命周期
 onMounted(() => {
   checkUserStatus()
+  loadData()
+})
+
+Taro.useDidShow(() => {
+  if (userStore.isLoggedIn && familyStore.hasFamily) {
+    loadData()
+  }
 })
 
 // 页面配置

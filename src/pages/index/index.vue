@@ -79,7 +79,7 @@
       <view class="remark-section">
         <input
           class="remark-input"
-          :value="recordForm.description"
+          :value="recordForm.value.description"
           @input="onRemarkInput"
           placeholder="添加备注..."
         />
@@ -88,7 +88,7 @@
       <!-- 日期选择 -->
       <view class="date-section" @tap="showDatePicker">
         <text class="date-label">记账日期</text>
-        <text class="date-value">{{ formatDate(recordForm.date) }}</text>
+        <text class="date-value">{{ formatDate(recordForm.value.date) }}</text>
         <text class="arrow">></text>
       </view>
 
@@ -153,7 +153,7 @@
     <picker
       v-if="showDatePickerModal"
       mode="date"
-      :value="recordForm.date"
+      :value="recordForm.value.date"
       @change="onDateChange"
       @cancel="showDatePickerModal = false"
     >
@@ -236,12 +236,15 @@ const selectCategory = (category) => {
 }
 
 const showDatePicker = () => {
+  console.log('显示日期选择器，当前日期:', recordForm.value.date)
   showDatePickerModal.value = true
 }
 
 const onDateChange = (e) => {
+  console.log('日期选择变化:', e.detail.value)
   recordForm.value.date = e.detail.value
   showDatePickerModal.value = false
+  console.log('更新后的日期:', recordForm.value.date)
 }
 
 const saveRecord = async () => {
