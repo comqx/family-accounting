@@ -13,7 +13,10 @@
         </view>
       </view>
 
-      <view class="family-stats">
+      <view class="family-s
+      
+      
+      tats">
         <view class="stat-item">
           <text class="stat-value">¥{{ formatAmount(monthExpense) }}</text>
           <text class="stat-label">本月支出</text>

@@ -79,7 +79,7 @@
       <view class="remark-section">
         <input
           class="remark-input"
-          :value="recordForm.value.description"
+          :value="recordForm.description"
           @input="onRemarkInput"
           placeholder="添加备注..."
         />
@@ -88,7 +88,7 @@
       <!-- 日期选择 -->
       <view class="date-section" @tap="showDatePicker">
         <text class="date-label">记账日期</text>
-        <text class="date-value">{{ formatDate(recordForm.value.date) }}</text>
+        <text class="date-value">{{ formatDate(recordForm.date) }}</text>
         <text class="arrow">></text>
       </view>
 
@@ -153,7 +153,9 @@
     <picker
       v-if="showDatePickerModal"
       mode="date"
-      :value="recordForm.value.date"
+      :value="recordForm.date"
+      :start="'2000-01-01'"
+      :end="maxDate"
       @change="onDateChange"
       @cancel="showDatePickerModal = false"
     >
@@ -195,6 +197,9 @@ const showDatePickerModal = ref(false)
 const monthExpense = ref(0)
 const monthIncome = ref(0)
 const recentRecords = ref([])
+
+// 日期选择器范围
+const maxDate = new Date().toISOString().split('T')[0]
 
 // 计算属性
 const currentCategories = computed(() => {

@@ -38,6 +38,11 @@
 
     <!-- 记录列表 -->
     <view class="records-section">
+      <!-- 调试信息 -->
+      <view style="background: #f0f0f0; padding: 10rpx; margin-bottom: 20rpx; font-size: 24rpx;">
+        <text>调试信息: records.length={{ records.length }}, groupedRecords.length={{ groupedRecords.length }}</text>
+      </view>
+      
       <view v-if="groupedRecords.length === 0" class="empty-state">
         <view class="empty-icon">📝</view>
         <text class="empty-text">暂无记录</text>
@@ -215,22 +220,43 @@ const currentCategories = computed(() => {
 })
 
 const filteredRecords = computed(() => {
+  console.log('filteredRecords computed - records.value:', records.value)
+  console.log('filteredRecords computed - typeFilter.value:', typeFilter.value)
+  console.log('filteredRecords computed - categoryFilter.value:', categoryFilter.value)
+  
   let filtered = records.value
   // 按类型筛选
   if (typeFilter.value) {
     filtered = filtered.filter(record => record.type === typeFilter.value)
+    console.log('After type filter:', filtered.length)
   }
   // 按分类筛选
   if (categoryFilter.value) {
     filtered = filtered.filter(record => record.categoryId === Number(categoryFilter.value))
+    console.log('After category filter:', filtered.length)
   }
+  
+  console.log('filteredRecords final result:', filtered)
   return filtered
 })
 
 const groupedRecords = computed(() => {
+  console.log('groupedRecords computed - records.value:', records.value)
+  console.log('groupedRecords computed - filteredRecords.value:', filteredRecords.value)
+  
+  if (!filteredRecords.value || filteredRecords.value.length === 0) {
+    console.log('No filtered records, returning empty array')
+    return []
+  }
+  
   const groups = {}
   filteredRecords.value.forEach(record => {
+    console.log('Processing record:', record)
+    console.log('Record date:', record.date)
+    
     const dateKey = formatDate(record.date, 'MM-DD')
+    console.log('Formatted dateKey:', dateKey)
+    
     if (!groups[dateKey]) {
       groups[dateKey] = {
         date: dateKey,
@@ -241,12 +267,15 @@ const groupedRecords = computed(() => {
     }
     groups[dateKey].records.push(record)
     if (record.type === 'expense') {
-      groups[dateKey].totalExpense += record.amount
+      groups[dateKey].totalExpense += parseFloat(record.amount)
     } else {
-      groups[dateKey].totalIncome += record.amount
+      groups[dateKey].totalIncome += parseFloat(record.amount)
     }
   })
-  return Object.values(groups).sort((a, b) => b.date.localeCompare(a.date))
+  
+  const result = Object.values(groups).sort((a, b) => b.date.localeCompare(a.date))
+  console.log('groupedRecords computed - result:', result)
+  return result
 })
 
 // 方法
@@ -305,8 +334,13 @@ const loadData = async () => {
   try {
     console.log('账本页开始加载数据...')
     
+    // 检查token
+    const token = Taro.getStorageSync('token')
+    console.log('当前token:', token ? '存在' : '不存在')
+    
     // 确保家庭信息已加载
     if (!familyStore.hasFamily) {
+      console.log('家庭信息未加载，正在获取...')
       await familyStore.getFamilyInfo()
     }
     
@@ -331,7 +365,8 @@ const loadData = async () => {
       type: typeFilter.value || undefined,
       categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined
     })
-    const res = await recordStore.loadRecords({
+    // 直接调用API获取记录
+    const recordsRes = await request.get('/api/record/list', {
       familyId: familyId,
       startDate,
       endDate,
@@ -340,9 +375,38 @@ const loadData = async () => {
       page: 1,
       pageSize: 100
     })
-    console.log('loadRecords result:', res)
-    records.value = recordStore.records
-    console.log('records.value:', records.value)
+    console.log('recordsRes:', recordsRes)
+    
+    // 兼容不同的响应格式
+    let recordsData = null;
+    if (recordsRes.data?.list) {
+      recordsData = recordsRes.data.list;
+    } else if (recordsRes.data?.records) {
+      recordsData = recordsRes.data.records;
+    } else if (Array.isArray(recordsRes.data)) {
+      recordsData = recordsRes.data;
+    }
+    
+    if (recordsData) {
+      records.value = recordsData;
+      console.log('records.value set to:', records.value);
+      console.log('records.value length:', records.value.length);
+      console.log('records.value type:', typeof records.value);
+      console.log('records.value is array:', Array.isArray(records.value));
+      
+      // 强制触发响应式更新
+      await new Promise(resolve => setTimeout(resolve, 0));
+      console.log('After timeout - records.value:', records.value);
+      
+      // 再次检查响应式更新
+      setTimeout(() => {
+        console.log('After 100ms - records.value:', records.value);
+        console.log('After 100ms - records.value.length:', records.value.length);
+      }, 100);
+    } else {
+      console.warn('No records data in response');
+      records.value = [];
+    }
     // 获取月统计
     const statsRes = await request.get('/api/report/statistics', {
       familyId: familyId,
@@ -372,19 +436,28 @@ const checkUserStatus = () => {
 
 // 生命周期
 onMounted(() => {
+  console.log('onMounted called')
   checkUserStatus()
-  loadData()
+  // 延迟加载数据，确保store已初始化
+  setTimeout(() => {
+    loadData()
+  }, 100)
 })
 
 Taro.useLoad(() => {
+  console.log('useLoad called')
   Taro.setNavigationBarTitle({
     title: '账本'
   })
 })
 
 Taro.useDidShow(() => {
+  console.log('useDidShow called, isLoggedIn:', userStore.isLoggedIn)
   if (userStore.isLoggedIn) {
-    loadData()
+    // 延迟加载数据，避免重复加载
+    setTimeout(() => {
+      loadData()
+    }, 100)
   }
 })
 
