@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS family_invites (
   used TINYINT(1) DEFAULT 0,
   used_by INT NULL,
   used_at TIMESTAMP NULL,
-  expires_at TIMESTAMP NOT NULL,
+  expires_at DATETIME NOT NULL, -- 类型改为DATETIME，兼容性更好，插入时由代码赋值为NOW()+INTERVAL 7 DAY
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_family_id (family_id),
   INDEX idx_invite_code (invite_code),
@@ -73,7 +73,8 @@ CREATE TABLE IF NOT EXISTS family_members (
 );
 
 -- 添加索引优化查询性能
-CREATE INDEX IF NOT EXISTS idx_records_family_date ON records(family_id, date);
-CREATE INDEX IF NOT EXISTS idx_records_family_type ON records(family_id, type);
-CREATE INDEX IF NOT EXISTS idx_records_category ON records(category_id);
-CREATE INDEX IF NOT EXISTS idx_records_user ON records(user_id); 
+-- MySQL不支持CREATE INDEX IF NOT EXISTS，直接用CREATE INDEX，若已存在会报错，忽略即可
+CREATE INDEX idx_records_family_date ON records(family_id, date);
+CREATE INDEX idx_records_family_type ON records(family_id, type);
+CREATE INDEX idx_records_category ON records(category_id);
+CREATE INDEX idx_records_user ON records(user_id); 
