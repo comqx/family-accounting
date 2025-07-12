@@ -369,15 +369,24 @@ const loadData = async () => {
       pageSize: 100
     })
     console.log('recordsRes:', recordsRes)
+    console.log('recordsRes.data:', recordsRes.data)
+    console.log('recordsRes.data.list:', recordsRes.data?.list)
+    console.log('recordsRes.data.records:', recordsRes.data?.records)
+    console.log('recordsRes.data is array:', Array.isArray(recordsRes.data))
     
     // 兼容不同的响应格式
     let recordsData = null;
     if (recordsRes.data?.list) {
       recordsData = recordsRes.data.list;
+      console.log('Found data in recordsRes.data.list:', recordsData)
     } else if (recordsRes.data?.records) {
       recordsData = recordsRes.data.records;
+      console.log('Found data in recordsRes.data.records:', recordsData)
     } else if (Array.isArray(recordsRes.data)) {
       recordsData = recordsRes.data;
+      console.log('Found data in recordsRes.data (array):', recordsData)
+    } else {
+      console.log('No data found in any expected format')
     }
     
     if (recordsData) {
