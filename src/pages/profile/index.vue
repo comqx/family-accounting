@@ -34,7 +34,12 @@ const chooseAvatar = async () => {
 const saveProfile = async () => {
   await userStore.updateUserInfo({ avatar: avatar.value, nickname: nickname.value, phone: phone.value })
   Taro.showToast({ title: '保存成功', icon: 'success' })
-  Taro.navigateBack()
+  const pages = Taro.getCurrentPages()
+  if (pages.length > 1) {
+    Taro.navigateBack()
+  } else {
+    Taro.switchTab({ url: '/pages/mine/index' })
+  }
 }
 </script>
 
