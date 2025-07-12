@@ -354,22 +354,15 @@ const loadData = async () => {
     
     // 获取分类
     await categoryStore.loadCategories(familyId)
-    // 获取账单记录
-    const [year, month] = selectedDate.value.split('-')
-    const startDate = `${year}-${month}-01`
-    const endDate = `${year}-${month}-31`
+    // 获取账单记录 - 先不限制日期范围，获取所有记录
     console.log('加载记录参数:', {
       familyId: familyId,
-      startDate,
-      endDate,
       type: typeFilter.value || undefined,
       categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined
     })
     // 直接调用API获取记录
     const recordsRes = await request.get('/api/record/list', {
       familyId: familyId,
-      startDate,
-      endDate,
       type: typeFilter.value || undefined,
       categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined,
       page: 1,
@@ -407,11 +400,9 @@ const loadData = async () => {
       console.warn('No records data in response');
       records.value = [];
     }
-    // 获取月统计
+    // 获取月统计 - 暂时获取所有统计
     const statsRes = await request.get('/api/report/statistics', {
-      familyId: familyId,
-      startDate,
-      endDate
+      familyId: familyId
     })
     console.log('统计响应:', statsRes)
     if (statsRes.data) {
