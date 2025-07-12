@@ -330,18 +330,48 @@ const checkUserStatus = () => {
 
 // 生命周期
 onMounted(async () => {
+  // 检查用户状态
   checkUserStatus()
+  
+  // 检查用户信息
+  const { useUserStore } = require('../../stores')
+  const userStore = useUserStore()
+  console.log('👤 用户信息:', {
+    isLoggedIn: userStore.isLoggedIn,
+    user: userStore.user
+  })
+  
+  // 如果用户未登录，直接返回
+  if (!userStore.isLoggedIn) {
+    console.log('❌ 用户未登录，无法加载报表数据')
+    return
+  }
+  
+  console.log('🏠 初始家庭状态:', {
+    hasFamily: familyStore.hasFamily,
+    familyId: familyStore.familyId,
+    familyName: familyStore.familyName,
+    family: familyStore.family
+  })
   
   // 确保家庭信息已加载
   if (!familyStore.hasFamily) {
     console.log('🏠 家庭信息未加载，尝试获取...')
-    await familyStore.getFamilyInfo()
+    const success = await familyStore.getFamilyInfo()
+    console.log('🏠 获取家庭信息结果:', success)
+    
+    if (!success) {
+      console.log('❌ 获取家庭信息失败，无法加载报表数据')
+      appStore.showToast('请先创建或加入家庭', 'none')
+      return
+    }
   }
   
-  console.log('🏠 当前家庭信息:', {
+  console.log('🏠 最终家庭信息:', {
     hasFamily: familyStore.hasFamily,
     familyId: familyStore.familyId,
-    familyName: familyStore.familyName
+    familyName: familyStore.familyName,
+    family: familyStore.family
   })
   
   loadReportData()
