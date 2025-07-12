@@ -4,6 +4,7 @@ export default defineAppConfig({
     'pages/ledger/index',
     'pages/reports/index',
     'pages/family/index',
+    'pages/mine/index',
     'pages/profile/index',
     'pages/login/index',
     'pages/record/add/index',
