@@ -1,0 +1,329 @@
+
+---
+apiVersion: keda-auto-operator.example.com/v1alpha1
+kind: KedaAutoScaler
+metadata:
+  name: scaler-autoscaler
+  namespace: geip-replay
+spec:
+  services:
+    - name: flow-app-service
+      minReplicaCount: 2
+      maxReplicaCount: 3
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="flow-app-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: flow-integrate-service
+      minReplicaCount: 2
+      maxReplicaCount: 3
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="flow-integrate-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: identity-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="identity-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: message-service
+      minReplicaCount: 2
+      maxReplicaCount: 3
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="message-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: param-service
+      minReplicaCount: 2
+      maxReplicaCount: 3
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="param-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: portal-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="portal-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: tenant-user-service
+      minReplicaCount: 2
+      maxReplicaCount: 10
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="tenant-user-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: basic-order-service
+      minReplicaCount: 1
+      maxReplicaCount: 3
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="basic-order-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+
+    - name: basic-tenant-service
+      minReplicaCount: 2
+      maxReplicaCount: 7
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="basic-tenant-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+
+    - name: basic-user-service
+      minReplicaCount: 2
+      maxReplicaCount: 7
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="basic-user-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+
+    - name: bim-basic-service
+      minReplicaCount: 2
+      maxReplicaCount: 5
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="bim-basic-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: identity-server-site
+      minReplicaCount: 2
+      maxReplicaCount: 5
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="identity-server-site"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: basic-org-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="basic-org-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: basic-permission-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="basic-permission-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: basic-product-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="basic-product-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: basic-tenant-license-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="basic-tenant-license-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: org-permission-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="org-permission-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+
+    - name: product-sale-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="product-sale-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: product-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="product-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+
+    - name: uaa-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="uaa-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
+    - name: workbench-service
+      minReplicaCount: 2
+      maxReplicaCount: 8
+      pollingInterval: 30
+      cooldownPeriod: 300
+      scalers:
+        - type: prometheus
+          metadata:
+            serverAddress: "http://ops-prometheus-prometheus.glodon-ops.svc:9090"
+            metricName: "metrices_lqx_1"
+            threshold: "30"
+            query:  >
+              sum by (namespace,container)
+              (metrices_lqx_1{namespace="geip-replay",container="workbench-service"}
+              + on(node) group_left() 0.3 * max by (node) (metrices_lqx_2{}))
