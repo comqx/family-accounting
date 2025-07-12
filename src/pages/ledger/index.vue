@@ -20,10 +20,19 @@
 
     <!-- 筛选栏 -->
     <view class="filter-bar">
-      <view class="filter-item" @tap="showDatePicker">
-        <text class="filter-text">{{ currentMonth }}</text>
-        <text class="filter-arrow">▼</text>
-      </view>
+      <picker
+        mode="date"
+        fields="month"
+        :value="selectedDate"
+        :start="'2000-01-01'"
+        :end="maxDate"
+        @change="onDateChange"
+      >
+        <view class="filter-item">
+          <text class="filter-text">{{ currentMonth }}</text>
+          <text class="filter-arrow">▼</text>
+        </view>
+      </picker>
 
       <view class="filter-item" @tap="showTypeFilter">
         <text class="filter-text">{{ typeFilterText }}</text>
@@ -38,11 +47,6 @@
 
     <!-- 记录列表 -->
     <view class="records-section">
-      <!-- 调试信息 -->
-      <view style="background: #f0f0f0; padding: 10rpx; margin-bottom: 20rpx; font-size: 24rpx;">
-        <text>调试信息: records.length={{ records.length }}, groupedRecords.length={{ groupedRecords.length }}</text>
-      </view>
-      
       <view v-if="groupedRecords.length === 0" class="empty-state">
         <view class="empty-icon">📝</view>
         <text class="empty-text">暂无记录</text>
@@ -96,17 +100,7 @@
       <text class="add-icon">+</text>
     </view>
 
-    <!-- 日期选择器 -->
-    <picker
-      v-if="showDatePickerModal"
-      mode="date"
-      fields="month"
-      :value="selectedDate"
-      @change="onDateChange"
-      @cancel="showDatePickerModal = false"
-    >
-      <view></view>
-    </picker>
+
 
     <!-- 类型筛选弹窗 -->
     <view v-if="showTypeModal" class="modal-overlay" @tap="closeTypeModal">
@@ -183,10 +177,12 @@ const monthIncome = ref(0)
 const selectedDate = ref(new Date().toISOString().split('T')[0].substring(0, 7))
 const typeFilter = ref('')
 const categoryFilter = ref('')
-const showDatePickerModal = ref(false)
 const showTypeModal = ref(false)
 const showCategoryModal = ref(false)
 const records = ref([])
+
+// 日期选择器范围
+const maxDate = new Date().toISOString().split('T')[0]
 
 // 类型选项
 const typeOptions = [
@@ -220,42 +216,27 @@ const currentCategories = computed(() => {
 })
 
 const filteredRecords = computed(() => {
-  console.log('filteredRecords computed - records.value:', records.value)
-  console.log('filteredRecords computed - typeFilter.value:', typeFilter.value)
-  console.log('filteredRecords computed - categoryFilter.value:', categoryFilter.value)
-  
   let filtered = records.value
   // 按类型筛选
   if (typeFilter.value) {
     filtered = filtered.filter(record => record.type === typeFilter.value)
-    console.log('After type filter:', filtered.length)
   }
   // 按分类筛选
   if (categoryFilter.value) {
     filtered = filtered.filter(record => record.categoryId === Number(categoryFilter.value))
-    console.log('After category filter:', filtered.length)
   }
   
-  console.log('filteredRecords final result:', filtered)
   return filtered
 })
 
 const groupedRecords = computed(() => {
-  console.log('groupedRecords computed - records.value:', records.value)
-  console.log('groupedRecords computed - filteredRecords.value:', filteredRecords.value)
-  
   if (!filteredRecords.value || filteredRecords.value.length === 0) {
-    console.log('No filtered records, returning empty array')
     return []
   }
   
   const groups = {}
   filteredRecords.value.forEach(record => {
-    console.log('Processing record:', record)
-    console.log('Record date:', record.date)
-    
     const dateKey = formatDate(record.date, 'MM-DD')
-    console.log('Formatted dateKey:', dateKey)
     
     if (!groups[dateKey]) {
       groups[dateKey] = {
@@ -273,19 +254,12 @@ const groupedRecords = computed(() => {
     }
   })
   
-  const result = Object.values(groups).sort((a, b) => b.date.localeCompare(a.date))
-  console.log('groupedRecords computed - result:', result)
-  return result
+  return Object.values(groups).sort((a, b) => b.date.localeCompare(a.date))
 })
 
 // 方法
-const showDatePicker = () => {
-  showDatePickerModal.value = true
-}
-
 const onDateChange = (e) => {
   selectedDate.value = e.detail.value
-  showDatePickerModal.value = false
   loadData()
 }
 
@@ -332,15 +306,8 @@ const goToAddRecord = () => {
 
 const loadData = async () => {
   try {
-    console.log('账本页开始加载数据...')
-    
-    // 检查token
-    const token = Taro.getStorageSync('token')
-    console.log('当前token:', token ? '存在' : '不存在')
-    
     // 确保家庭信息已加载
     if (!familyStore.hasFamily) {
-      console.log('家庭信息未加载，正在获取...')
       await familyStore.getFamilyInfo()
     }
     
@@ -350,8 +317,6 @@ const loadData = async () => {
       return
     }
     
-    console.log('使用家庭ID:', familyId)
-    
     // 获取分类
     await categoryStore.loadCategories(familyId)
     // 获取账单记录 - 先不限制日期范围，获取所有记录
@@ -360,65 +325,56 @@ const loadData = async () => {
       type: typeFilter.value || undefined,
       categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined
     })
-    // 直接调用API获取记录
-    const recordsRes = await request.get('/api/record/list', {
+    // 构建请求参数，过滤掉undefined值
+    const requestParams = {
       familyId: familyId,
-      type: typeFilter.value || undefined,
-      categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined,
       page: 1,
       pageSize: 100
-    })
-    console.log('recordsRes:', recordsRes)
-    console.log('recordsRes.data:', recordsRes.data)
-    console.log('recordsRes.data.list:', recordsRes.data?.list)
-    console.log('recordsRes.data.records:', recordsRes.data?.records)
-    console.log('recordsRes.data is array:', Array.isArray(recordsRes.data))
+    }
+    
+    // 添加日期范围筛选
+    const [year, month] = selectedDate.value.split('-')
+    const startDate = `${year}-${month}-01`
+    const endDate = `${year}-${month}-31`
+    requestParams.startDate = startDate
+    requestParams.endDate = endDate
+    
+    // 只有当有值时才添加参数
+    if (typeFilter.value) {
+      requestParams.type = typeFilter.value
+    }
+    if (categoryFilter.value) {
+      requestParams.categoryId = Number(categoryFilter.value)
+    }
+    
+    // 直接调用API获取记录
+    const recordsRes = await request.get('/api/record/list', requestParams)
     
     // 兼容不同的响应格式
     let recordsData = null;
     if (recordsRes.data?.list) {
       recordsData = recordsRes.data.list;
-      console.log('Found data in recordsRes.data.list:', recordsData)
     } else if (recordsRes.data?.records) {
       recordsData = recordsRes.data.records;
-      console.log('Found data in recordsRes.data.records:', recordsData)
     } else if (Array.isArray(recordsRes.data)) {
       recordsData = recordsRes.data;
-      console.log('Found data in recordsRes.data (array):', recordsData)
-    } else {
-      console.log('No data found in any expected format')
     }
     
     if (recordsData) {
       records.value = recordsData;
-      console.log('records.value set to:', records.value);
-      console.log('records.value length:', records.value.length);
-      console.log('records.value type:', typeof records.value);
-      console.log('records.value is array:', Array.isArray(records.value));
-      
-      // 强制触发响应式更新
-      await new Promise(resolve => setTimeout(resolve, 0));
-      console.log('After timeout - records.value:', records.value);
-      
-      // 再次检查响应式更新
-      setTimeout(() => {
-        console.log('After 100ms - records.value:', records.value);
-        console.log('After 100ms - records.value.length:', records.value.length);
-      }, 100);
     } else {
-      console.warn('No records data in response');
       records.value = [];
     }
-    // 获取月统计 - 暂时获取所有统计
+    // 获取月统计
     const statsRes = await request.get('/api/report/statistics', {
-      familyId: familyId
+      familyId: familyId,
+      startDate,
+      endDate
     })
-    console.log('统计响应:', statsRes)
     if (statsRes.data) {
       monthExpense.value = statsRes.data.totalExpense || 0
       monthIncome.value = statsRes.data.totalIncome || 0
     }
-    console.log('月统计:', { expense: monthExpense.value, income: monthIncome.value })
   } catch (error) {
     console.error('账本页加载数据失败:', error)
   }
@@ -436,7 +392,6 @@ const checkUserStatus = () => {
 
 // 生命周期
 onMounted(() => {
-  console.log('onMounted called')
   checkUserStatus()
   // 延迟加载数据，确保store已初始化
   setTimeout(() => {
@@ -445,14 +400,12 @@ onMounted(() => {
 })
 
 Taro.useLoad(() => {
-  console.log('useLoad called')
   Taro.setNavigationBarTitle({
     title: '账本'
   })
 })
 
 Taro.useDidShow(() => {
-  console.log('useDidShow called, isLoggedIn:', userStore.isLoggedIn)
   if (userStore.isLoggedIn) {
     // 延迟加载数据，避免重复加载
     setTimeout(() => {

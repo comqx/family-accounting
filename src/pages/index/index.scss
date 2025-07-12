@@ -131,33 +131,61 @@
 
       .category-list {
         white-space: nowrap;
+        padding: 10rpx 0;
+        // 添加滚动条样式
+        &::-webkit-scrollbar {
+          display: none;
+        }
+        
+        // 确保内容可以滚动
+        scroll-behavior: smooth;
 
         .category-item {
           display: inline-block;
           text-align: center;
           margin-right: 30rpx;
-          padding: 20rpx 10rpx;
-          border-radius: 12rpx;
+          padding: 20rpx 15rpx;
+          border-radius: 16rpx;
           transition: all 0.3s ease;
+          min-width: 100rpx;
+          // 添加阴影效果
+          box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+
+          &:last-child {
+            margin-right: 30rpx; // 最后一个项目右边距
+          }
 
           &.active {
-            background: #e3f2fd;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scale(1.05);
+            box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
 
             .category-icon {
-              background: #1296db !important;
+              background: white !important;
+              color: #667eea;
+            }
+
+            .category-name {
               color: white;
+              font-weight: 500;
             }
           }
 
           &.add-category {
             .category-icon {
-              background: #f0f0f0;
-              border: 2rpx dashed #ccc;
+              background: #f8f9fa;
+              border: 2rpx dashed #ddd;
+              color: #999;
 
               .add-icon {
                 color: #999;
                 font-size: 32rpx;
+                font-weight: bold;
               }
+            }
+
+            .category-name {
+              color: #999;
             }
           }
 
@@ -169,17 +197,25 @@
             align-items: center;
             justify-content: center;
             font-size: 32rpx;
-            margin: 0 auto 10rpx;
+            margin: 0 auto 12rpx;
             transition: all 0.3s ease;
+            box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
           }
 
           .category-name {
             display: block;
             font-size: 24rpx;
             color: #666;
-            max-width: 80rpx;
+            max-width: 100rpx;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+          }
+
+          // 添加点击效果
+          &:active {
+            transform: scale(0.95);
           }
         }
       }

@@ -236,10 +236,20 @@ const loadReportData = async () => {
     const { startDate, endDate } = getDateRange()
     const familyId = familyStore.familyId
     
+    console.log('📊 加载报表数据:', { familyId, startDate, endDate })
+    
+    if (!familyId) {
+      console.error('❌ 家庭ID为空，无法加载报表数据')
+      appStore.showToast('请先选择家庭', 'none')
+      return
+    }
+    
     // 1. 获取统计数据
     const statsRes = await request.get('/api/report/statistics', {
       familyId, startDate, endDate
     })
+    
+    console.log('📊 统计数据响应:', statsRes)
     
     if (statsRes.data && statsRes.data.data) {
       const stats = statsRes.data.data
@@ -250,12 +260,20 @@ const loadReportData = async () => {
       // 计算平均每日支出
       const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1
       avgDailyExpense.value = days > 0 ? totalExpense.value / days : 0
+      
+      console.log('📊 统计数据已更新:', { 
+        totalExpense: totalExpense.value, 
+        totalIncome: totalIncome.value, 
+        recordDays: recordDays.value 
+      })
     }
     
     // 2. 获取分类统计
     const catRes = await request.get('/api/report/categories', {
       familyId, startDate, endDate, type: 'expense'
     })
+    
+    console.log('📈 分类统计响应:', catRes)
     
     if (catRes.data && catRes.data.data) {
       categoryStats.value = catRes.data.data.map(cat => ({
@@ -267,6 +285,8 @@ const loadReportData = async () => {
         count: cat.count,
         percentage: totalExpense.value > 0 ? Math.round((cat.amount / totalExpense.value) * 100) : 0
       }))
+      
+      console.log('📈 分类统计已更新:', categoryStats.value)
     }
     
     // 3. 获取趋势数据计算最大日支出
@@ -274,13 +294,18 @@ const loadReportData = async () => {
       familyId, startDate, endDate, type: 'expense', period: 'day'
     })
     
+    console.log('📉 趋势数据响应:', trendRes)
+    
     if (trendRes.data && trendRes.data.data) {
       const maxExpense = Math.max(...trendRes.data.data.map(item => item.expense))
       maxDailyExpense.value = maxExpense || 0
+      
+      console.log('📉 趋势数据已更新:', { maxDailyExpense: maxDailyExpense.value })
     }
     
   } catch (error) {
-    console.error('加载报表数据失败:', error)
+    console.error('❌ 加载报表数据失败:', error)
+    console.error('错误详情:', error.message, error.stack)
     appStore.showToast('加载数据失败', 'none')
   }
 }
@@ -304,8 +329,21 @@ const checkUserStatus = () => {
 }
 
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   checkUserStatus()
+  
+  // 确保家庭信息已加载
+  if (!familyStore.hasFamily) {
+    console.log('🏠 家庭信息未加载，尝试获取...')
+    await familyStore.getFamilyInfo()
+  }
+  
+  console.log('🏠 当前家庭信息:', {
+    hasFamily: familyStore.hasFamily,
+    familyId: familyStore.familyId,
+    familyName: familyStore.familyName
+  })
+  
   loadReportData()
 })
 

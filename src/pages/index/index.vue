@@ -86,11 +86,20 @@
       </view>
 
       <!-- 日期选择 -->
-      <view class="date-section" @tap="showDatePicker">
-        <text class="date-label">记账日期</text>
-        <text class="date-value">{{ formatDate(recordForm.date) }}</text>
-        <text class="arrow">></text>
-      </view>
+      <picker
+        mode="date"
+        :value="recordForm.date"
+        :start="'2000-01-01'"
+        :end="maxDate"
+        @change="onDateChange"
+      >
+        <view class="date-section">
+          <text class="date-label">记账日期</text>
+          <text class="date-value">{{ formatDate(recordForm.date) }}</text>
+          <text class="arrow">></text>
+          <text style="font-size: 20rpx; color: #999; margin-left: 10rpx;">点击选择</text>
+        </view>
+      </picker>
 
       <!-- 保存按钮 -->
       <view class="save-section">
@@ -149,18 +158,7 @@
       <text class="import-text">智能导入</text>
     </view>
 
-    <!-- 日期选择器 -->
-    <picker
-      v-if="showDatePickerModal"
-      mode="date"
-      :value="recordForm.date"
-      :start="'2000-01-01'"
-      :end="maxDate"
-      @change="onDateChange"
-      @cancel="showDatePickerModal = false"
-    >
-      <view></view>
-    </picker>
+
   </view>
 </template>
 
@@ -193,7 +191,6 @@ const recordForm = ref({
 
 const amountFocused = ref(false)
 const saving = ref(false)
-const showDatePickerModal = ref(false)
 const monthExpense = ref(0)
 const monthIncome = ref(0)
 const recentRecords = ref([])
@@ -240,15 +237,9 @@ const selectCategory = (category) => {
   recordForm.value.categoryId = Number(category.id)
 }
 
-const showDatePicker = () => {
-  console.log('显示日期选择器，当前日期:', recordForm.value.date)
-  showDatePickerModal.value = true
-}
-
 const onDateChange = (e) => {
   console.log('日期选择变化:', e.detail.value)
   recordForm.value.date = e.detail.value
-  showDatePickerModal.value = false
   console.log('更新后的日期:', recordForm.value.date)
 }
 
