@@ -278,6 +278,12 @@ export const useUserStore = defineStore('user', () => {
     Taro.setStorageSync('userInfo', userInfo);
   };
 
+  // 兼容页面调用的 getUserInfo
+  const getUserInfo = async () => {
+    if (user.value) return user.value
+    return null
+  }
+
   return {
     // 状态
     user,
@@ -303,6 +309,7 @@ export const useUserStore = defineStore('user', () => {
     checkLoginStatus,
     hasPermission,
     updateUserRole,
-    setUser
+    setUser,
+    getUserInfo
   };
 });

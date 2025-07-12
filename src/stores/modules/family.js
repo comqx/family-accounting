@@ -596,6 +596,7 @@ export const useFamilyStore = defineStore('family', () => {
     getCategoryBudgets,
     setCategoryBudget,
     getBudgetHistory,
+    generateInvite: generateInviteCode,
     $reset
   };
 }); 
