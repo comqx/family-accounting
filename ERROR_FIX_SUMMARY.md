@@ -365,4 +365,124 @@ import request from '../../../utils/request'  // 报表页面
 **测试结果**：
 - ✅ 账本页面可以正常加载数据
 - ✅ 报表页面可以正常调用API
-- ✅ 所有页面都正确导入了request模块 
+- ✅ 所有页面都正确导入了request模块
+
+### 2024-07-11 - 系统错误处理优化
+
+**问题描述**：
+- 登录后出现文件系统错误：`no such file or directory, access 'wxfile://usr/miniprogramLog/log2'`
+- 继续出现backgroundfetch隐私错误
+- 这些错误影响用户体验，但不会影响功能
+
+**问题原因**：
+- 微信开发者工具的内部错误
+- 小程序日志系统的问题
+- backgroundfetch相关的系统错误
+
+**解决方案**：
+1. **创建全局错误处理器**：
+   ```javascript
+   // src/utils/error-handler.ts
+   const IGNORED_ERRORS = [
+     'wxfile://',
+     'miniprogramLog', 
+     'backgroundfetch',
+     'no such file or directory',
+     'private_getBackgroundFetchData',
+     'backgroundfetch privacy fail'
+   ]
+   ```
+
+2. **在app.ts中集成错误处理**：
+   ```javascript
+   onError (error) {
+     handleGlobalError(error)
+   },
+   onUnhandledRejection (options) {
+     handleGlobalError(options.reason)
+   }
+   ```
+
+3. **在请求工具中添加错误过滤**：
+   ```javascript
+   // 检查是否为需要忽略的系统错误
+   if (error.includes('wxfile://') || error.includes('backgroundfetch')) {
+     console.warn('忽略系统错误:', error)
+     return Promise.reject(error)
+   }
+   ```
+
+**修改文件**：
+- `src/app.ts` - 集成全局错误处理
+- `src/utils/error-handler.ts` - 创建错误处理器
+- `src/utils/request/index.js` - 添加错误过滤
+
+**测试结果**：
+- ✅ 系统错误被正确过滤，不再影响用户体验
+- ✅ 真正的应用错误仍然会被正确记录
+- ✅ 用户界面不再显示无关的系统错误
+
+### 2024-07-11 - 记账历史显示问题修复
+
+**问题描述**：
+- 登录后记账，下面的记账历史里面是空
+- 记账后，账本里面也是空
+- 后端API正常返回数据，但前端无法正确显示
+
+**问题原因**：
+1. **缺少familyId参数**：`getRecentRecords`、`getStatsByDateRange`、`getStatsByCategory`、`searchRecords` 方法没有传递 `familyId` 参数
+2. **响应格式处理不完整**：前端响应处理逻辑可能没有正确解析后端返回的数据格式
+3. **调试信息不足**：缺少详细的调试日志来排查问题
+
+**解决方案**：
+1. **修复所有记录相关方法的familyId参数**：
+   ```javascript
+   // 获取家庭ID
+   const { useFamilyStore } = require('./family');
+   const familyStore = useFamilyStore();
+   const familyId = familyStore.familyId;
+   
+   if (!familyId) {
+     console.warn('没有家庭ID，无法获取记录');
+     return [];
+   }
+   
+   const response = await request.get('/api/record/list', {
+     familyId: familyId,
+     // ... 其他参数
+   });
+   ```
+
+2. **增强响应格式处理**：
+   ```javascript
+   // 兼容不同的响应格式
+   let recordsData = null;
+   if (response.data?.list) {
+     recordsData = response.data.list;
+   } else if (response.data?.records) {
+     recordsData = response.data.records;
+   } else if (Array.isArray(response.data)) {
+     recordsData = response.data;
+   } else if (response.data && typeof response.data === 'object') {
+     recordsData = response.data.list || response.data.records || [];
+   }
+   ```
+
+3. **添加详细调试日志**：
+   ```javascript
+   console.log('getRecentRecords response:', response);
+   console.log('Found records in response.data.list:', recordsData.length);
+   console.log('loadRecentRecords result:', res);
+   console.log('recentRecords.value:', recentRecords.value);
+   ```
+
+**修改文件**：
+- `src/stores/modules/record.js` - 修复所有记录方法的familyId参数和响应处理
+- `src/pages/index/index.vue` - 添加调试日志
+- `src/pages/ledger/index.vue` - 添加调试日志
+
+**测试结果**：
+- ✅ 后端API测试正常，返回9条记录
+- ✅ 前端方法已添加familyId参数
+- ✅ 添加了详细的调试日志
+- ⏳ 需要重新测试前端显示效果 

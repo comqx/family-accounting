@@ -353,8 +353,11 @@ const loadCategories = async () => {
 // 加载最近记录
 const loadRecentRecords = async () => {
   try {
+    console.log('开始加载最近记录...')
     const res = await recordStore.getRecentRecords(10)
+    console.log('loadRecentRecords result:', res)
     recentRecords.value = res || []
+    console.log('recentRecords.value:', recentRecords.value)
   } catch (error) {
     console.error('加载最近记录失败:', error)
   }

@@ -302,12 +302,20 @@ const goToAddRecord = () => {
 
 const loadData = async () => {
   try {
+    console.log('账本页开始加载数据...')
     // 获取分类
     await categoryStore.loadCategories(userStore.user?.familyId)
     // 获取账单记录
     const [year, month] = selectedDate.value.split('-')
     const startDate = `${year}-${month}-01`
     const endDate = `${year}-${month}-31`
+    console.log('加载记录参数:', {
+      familyId: userStore.user?.familyId,
+      startDate,
+      endDate,
+      type: typeFilter.value || undefined,
+      categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined
+    })
     const res = await recordStore.loadRecords({
       familyId: userStore.user?.familyId,
       startDate,
@@ -317,7 +325,9 @@ const loadData = async () => {
       page: 1,
       pageSize: 100
     })
+    console.log('loadRecords result:', res)
     records.value = recordStore.records
+    console.log('records.value:', records.value)
     // 获取月统计
     const statsRes = await request.get('/api/report/statistics', {
       familyId: userStore.user?.familyId,

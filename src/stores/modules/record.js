@@ -256,25 +256,45 @@ export const useRecordStore = defineStore('record', () => {
   // 获取最近记录
   const getRecentRecords = async (limit = 10) => {
     try {
+      // 获取家庭ID
+      const { useFamilyStore } = require('./family');
+      const familyStore = useFamilyStore();
+      const familyId = familyStore.familyId;
+      
+      if (!familyId) {
+        console.warn('没有家庭ID，无法获取记录');
+        return [];
+      }
+      
       const response = await request.get('/api/record/list', {
+        familyId: familyId,
         page: 1,
         pageSize: limit
       });
+
+      console.log('getRecentRecords response:', response);
 
       // 兼容不同的响应格式
       let recordsData = null;
       if (response.data?.list) {
         recordsData = response.data.list;
+        console.log('Found records in response.data.list:', recordsData.length);
       } else if (response.data?.records) {
         recordsData = response.data.records;
+        console.log('Found records in response.data.records:', recordsData.length);
       } else if (Array.isArray(response.data)) {
         recordsData = response.data;
+        console.log('Found records in response.data (array):', recordsData.length);
+      } else {
+        console.log('No records found in response:', response);
       }
 
       if (recordsData) {
+        console.log('Returning records:', recordsData.length);
         return recordsData;
       }
 
+      console.log('No records data, returning empty array');
       return [];
     } catch (error) {
       console.error('Get recent records error:', error);
@@ -285,7 +305,23 @@ export const useRecordStore = defineStore('record', () => {
   // 获取统计数据
   const getStatsByDateRange = async (startDate, endDate) => {
     try {
+      // 获取家庭ID
+      const { useFamilyStore } = require('./family');
+      const familyStore = useFamilyStore();
+      const familyId = familyStore.familyId;
+      
+      if (!familyId) {
+        console.warn('没有家庭ID，无法获取统计数据');
+        return {
+          totalIncome: 0,
+          totalExpense: 0,
+          balance: 0,
+          count: 0
+        };
+      }
+      
       const response = await request.get('/api/record/list', {
+        familyId: familyId,
         startDate,
         endDate,
         page: 1,
@@ -339,7 +375,18 @@ export const useRecordStore = defineStore('record', () => {
   // 按分类统计
   const getStatsByCategory = async (startDate, endDate) => {
     try {
+      // 获取家庭ID
+      const { useFamilyStore } = require('./family');
+      const familyStore = useFamilyStore();
+      const familyId = familyStore.familyId;
+      
+      if (!familyId) {
+        console.warn('没有家庭ID，无法获取分类统计');
+        return [];
+      }
+      
       const response = await request.get('/api/record/list', {
+        familyId: familyId,
         startDate,
         endDate,
         page: 1,
@@ -388,7 +435,18 @@ export const useRecordStore = defineStore('record', () => {
   // 搜索记录
   const searchRecords = async (keyword) => {
     try {
+      // 获取家庭ID
+      const { useFamilyStore } = require('./family');
+      const familyStore = useFamilyStore();
+      const familyId = familyStore.familyId;
+      
+      if (!familyId) {
+        console.warn('没有家庭ID，无法搜索记录');
+        return [];
+      }
+      
       const response = await request.get('/api/record/list', {
+        familyId: familyId,
         keyword,
         page: 1,
         pageSize: 100

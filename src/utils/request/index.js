@@ -77,6 +77,17 @@ const responseInterceptor = (response) => {
 
 // 错误处理
 const errorHandler = (error) => {
+  // 检查是否为需要忽略的系统错误
+  if (error && typeof error === 'string') {
+    if (error.includes('wxfile://') || 
+        error.includes('miniprogramLog') || 
+        error.includes('backgroundfetch') ||
+        error.includes('no such file or directory')) {
+      console.warn('忽略系统错误:', error)
+      return Promise.reject(error)
+    }
+  }
+  
   console.error('Request Error:', error)
   
   // 处理网络错误
