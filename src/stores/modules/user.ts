@@ -284,6 +284,11 @@ export const useUserStore = defineStore('user', () => {
     return null
   }
 
+  // 兼容页面调用的 updateUserInfo
+  const updateUserInfo = async (profileData) => {
+    return await updateProfile(profileData)
+  }
+
   return {
     // 状态
     user,
@@ -310,6 +315,7 @@ export const useUserStore = defineStore('user', () => {
     hasPermission,
     updateUserRole,
     setUser,
-    getUserInfo
+    getUserInfo,
+    updateUserInfo
   };
 });
