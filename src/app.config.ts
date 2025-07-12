@@ -58,7 +58,7 @@ export default defineAppConfig({
         selectedIconPath: 'assets/icons/family-active.png'
       },
       {
-        pagePath: 'pages/profile/index',
+        pagePath: 'pages/mine/index',
         text: '我的',
         iconPath: 'assets/icons/profile.png',
         selectedIconPath: 'assets/icons/profile-active.png'
