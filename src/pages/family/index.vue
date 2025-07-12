@@ -159,7 +159,7 @@ const handleInviteMember = async () => {
   }
   // 调用后端生成邀请码接口
   const res = await familyStore.generateInvite()
-  inviteCode.value = res.code
+  inviteCode.value = res.data?.inviteCode || ''
   showInviteModal.value = true
 }
 
