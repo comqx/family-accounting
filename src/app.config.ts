@@ -14,6 +14,8 @@ export default defineAppConfig({
     'pages/family/create/index',
     'pages/family/join/index',
     'pages/family/members/index',
+    'pages/family/settings/index', // 新增家庭设置页面
+    'pages/family/budget/index',   // 新增预算管理页面
     'pages/import/index',
     'pages/import/result/index',
     'pages/settings/index'

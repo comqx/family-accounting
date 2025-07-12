@@ -167,7 +167,6 @@ const userStore = useUserStore()
 const familyStore = useFamilyStore()
 const appStore = useAppStore()
 
-const members = ref([])
 const showInvite = ref(false)
 const currentInviteCode = ref('')
 const showMemberModal = ref(false)
@@ -175,6 +174,8 @@ const selectedMember = ref({})
 const showRoleModal = ref(false)
 const selectedRole = ref('')
 
+// 关键修正：members直接computed取store，保证为数组
+const members = computed(() => Array.isArray(familyStore.members) ? familyStore.members : [])
 const totalMembers = computed(() => members.value.length)
 const adminCount = computed(() => members.value.filter(m => m.role === 'ADMIN' || m.role === 'owner').length)
 const memberCount = computed(() => totalMembers.value - adminCount.value)
@@ -312,7 +313,7 @@ const confirmRemoveMember = async () => {
 
 const loadData = async () => {
   try {
-    members.value = await familyStore.loadMembers()
+    await familyStore.loadMembers()
   } catch (error) {
     appStore.showToast('加载成员数据失败', 'none')
   }
