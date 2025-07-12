@@ -67,7 +67,7 @@
     <view class="category-budget">
       <view class="section-header">
         <text class="section-title">分类预算</text>
-        <text v-if="familyStore.isAdmin" class="edit-btn" @tap="showCategoryBudget">设置</text>
+        <text v-if="familyStore.isAdmin" class="edit-btn" @tap="addCategoryBudget">设置</text>
       </view>
       
       <view class="category-list">
@@ -171,6 +171,51 @@
         </view>
       </view>
     </view>
+
+    <!-- 分类预算编辑弹窗 -->
+    <view v-if="showCategoryModal" class="modal-overlay" @tap="closeCategoryModal">
+      <view class="modal-content" @tap.stop>
+        <view class="modal-header">
+          <text class="modal-title">{{ editCategory ? '编辑' : '添加' }}分类预算</text>
+          <text class="close-btn" @tap="closeCategoryModal">×</text>
+        </view>
+        <view class="modal-body">
+          <view class="form-item">
+            <text class="form-label">分类名称</text>
+            <input 
+              class="form-input" 
+              v-model="editCategory.name" 
+              placeholder="请输入分类名称"
+            />
+          </view>
+          <view class="form-item">
+            <text class="form-label">预算金额</text>
+            <input 
+              class="form-input" 
+              v-model="editCategoryAmount" 
+              type="number"
+              placeholder="请输入预算金额"
+            />
+          </view>
+          <view class="form-item">
+            <text class="form-label">分类颜色</text>
+            <view class="color-picker">
+              <view 
+                v-for="color in colors" 
+                :key="color" 
+                class="color-option" 
+                :style="{ backgroundColor: color }"
+                @tap="editCategory.color = color"
+              ></view>
+            </view>
+          </view>
+          <view class="form-actions">
+            <button class="cancel-btn" @tap="closeCategoryModal">取消</button>
+            <button class="confirm-btn" @tap="saveCategoryBudget">{{ editCategory ? '保存' : '添加' }}</button>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -190,125 +235,114 @@ const showBudgetModal = ref(false)
 const editBudgetAmount = ref('')
 const editBudgetAlerts = ref(true)
 const editAlertThreshold = ref('80')
+const showCategoryModal = ref(false)
+const editCategory = ref(null)
+const editCategoryAmount = ref('')
 
-// 模拟数据
-const totalBudget = ref(5000)
-const usedAmount = ref(3200)
+const totalBudget = ref(0)
+const usedAmount = ref(0)
 const budgetAlerts = ref(true)
 const alertThreshold = ref(80)
+const categoryBudgets = ref([])
+const budgetHistory = ref([])
 
-const categoryBudgets = ref([
-  { id: 1, name: '餐饮', icon: '🍽️', color: '#ff6b6b', budget: 1500, used: 1200 },
-  { id: 2, name: '交通', icon: '🚗', color: '#4ecdc4', budget: 800, used: 600 },
-  { id: 3, name: '购物', icon: '🛒', color: '#45b7d1', budget: 1000, used: 800 },
-  { id: 4, name: '娱乐', icon: '🎮', color: '#96ceb4', budget: 500, used: 300 },
-  { id: 5, name: '其他', icon: '📦', color: '#feca57', budget: 1200, used: 300 }
+const colors = ref([
+  '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ffa502', '#2ed573', '#1296db'
 ])
 
-const budgetHistory = ref([
-  { month: '2024年1月', budget: 5000, used: 4800, status: 'normal' },
-  { month: '2023年12月', budget: 5000, used: 5200, status: 'over' },
-  { month: '2023年11月', budget: 5000, used: 4900, status: 'near' },
-  { month: '2023年10月', budget: 5000, used: 4500, status: 'normal' }
-])
-
-// 计算属性
 const currentMonth = computed(() => {
   const now = new Date()
   return `${now.getFullYear()}年${now.getMonth() + 1}月`
 })
 
+const loadData = async () => {
+  // 获取预算总览
+  const budget = await familyStore.getBudget()
+  totalBudget.value = budget.amount || 0
+  usedAmount.value = budget.used || 0
+  budgetAlerts.value = budget.alerts_enabled
+  alertThreshold.value = budget.alert_threshold
+  // 获取分类预算
+  categoryBudgets.value = await familyStore.getCategoryBudgets()
+  // 获取预算历史
+  budgetHistory.value = await familyStore.getBudgetHistory()
+}
+onMounted(loadData)
+
 const budgetProgress = computed(() => {
   if (totalBudget.value <= 0) return 0
   return Math.min(Math.round((usedAmount.value / totalBudget.value) * 100), 100)
 })
-
 const budgetColor = computed(() => {
   if (budgetProgress.value >= 100) return '#ff4757'
   if (budgetProgress.value >= 80) return '#ffa502'
   return '#2ed573'
 })
-
-const remainingBudget = computed(() => {
-  return Math.max(totalBudget.value - usedAmount.value, 0)
-})
-
+const remainingBudget = computed(() => Math.max(totalBudget.value - usedAmount.value, 0))
 const remainingDays = computed(() => {
   const now = new Date()
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
   return lastDay.getDate() - now.getDate()
 })
-
 const dailyBudget = computed(() => {
   if (remainingDays.value <= 0) return 0
   return Math.round(remainingBudget.value / remainingDays.value)
 })
 
-// 方法
 const showBudgetEdit = () => {
   if (!familyStore.isAdmin) {
     appStore.showToast('只有管理员可以设置预算', 'none')
     return
   }
-  
   editBudgetAmount.value = totalBudget.value.toString()
   editBudgetAlerts.value = budgetAlerts.value
   editAlertThreshold.value = alertThreshold.value.toString()
   showBudgetModal.value = true
 }
-
-const closeBudgetModal = () => {
-  showBudgetModal.value = false
-}
-
-const onBudgetAlertsChange = (e) => {
-  editBudgetAlerts.value = e.detail.value
-}
-
+const closeBudgetModal = () => showBudgetModal.value = false
+const onBudgetAlertsChange = (e) => editBudgetAlerts.value = e.detail.value
 const saveBudget = async () => {
   if (!editBudgetAmount.value || parseFloat(editBudgetAmount.value) <= 0) {
     appStore.showToast('请输入有效的预算金额', 'none')
     return
   }
-  
   try {
-    // TODO: 调用后端API保存预算设置
-    totalBudget.value = parseFloat(editBudgetAmount.value)
-    budgetAlerts.value = editBudgetAlerts.value
-    alertThreshold.value = parseInt(editAlertThreshold.value)
-    
+    await familyStore.setBudget({
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1,
+      amount: parseFloat(editBudgetAmount.value),
+      alerts_enabled: editBudgetAlerts.value,
+      alert_threshold: parseInt(editAlertThreshold.value)
+    })
     appStore.showToast('预算设置保存成功', 'success')
     closeBudgetModal()
+    loadData()
   } catch (error) {
     console.error('保存预算设置失败:', error)
     appStore.showToast('保存失败', 'none')
   }
 }
-
-const showCategoryBudget = () => {
-  appStore.showToast('功能开发中', 'none')
+const editCategoryBudget = (cat) => {
+  editCategory.value = cat
+  editCategoryAmount.value = cat.budget
+  showCategoryModal.value = true
 }
-
-// 加载数据
-const loadData = async () => {
-  try {
-    // TODO: 从后端加载预算数据
-  } catch (error) {
-    console.error('加载预算数据失败:', error)
-  }
+const addCategoryBudget = () => {
+  editCategory.value = { id: null, name: '', color: '#1296db', budget: 0 }
+  editCategoryAmount.value = ''
+  showCategoryModal.value = true
 }
-
-// 生命周期
-onMounted(() => {
-  loadData()
-})
-
-// 页面配置
-Taro.useLoad(() => {
-  Taro.setNavigationBarTitle({
-    title: '预算管理'
+const closeCategoryModal = () => showCategoryModal.value = false
+const saveCategoryBudget = async () => {
+  await familyStore.setCategoryBudget({
+    category_id: editCategory.value.id,
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+    amount: parseFloat(editCategoryAmount.value)
   })
-})
+  showCategoryModal.value = false
+  loadData()
+}
 </script>
 
 <style lang="scss">
@@ -686,6 +720,20 @@ Taro.useLoad(() => {
           .confirm-btn {
             background: #1296db;
             color: white;
+          }
+        }
+
+        .color-picker {
+          display: flex;
+          gap: 10rpx;
+          margin-top: 15rpx;
+
+          .color-option {
+            width: 50rpx;
+            height: 50rpx;
+            border-radius: 50%;
+            border: 2rpx solid #eee;
+            box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
           }
         }
       }

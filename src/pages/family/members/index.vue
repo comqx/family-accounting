@@ -159,25 +159,22 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
+import Taro from '@tarojs/taro'
 import { formatDate } from '../../../utils/format'
 
-// Store
 const userStore = useUserStore()
 const familyStore = useFamilyStore()
 const appStore = useAppStore()
 
-// 响应式数据
+const members = ref([])
 const showInvite = ref(false)
-const showMemberModal = ref(false)
-const showRoleModal = ref(false)
 const currentInviteCode = ref('')
+const showMemberModal = ref(false)
 const selectedMember = ref({})
+const showRoleModal = ref(false)
 const selectedRole = ref('')
 
-// 计算属性
-const members = computed(() => familyStore.members)
 const totalMembers = computed(() => members.value.length)
 const adminCount = computed(() => members.value.filter(m => m.role === 'ADMIN' || m.role === 'owner').length)
 const memberCount = computed(() => totalMembers.value - adminCount.value)
@@ -188,7 +185,6 @@ const availableRoles = [
   { value: 'OBSERVER', label: '观察员', description: '只能查看数据', icon: '👁️' }
 ]
 
-// 方法
 const getRoleText = (role) => {
   switch (role) {
     case 'owner':
@@ -225,14 +221,12 @@ const canRemoveMember = (member) => {
 
 const showInviteModal = async () => {
   try {
-    // 生成邀请码
-    const response = await familyStore.generateInviteCode()
-    if (response.success) {
-      currentInviteCode.value = response.data.inviteCode
+    const response = await familyStore.generateInvite()
+    if (response.code) {
+      currentInviteCode.value = response.code
       showInvite.value = true
     }
   } catch (error) {
-    console.error('生成邀请码失败:', error)
     appStore.showToast('生成邀请码失败', 'none')
   }
 }
@@ -283,16 +277,14 @@ const selectRole = (role) => {
 
 const confirmChangeRole = async () => {
   try {
-    const success = await familyStore.updateMemberRole(selectedMember.value.id, selectedRole.value)
+    const success = await familyStore.changeMemberRole(selectedMember.value.id, selectedRole.value)
     if (success) {
       appStore.showToast('角色更新成功', 'success')
       closeRoleModal()
       closeMemberModal()
-      // 重新加载成员列表
-      await familyStore.loadMembers()
+      await loadData()
     }
   } catch (error) {
-    console.error('更新角色失败:', error)
     appStore.showToast('更新角色失败', 'none')
   }
 }
@@ -308,11 +300,9 @@ const confirmRemoveMember = async () => {
           if (success) {
             appStore.showToast('成员已移除', 'success')
             closeMemberModal()
-            // 重新加载成员列表
-            await familyStore.loadMembers()
+            await loadData()
           }
         } catch (error) {
-          console.error('移除成员失败:', error)
           appStore.showToast('移除成员失败', 'none')
         }
       }
@@ -320,29 +310,18 @@ const confirmRemoveMember = async () => {
   })
 }
 
-// 加载数据
 const loadData = async () => {
   try {
-    await familyStore.loadMembers()
+    members.value = await familyStore.loadMembers()
   } catch (error) {
-    console.error('加载成员数据失败:', error)
+    appStore.showToast('加载成员数据失败', 'none')
   }
 }
 
-// 生命周期
-onMounted(() => {
-  loadData()
-})
-
-Taro.useDidShow(() => {
-  loadData()
-})
-
-// 页面配置
+onMounted(loadData)
+Taro.useDidShow(loadData)
 Taro.useLoad(() => {
-  Taro.setNavigationBarTitle({
-    title: '成员管理'
-  })
+  Taro.setNavigationBarTitle({ title: '成员管理' })
 })
 </script>
 
@@ -732,7 +711,7 @@ Taro.useLoad(() => {
             flex: 1;
             border: none;
             border-radius: 12rpx;
-            padding: 20rpx;
+  padding: 20rpx;
             font-size: 28rpx;
 
             &::after {

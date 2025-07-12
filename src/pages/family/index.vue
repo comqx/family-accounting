@@ -126,31 +126,26 @@ import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../stores'
 import { formatAmount } from '../../utils/format'
 
-// Store
 const userStore = useUserStore()
 const familyStore = useFamilyStore()
 const appStore = useAppStore()
 
-// 响应式数据
 const showInviteModal = ref(false)
-const inviteCode = ref('ABC123')
-const monthExpense = ref(1250.80)
-const monthIncome = ref(5000.00)
+const inviteCode = ref('')
+const monthExpense = ref(0)
+const monthIncome = ref(0)
 
-// 计算属性
 const familyName = computed(() => familyStore.familyName || '我的家庭')
 const memberCount = computed(() => familyStore.members.length)
 
-// 方法
 const getRoleText = (role) => {
   switch (role) {
     case 'owner':
+    case 'ADMIN':
       return '管理员'
-    case 'admin':
-      return '管理员'
-    case 'member':
+    case 'MEMBER':
       return '成员'
-    case 'observer':
+    case 'OBSERVER':
       return '观察员'
     default:
       return '成员'
@@ -162,19 +157,10 @@ const handleInviteMember = async () => {
     appStore.showToast('只有管理员可以邀请成员', 'none')
     return
   }
-
-  // 生成邀请码
-  inviteCode.value = generateInviteCode()
+  // 调用后端生成邀请码接口
+  const res = await familyStore.generateInvite()
+  inviteCode.value = res.code
   showInviteModal.value = true
-}
-
-const generateInviteCode = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  let result = ''
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
 }
 
 const closeInviteModal = () => {
@@ -189,80 +175,59 @@ const copyInviteCode = async () => {
 }
 
 const shareToWechat = () => {
-  // 微信分享逻辑
   appStore.showToast('功能开发中', 'none')
 }
 
 const showQRCode = () => {
-  // 显示二维码逻辑
   appStore.showToast('功能开发中', 'none')
 }
 
 const showFamilySettings = () => {
-  appStore.showToast('功能开发中', 'none')
+  Taro.navigateTo({ url: '/pages/family/settings/index' })
 }
 
 const goToMembers = () => {
-  Taro.navigateTo({
-    url: '/pages/family/members/index'
-  })
+  Taro.navigateTo({ url: '/pages/family/members/index' })
 }
 
 const goToCategories = () => {
-  Taro.navigateTo({
-    url: '/pages/category/index'
-  })
+  Taro.navigateTo({ url: '/pages/category/index' })
 }
 
 const goToBudget = () => {
-  Taro.navigateTo({
-    url: '/pages/family/budget/index'
-  })
+  Taro.navigateTo({ url: '/pages/family/budget/index' })
 }
 
 const goToSettings = () => {
-  Taro.navigateTo({
-    url: '/pages/family/settings/index'
-  })
+  Taro.navigateTo({ url: '/pages/family/settings/index' })
 }
 
-// 检查用户状态
 const checkUserStatus = () => {
   if (!userStore.isLoggedIn) {
-    Taro.reLaunch({
-      url: '/pages/login/index'
-    })
+    Taro.reLaunch({ url: '/pages/login/index' })
     return
   }
-
   if (!userStore.hasFamily) {
-    Taro.reLaunch({
-      url: '/pages/family/create/index'
-    })
+    Taro.reLaunch({ url: '/pages/family/create/index' })
     return
   }
 }
 
-// 加载数据
 const loadData = async () => {
   try {
-    // 确保家庭信息已加载
-    if (!familyStore.hasFamily) {
-      await familyStore.getFamilyInfo()
-    }
-    
-    // 加载家庭成员
+    await familyStore.getFamilyInfo()
     await familyStore.loadMembers()
-    
-    console.log('家庭信息:', familyStore.family)
-    console.log('家庭成员:', familyStore.members)
-    console.log('是否管理员:', familyStore.isAdmin)
+    // 假设有统计API
+    const stats = await familyStore.getMonthStats?.()
+    if (stats) {
+      monthExpense.value = stats.expense
+      monthIncome.value = stats.income
+    }
   } catch (error) {
     console.error('加载家庭数据失败:', error)
   }
 }
 
-// 生命周期
 onMounted(() => {
   checkUserStatus()
   loadData()
@@ -274,14 +239,10 @@ Taro.useDidShow(() => {
   }
 })
 
-// 页面配置
 Taro.useLoad(() => {
-  Taro.setNavigationBarTitle({
-    title: '家庭'
-  })
+  Taro.setNavigationBarTitle({ title: '家庭' })
 })
 
-// 页面分享
 Taro.useShareAppMessage(() => {
   return appStore.share({
     title: '家账通 - 加入我的家庭账本',

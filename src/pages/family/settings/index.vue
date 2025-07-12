@@ -260,10 +260,7 @@ const budgetAlertsEnabled = ref(false)
 const syncEnabled = ref(true)
 
 // 计算属性
-const monthlyBudget = computed(() => {
-  // TODO: 从后端获取实际预算数据
-  return 5000
-})
+const monthlyBudget = computed(() => familyStore.budget?.amount || 0)
 
 // 方法
 const showFamilyInfoEdit = () => {
@@ -271,7 +268,6 @@ const showFamilyInfoEdit = () => {
     appStore.showToast('只有管理员可以修改家庭信息', 'none')
     return
   }
-  
   familyName.value = familyStore.familyName || ''
   familyDescription.value = familyStore.family?.description || ''
   showFamilyInfo.value = true
@@ -286,16 +282,15 @@ const saveFamilyInfo = async () => {
     appStore.showToast('请输入家庭名称', 'none')
     return
   }
-  
   try {
     const success = await familyStore.updateFamily({
       name: familyName.value.trim(),
       description: familyDescription.value.trim()
     })
-    
     if (success) {
       appStore.showToast('家庭信息更新成功', 'success')
       closeFamilyInfo()
+      await familyStore.getFamilyInfo()
     }
   } catch (error) {
     console.error('更新家庭信息失败:', error)
@@ -307,14 +302,14 @@ const showFamilyDescEdit = () => {
   showFamilyInfoEdit()
 }
 
-const showBudgetSettings = () => {
+const showBudgetSettings = async () => {
   if (!familyStore.isAdmin) {
     appStore.showToast('只有管理员可以设置预算', 'none')
     return
   }
-  
-  budgetAmount.value = monthlyBudget.value.toString()
-  budgetAlertsEnabled.value = true // TODO: 从后端获取实际设置
+  await familyStore.getBudget()
+  budgetAmount.value = familyStore.budget?.amount?.toString() || ''
+  budgetAlertsEnabled.value = familyStore.budget?.alerts_enabled || false
   showBudget.value = true
 }
 
@@ -328,9 +323,16 @@ const onBudgetAlertsChange = (e) => {
 
 const saveBudget = async () => {
   try {
-    // TODO: 调用后端API保存预算设置
+    await familyStore.setBudget({
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1,
+      amount: parseFloat(budgetAmount.value),
+      alerts_enabled: budgetAlertsEnabled.value,
+      alert_threshold: 80 // 可扩展为可编辑
+    })
     appStore.showToast('预算设置保存成功', 'success')
     closeBudget()
+    await familyStore.getBudget()
   } catch (error) {
     console.error('保存预算设置失败:', error)
     appStore.showToast('保存失败', 'none')
@@ -341,12 +343,24 @@ const showBudgetAlerts = () => {
   showBudgetSettings()
 }
 
-const showDataExport = () => {
-  appStore.showToast('功能开发中', 'none')
+const showDataExport = async () => {
+  try {
+    await familyStore.exportData()
+    appStore.showToast('导出成功', 'success')
+  } catch (e) {
+    appStore.showToast('导出失败', 'none')
+  }
 }
 
-const showDataImport = () => {
-  appStore.showToast('功能开发中', 'none')
+const showDataImport = async (e) => {
+  try {
+    const file = e?.target?.files?.[0]
+    if (!file) return
+    await familyStore.importData(file)
+    appStore.showToast('导入成功', 'success')
+  } catch (e) {
+    appStore.showToast('导入失败', 'none')
+  }
 }
 
 const showDataSync = () => {
@@ -370,9 +384,7 @@ const showLeaveFamily = () => {
         try {
           const success = await familyStore.leaveFamily()
           if (success) {
-            Taro.reLaunch({
-              url: '/pages/family/create/index'
-            })
+            Taro.reLaunch({ url: '/pages/family/create/index' })
           }
         } catch (error) {
           console.error('离开家庭失败:', error)
@@ -392,9 +404,7 @@ const showDissolveFamily = () => {
         try {
           const success = await familyStore.dissolveFamily()
           if (success) {
-            Taro.reLaunch({
-              url: '/pages/family/create/index'
-            })
+            Taro.reLaunch({ url: '/pages/family/create/index' })
           }
         } catch (error) {
           console.error('解散家庭失败:', error)
@@ -406,11 +416,11 @@ const showDissolveFamily = () => {
 }
 
 // 生命周期
-onMounted(() => {
-  // 初始化数据
+onMounted(async () => {
+  await familyStore.getFamilyInfo()
+  await familyStore.getBudget()
 })
 
-// 页面配置
 Taro.useLoad(() => {
   Taro.setNavigationBarTitle({
     title: '家庭设置'
