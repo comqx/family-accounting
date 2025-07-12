@@ -94,11 +94,11 @@
         @change="onDateChange"
       >
         <view class="date-section">
-          <text class="date-label">记账日期</text>
-          <text class="date-value">{{ formatDate(recordForm.date) }}</text>
-          <text class="arrow">></text>
+        <text class="date-label">记账日期</text>
+        <text class="date-value">{{ formatDate(recordForm.date) }}</text>
+        <text class="arrow">></text>
           <text style="font-size: 20rpx; color: #999; margin-left: 10rpx;">点击选择</text>
-        </view>
+      </view>
       </picker>
 
       <!-- 保存按钮 -->

@@ -154,6 +154,20 @@
         </view>
       </view>
     </view>
+
+    <!-- 扫码加入家庭弹窗 -->
+    <view v-if="showQRCodeModal" class="modal-overlay" @tap="closeQRCodeModal">
+      <view class="modal-content" @tap.stop>
+        <view class="modal-header">
+          <text class="modal-title">扫码加入家庭</text>
+          <text class="close-btn" @tap="closeQRCodeModal">×</text>
+        </view>
+        <view class="modal-body" style="text-align:center;">
+          <canvas canvas-id="invite-qrcode" style="width:320rpx;height:320rpx;margin:0 auto;" />
+          <view style="margin-top:24rpx;font-size:26rpx;color:#888;">微信扫码，自动填写邀请码</view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -161,6 +175,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
 import Taro from '@tarojs/taro'
+import QRCode from 'qrcode'
 import { formatDate } from '../../../utils/format'
 
 const userStore = useUserStore()
@@ -173,6 +188,7 @@ const showMemberModal = ref(false)
 const selectedMember = ref({})
 const showRoleModal = ref(false)
 const selectedRole = ref('')
+const showQRCodeModal = ref(false)
 
 // 关键修正：members直接computed取store，保证为数组
 const members = computed(() => Array.isArray(familyStore.members) ? familyStore.members : [])
@@ -244,11 +260,41 @@ const copyInviteCode = async () => {
 }
 
 const shareToWechat = () => {
-  appStore.showToast('功能开发中', 'none')
+  // 直接调起小程序原生分享
+  Taro.showShareMenu({
+    withShareTicket: true
+  })
+  // 提示用户点击右上角分享
+  appStore.showToast('请点击右上角“···”进行微信分享', 'none')
 }
 
-const showQRCode = () => {
-  appStore.showToast('功能开发中', 'none')
+Taro.useShareAppMessage(() => {
+  // 分享到微信时带上邀请码
+  return {
+    title: '邀请你加入我的家庭账本',
+    path: `/pages/family/join/index?code=${currentInviteCode.value}`,
+    imageUrl: '' // 可自定义分享图
+  }
+})
+
+const showQRCode = async () => {
+  showQRCodeModal.value = true
+  // 生成二维码内容：小程序路径+邀请码
+  const qrContent = `/pages/family/join/index?code=${currentInviteCode.value}`
+  // 生成二维码图片
+  setTimeout(() => {
+    QRCode.toCanvas(
+      document.getElementById('invite-qrcode'),
+      qrContent,
+      { width: 200, margin: 1 },
+      (error) => {
+        if (error) console.error(error)
+      }
+    )
+  }, 100)
+}
+const closeQRCodeModal = () => {
+  showQRCodeModal.value = false
 }
 
 const showMemberActions = (member) => {

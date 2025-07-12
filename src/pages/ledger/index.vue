@@ -29,9 +29,9 @@
         @change="onDateChange"
       >
         <view class="filter-item">
-          <text class="filter-text">{{ currentMonth }}</text>
-          <text class="filter-arrow">▼</text>
-        </view>
+        <text class="filter-text">{{ currentMonth }}</text>
+        <text class="filter-arrow">▼</text>
+      </view>
       </picker>
 
       <view class="filter-item" @tap="showTypeFilter">
@@ -368,8 +368,8 @@ const loadData = async () => {
     // 获取月统计
     const statsRes = await request.get('/api/report/statistics', {
       familyId: familyId,
-      startDate,
-      endDate
+        startDate,
+        endDate
     })
     if (statsRes.data) {
       monthExpense.value = statsRes.data.totalExpense || 0
@@ -395,7 +395,7 @@ onMounted(() => {
   checkUserStatus()
   // 延迟加载数据，确保store已初始化
   setTimeout(() => {
-    loadData()
+  loadData()
   }, 100)
 })
 
@@ -409,7 +409,7 @@ Taro.useDidShow(() => {
   if (userStore.isLoggedIn) {
     // 延迟加载数据，避免重复加载
     setTimeout(() => {
-      loadData()
+    loadData()
     }, 100)
   }
 })
