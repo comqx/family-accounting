@@ -71,15 +71,15 @@
         <text class="menu-arrow">></text>
       </view>
 
-      <view class="menu-item" @tap="showBudgetSettings">
+      <view class="menu-item" @tap="goToBudget">
         <view class="menu-icon">💰</view>
-        <text class="menu-text">预算设置</text>
+        <text class="menu-text">预算管理</text>
         <text class="menu-arrow">></text>
       </view>
 
-      <view class="menu-item" @tap="showDataSync">
-        <view class="menu-icon">🔄</view>
-        <text class="menu-text">数据同步</text>
+      <view class="menu-item" @tap="goToSettings">
+        <view class="menu-icon">⚙️</view>
+        <text class="menu-text">家庭设置</text>
         <text class="menu-arrow">></text>
       </view>
     </view>
@@ -214,12 +214,16 @@ const goToCategories = () => {
   })
 }
 
-const showBudgetSettings = () => {
-  appStore.showToast('功能开发中', 'none')
+const goToBudget = () => {
+  Taro.navigateTo({
+    url: '/pages/family/budget/index'
+  })
 }
 
-const showDataSync = () => {
-  appStore.showToast('功能开发中', 'none')
+const goToSettings = () => {
+  Taro.navigateTo({
+    url: '/pages/family/settings/index'
+  })
 }
 
 // 检查用户状态

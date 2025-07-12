@@ -222,6 +222,22 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
+  // 生成邀请码
+  const generateInviteCode = async () => {
+    try {
+      const response = await request.post(`/api/family/${family.value?.id}/invite`);
+
+      if (response.success) {
+        return response;
+      }
+
+      return { success: false };
+    } catch (error) {
+      console.error('Generate invite code error:', error);
+      throw error;
+    }
+  };
+
   // 邀请成员
   const inviteMember = async (userId, role = 'MEMBER') => {
     try {
