@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onShow } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore } from '@/stores'
 import { useRecordStore } from '../../stores/modules/record'
@@ -144,6 +144,7 @@ const loadData = async () => {
   recordCount.value = stats.count || 0
 }
 onMounted(loadData)
+onShow(loadData)
 
 // 优化：仅首次需要授权，授权后自动保存
 const onGetWechatProfile = async () => {
@@ -167,7 +168,7 @@ const maskPhone = (phone) => {
   return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
 }
 const editProfile = () => Taro.navigateTo({ url: '/pages/profile/index' })
-const goToFamily = () => Taro.navigateTo({ url: '/pages/family/index' })
+const goToFamily = () => Taro.switchTab({ url: '/pages/family/index' })
 const goToFamilySettings = () => Taro.navigateTo({ url: '/pages/family/settings/index' })
 const switchFamily = () => Taro.navigateTo({ url: '/pages/family/switch/index' })
 const goToExport = () => Taro.navigateTo({ url: '/pages/family/settings/index?tab=data' })

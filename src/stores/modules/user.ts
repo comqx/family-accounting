@@ -145,26 +145,24 @@ export const useUserStore = defineStore('user', () => {
 
   // 获取微信用户信息
   const getWechatUserInfo = async () => {
+    console.log('[userStore] 准备调用 Taro.getUserProfile')
     try {
-      // 获取用户信息
       const userInfo = await Taro.getUserProfile({
         desc: '用于完善用户资料'
       });
-
+      console.log('[userStore] getUserProfile 授权成功', userInfo)
       return {
         nickName: userInfo.userInfo.nickName,
         avatarUrl: userInfo.userInfo.avatarUrl
       };
     } catch (error) {
-      console.error('Get wechat user info error:', error);
-      
+      console.error('[userStore] getUserProfile 授权失败', error)
       if (error.errMsg && error.errMsg.includes('auth deny')) {
         Taro.showToast({
           title: '需要授权才能使用',
           icon: 'none'
         });
       }
-      
       return null;
     }
   };

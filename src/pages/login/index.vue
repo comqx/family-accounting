@@ -118,6 +118,14 @@ const isLogging = ref(false)
 const showPrivacyModal = ref(false)
 const showAgreementModal = ref(false)
 
+// 判断微信授权返回的用户信息是否为脱敏数据
+const isFakeProfile = (info) => {
+  if (!info) return true
+  const fakeNick = !info.nickName || info.nickName === '微信用户'
+  const fakeAvatar = !info.avatarUrl || info.avatarUrl.includes('/default/')
+  return fakeNick || fakeAvatar
+}
+
 // 微信登录
 const handleWechatLogin = async () => {
   if (isLogging.value) return
@@ -125,19 +133,35 @@ const handleWechatLogin = async () => {
   try {
     isLogging.value = true
 
-    // 先获取微信用户信息
-    const userInfo = await userStore.getWechatUserInfo()
-    if (!userInfo) {
-      throw new Error('获取用户信息失败')
+    // 先尝试从本地缓存获取
+    let userInfo = Taro.getStorageSync('userInfo')
+    if (isFakeProfile(userInfo)) {
+      console.log('[login] 本地无有效用户信息或信息脱敏，弹窗获取微信昵称和头像')
+      userInfo = await userStore.getWechatUserInfo()
+      console.log('[login] getWechatUserInfo 返回：', userInfo)
+      if (!userInfo) {
+        throw new Error('获取微信信息失败')
+      }
+      // 仅当拿到真实信息才缓存
+      if (!isFakeProfile(userInfo)) {
+        Taro.setStorageSync('userInfo', userInfo)
+      } else {
+        console.warn('[login] 获取到的用户信息仍为脱敏数据，将继续登录但不做本地缓存')
+      }
+    } else {
+      console.log('[login] 本地已有真实用户信息，直接使用', userInfo)
     }
 
     // 执行登录
+    console.log('[login] 调用 userStore.login')
     const success = await userStore.login(userInfo)
+    console.log('[login] userStore.login 返回：', success)
 
     if (success) {
       // 登录成功后，检查家庭状态
       const { useFamilyStore } = await import('../../stores/modules/family')
       const familyStore = useFamilyStore()
+      console.log('[login] 登录成功，检查家庭状态', userStore.user, familyStore.hasFamily)
       
       // 检查登录响应中是否直接包含家庭信息
       if (userStore.user?.familyId || familyStore.hasFamily) {
