@@ -84,8 +84,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onShow } from 'vue'
-import Taro from '@tarojs/taro'
+import { ref, onMounted, computed } from 'vue'
+import Taro, { onShow } from '@tarojs/taro'
 import { useUserStore, useFamilyStore } from '@/stores'
 import { useRecordStore } from '../../stores/modules/record'
 import profilePng from '../../assets/icons/profile.png'
@@ -144,7 +144,9 @@ const loadData = async () => {
   recordCount.value = stats.count || 0
 }
 onMounted(loadData)
-onShow(loadData)
+if (typeof onShow === 'function') {
+  onShow(loadData)
+}
 
 // 优化：仅首次需要授权，授权后自动保存
 const onGetWechatProfile = async () => {

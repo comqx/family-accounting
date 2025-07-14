@@ -214,7 +214,9 @@ const showCustomPicker = () => {
 }
 
 const onCustomDateChange = (e) => {
+  console.log('选择了新月份', e.detail.value)
   customDate.value = e.detail.value
+  selectedPeriod.value = 'custom' // 强制切换为自定义
   showTimePicker.value = false
   loadReportData()
 }
