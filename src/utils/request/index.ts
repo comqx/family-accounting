@@ -43,15 +43,16 @@ class RequestManager {
     // 从存储中获取token
     this.token = Taro.getStorageSync('token') || '';
     
-    // 设置基础URL
-    const accountInfo = Taro.getAccountInfoSync();
-    if (accountInfo.miniProgram.envVersion === 'develop') {
-      this.baseURL = 'https://dev-api.example.com';
-    } else if (accountInfo.miniProgram.envVersion === 'trial') {
-      this.baseURL = 'https://test-api.example.com';
-    } else {
-      this.baseURL = 'https://api.example.com';
-    }
+    // 如需按环境切换 API 域名，可在此处通过环境变量或配置文件动态注入。
+    // 默认保持初始 baseURL（云函数地址）。
+    // const accountInfo = Taro.getAccountInfoSync();
+    // if (accountInfo.miniProgram.envVersion === 'develop') {
+    //   this.baseURL = 'https://dev-api.example.com';
+    // } else if (accountInfo.miniProgram.envVersion === 'trial') {
+    //   this.baseURL = 'https://test-api.example.com';
+    // } else {
+    //   this.baseURL = 'https://api.example.com';
+    // }
   }
 
   // 设置token

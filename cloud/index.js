@@ -10,6 +10,9 @@ require('dotenv').config();
 const { testConnection, initPool } = require('./config/database');
 
 const app = express();
+// 在使用 express-rate-limit 前信任代理，以便正确解析 X-Forwarded-For
+// 云托管、nginx 等反向代理会添加该头；设置后可避免 ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 80;
 
 // 中间件配置

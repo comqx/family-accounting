@@ -36,13 +36,6 @@
 
       <!-- 登录按钮 -->
       <view class="login-section">
-        <view class="policy-checkbox">
-          <checkbox :checked="agreePolicy" @tap="agreePolicy.value = !agreePolicy.value" />
-          <text class="policy-text">我已阅读并同意</text>
-          <text class="link-text" @tap="showPrivacyPolicy">《隐私政策》</text>
-          <text class="policy-text">和</text>
-          <text class="link-text" @tap="showUserAgreement">《用户协议》</text>
-        </view>
         <button
           class="login-btn"
           @tap="handleWechatLogin"
@@ -50,15 +43,18 @@
           :disabled="isLogging || !agreePolicy"
         >
           <view class="btn-content">
-            <text class="wechat-icon">��</text>
-            <text class="btn-text">{{ isLogging ? '登录中...' : '微信一键登录' }}</text>
+            <text class="wechat-icon">💬</text>
+            <text class="btn-text">{{ isLogging ? '登录中...' : '一键登录' }}</text>
           </view>
         </button>
-
-        <view class="login-tips">
-          <text class="tips-text">登录即表示同意</text>
+        <view class="policy-checkbox">
+          <!-- 使用 checkbox-group 以确保 change 事件正常触发 -->
+          <checkbox-group @change="onAgreeChange">
+            <checkbox value="agree" :checked="agreePolicy" />
+          </checkbox-group>
+          <text class="policy-text">我已阅读并同意</text>
           <text class="link-text" @tap="showPrivacyPolicy">《隐私政策》</text>
-          <text class="tips-text">和</text>
+          <text class="policy-text">和</text>
           <text class="link-text" @tap="showUserAgreement">《用户协议》</text>
         </view>
       </view>
@@ -125,6 +121,10 @@ const isLogging = ref(false)
 const showPrivacyModal = ref(false)
 const showAgreementModal = ref(false)
 const agreePolicy = ref(false)
+// 勾选框变更：当 value 数组包含 'agree' 时表示已勾选
+const onAgreeChange = (e) => {
+  agreePolicy.value = Array.isArray(e.detail.value) && e.detail.value.includes('agree')
+}
 
 // 判断微信授权返回的用户信息是否为脱敏数据
 const isFakeProfile = (info) => {
@@ -136,6 +136,7 @@ const isFakeProfile = (info) => {
 
 // 微信登录
 const handleWechatLogin = async () => {
+  console.log('[login] 点击一键登录按钮')
   if (isLogging.value) return
   if (!agreePolicy.value) {
     appStore.showToast('请先阅读并同意隐私政策和用户协议', 'none')
@@ -373,7 +374,7 @@ Taro.useShareAppMessage(() => {
       .policy-checkbox {
         display: flex;
         align-items: center;
-        margin-bottom: 24rpx;
+        margin-top: 24rpx;
         font-size: 24rpx;
         color: #fff;
         .policy-text {

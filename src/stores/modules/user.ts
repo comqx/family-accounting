@@ -38,19 +38,37 @@ export const useUserStore = defineStore('user', () => {
   };
 
   // 微信登录
-  const login = async (userInfo) => {
+  // 支持外部传入 { code, userInfo }，避免重复调用 Taro.login()
+  const login = async (options = {}) => {
+    /**
+     * @typedef LoginOptions
+     * @property {string} [code]      - 小程序登录凭证
+     * @property {object} [userInfo]  - 用户信息（昵称、头像等，可选）
+     */
+    let { code: externalCode, userInfo } = options as any;
+    // 兼容旧调用方式：若直接传入用户信息对象（含 nickName / avatarUrl），而非 { userInfo }
+    if (!externalCode && !userInfo && options && typeof options === 'object') {
+      const maybeProfile = options as any;
+      if ('nickName' in maybeProfile || 'avatarUrl' in maybeProfile) {
+        userInfo = maybeProfile;
+      }
+    }
     try {
       isLoading.value = true;
 
-      // 获取微信登录code
-      const loginResult = await Taro.login();
-      if (!loginResult.code) {
-        throw new Error('获取微信登录code失败');
+      // 如果外部未提供 code，则自行调用 Taro.login()
+      let loginCode = externalCode;
+      if (!loginCode) {
+        const loginResult = await Taro.login();
+        if (!loginResult.code) {
+          throw new Error('获取微信登录code失败');
+        }
+        loginCode = loginResult.code;
       }
 
       // 调用登录接口
       const response = await request.post('/api/auth/wechat-login', {
-        code: loginResult.code,
+        code: loginCode,
         userInfo: userInfo
       });
 

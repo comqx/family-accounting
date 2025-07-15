@@ -7,8 +7,8 @@ const router = express.Router();
 
 // 微信登录
 router.post('/wechat-login', [
-  body('code').notEmpty().withMessage('微信授权码不能为空'),
-  body('userInfo').isObject().withMessage('用户信息格式错误')
+  body('code').notEmpty().withMessage('微信授权码不能为空')
+  // 不再强制校验 userInfo，让其可选
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -16,7 +16,7 @@ router.post('/wechat-login', [
       return res.status(400).json({ error: errors.array()[0].msg });
     }
 
-    const { code, userInfo } = req.body;
+    const { code, userInfo = {} } = req.body;
     
     // TODO: 调用微信API获取openid和session_key
     // const wxResponse = await getWechatSession(code);
@@ -24,7 +24,7 @@ router.post('/wechat-login', [
     // 模拟微信登录响应
     // 使用固定的 openid 来模拟真实微信登录行为
     const mockWxResponse = {
-      openid: userInfo.unionId || `mock_openid_${userInfo.nickName}`,
+      openid: userInfo.unionId || `mock_openid_${code}_${Date.now()}`,
       session_key: `mock_session_${Date.now()}`,
       unionid: userInfo.unionId || null
     };
@@ -63,7 +63,13 @@ router.post('/wechat-login', [
         // 用户不存在，创建新用户
         const [result] = await pool.execute(
           'INSERT INTO users (openid, unionid, nickname, avatar, role) VALUES (?, ?, ?, ?, ?)',
-          [mockWxResponse.openid, mockWxResponse.unionid, userInfo.nickName, userInfo.avatarUrl, 'MEMBER']
+          [
+            mockWxResponse.openid,
+            mockWxResponse.unionid,
+            userInfo.nickName || '微信用户',
+            userInfo.avatarUrl || null,
+            'MEMBER'
+          ]
         );
         
         userId = result.insertId;
@@ -71,6 +77,7 @@ router.post('/wechat-login', [
     } catch (dbError) {
       console.error('数据库操作错误:', dbError);
       res.status(500).json({ error: '登录失败，请重试' });
+      return;
     }
 
     // 生成JWT token
@@ -84,7 +91,7 @@ router.post('/wechat-login', [
       { expiresIn: '7d' }
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         token,
@@ -102,7 +109,7 @@ router.post('/wechat-login', [
     });
   } catch (error) {
     console.error('微信登录错误:', error);
-    res.status(500).json({ error: '登录失败，请重试' });
+    return res.status(500).json({ error: '登录失败，请重试' });
   }
 });
 
