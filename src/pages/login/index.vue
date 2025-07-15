@@ -36,14 +36,21 @@
 
       <!-- 登录按钮 -->
       <view class="login-section">
+        <view class="policy-checkbox">
+          <checkbox :checked="agreePolicy" @tap="agreePolicy.value = !agreePolicy.value" />
+          <text class="policy-text">我已阅读并同意</text>
+          <text class="link-text" @tap="showPrivacyPolicy">《隐私政策》</text>
+          <text class="policy-text">和</text>
+          <text class="link-text" @tap="showUserAgreement">《用户协议》</text>
+        </view>
         <button
           class="login-btn"
           @tap="handleWechatLogin"
           :loading="isLogging"
-          :disabled="isLogging"
+          :disabled="isLogging || !agreePolicy"
         >
           <view class="btn-content">
-            <text class="wechat-icon">💬</text>
+            <text class="wechat-icon">��</text>
             <text class="btn-text">{{ isLogging ? '登录中...' : '微信一键登录' }}</text>
           </view>
         </button>
@@ -117,6 +124,7 @@ const appStore = useAppStore()
 const isLogging = ref(false)
 const showPrivacyModal = ref(false)
 const showAgreementModal = ref(false)
+const agreePolicy = ref(false)
 
 // 判断微信授权返回的用户信息是否为脱敏数据
 const isFakeProfile = (info) => {
@@ -129,70 +137,52 @@ const isFakeProfile = (info) => {
 // 微信登录
 const handleWechatLogin = async () => {
   if (isLogging.value) return
+  if (!agreePolicy.value) {
+    appStore.showToast('请先阅读并同意隐私政策和用户协议', 'none')
+    return
+  }
 
   try {
     isLogging.value = true
-
-    // 先尝试从本地缓存获取
-    let userInfo = Taro.getStorageSync('userInfo')
-    if (isFakeProfile(userInfo)) {
-      console.log('[login] 本地无有效用户信息或信息脱敏，弹窗获取微信昵称和头像')
-      userInfo = await userStore.getWechatUserInfo()
-      console.log('[login] getWechatUserInfo 返回：', userInfo)
-      if (!userInfo) {
-        throw new Error('获取微信信息失败')
-      }
-      // 仅当拿到真实信息才缓存
-      if (!isFakeProfile(userInfo)) {
-        Taro.setStorageSync('userInfo', userInfo)
-      } else {
-        console.warn('[login] 获取到的用户信息仍为脱敏数据，将继续登录但不做本地缓存')
-      }
-    } else {
-      console.log('[login] 本地已有真实用户信息，直接使用', userInfo)
-    }
-
-    // 执行登录
-    console.log('[login] 调用 userStore.login')
-    const success = await userStore.login(userInfo)
-    console.log('[login] userStore.login 返回：', success)
-
-    if (success) {
-      // 登录成功后，检查家庭状态
-      const { useFamilyStore } = await import('../../stores/modules/family')
-      const familyStore = useFamilyStore()
-      console.log('[login] 登录成功，检查家庭状态', userStore.user, familyStore.hasFamily)
-      
-      // 检查登录响应中是否直接包含家庭信息
-      if (userStore.user?.familyId || familyStore.hasFamily) {
-        // 有家庭，直接进入主页
-        Taro.reLaunch({
-          url: '/pages/index/index'
-        })
-        return
-      }
-      
-      // 如果用户有家庭ID但没有家庭信息，尝试获取家庭信息
-      if (userStore.user?.familyId) {
-        try {
-          const hasFamily = await familyStore.getFamilyInfo()
-          if (hasFamily) {
-            // 有家庭，直接进入主页
-            Taro.reLaunch({
-              url: '/pages/index/index'
-            })
-            return
-          }
-        } catch (error) {
-          console.error('获取家庭信息失败:', error)
-        }
-      }
-      
-      // 没有家庭，引导创建或加入家庭
+    // 只获取 code，不获取用户信息
+    const loginResult = await Taro.login()
+    if (!loginResult.code) throw new Error('获取微信登录code失败')
+    const success = await userStore.login({ code: loginResult.code })
+    if (!success) throw new Error('登录失败')
+    // 登录成功后，检查家庭状态
+    const { useFamilyStore } = await import('../../stores/modules/family')
+    const familyStore = useFamilyStore()
+    console.log('[login] 登录成功，检查家庭状态', userStore.user, familyStore.hasFamily)
+    
+    // 检查登录响应中是否直接包含家庭信息
+    if (userStore.user?.familyId || familyStore.hasFamily) {
+      // 有家庭，直接进入主页
       Taro.reLaunch({
-        url: '/pages/family/create/index'
+        url: '/pages/index/index'
       })
+      return
     }
+    
+    // 如果用户有家庭ID但没有家庭信息，尝试获取家庭信息
+    if (userStore.user?.familyId) {
+      try {
+        const hasFamily = await familyStore.getFamilyInfo()
+        if (hasFamily) {
+          // 有家庭，直接进入主页
+          Taro.reLaunch({
+            url: '/pages/index/index'
+          })
+          return
+        }
+      } catch (error) {
+        console.error('获取家庭信息失败:', error)
+      }
+    }
+    
+    // 没有家庭，引导创建或加入家庭
+    Taro.reLaunch({
+      url: '/pages/family/create/index'
+    })
   } catch (error) {
     console.error('Login error:', error)
     appStore.showToast(error.message || '登录失败，请重试', 'none')
@@ -380,6 +370,21 @@ Taro.useShareAppMessage(() => {
 
     // 登录区域
     .login-section {
+      .policy-checkbox {
+        display: flex;
+        align-items: center;
+        margin-bottom: 24rpx;
+        font-size: 24rpx;
+        color: #fff;
+        .policy-text {
+          margin: 0 6rpx;
+        }
+        .link-text {
+          color: #00bcd4;
+          text-decoration: underline;
+          margin: 0 4rpx;
+        }
+      }
       .login-btn {
         width: 100%;
         background: white;

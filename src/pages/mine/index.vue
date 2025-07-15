@@ -152,12 +152,10 @@ if (typeof onShow === 'function') {
 const onGetWechatProfile = async () => {
   const wxInfo = await userStore.getWechatUserInfo?.()
   if (wxInfo) {
-    if (!user.value.avatar) user.value.avatar = wxInfo.avatarUrl
-    if (!user.value.nickname) user.value.nickname = wxInfo.nickName
     // 同步到后端
     await userStore.updateUserInfo?.({
-      avatar: user.value.avatar,
-      nickname: user.value.nickname
+      avatar: wxInfo.avatarUrl,
+      nickname: wxInfo.nickName
     })
     // 强制刷新本地和后端数据
     await userStore.getUserProfile?.()
