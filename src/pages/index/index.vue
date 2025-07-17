@@ -26,7 +26,7 @@
         <view
           class="type-tab"
           :class="{ active: recordForm.type === 'expense' }"
-          @tap="switchType('expense')"
+          @tap="throttledSwitchType('expense')"
           role="tab"
           :aria-selected="recordForm.type === 'expense'"
           aria-label="支出"
@@ -36,7 +36,7 @@
         <view
           class="type-tab"
           :class="{ active: recordForm.type === 'income' }"
-          @tap="switchType('income')"
+          @tap="throttledSwitchType('income')"
           role="tab"
           :aria-selected="recordForm.type === 'income'"
           aria-label="收入"
@@ -68,7 +68,7 @@
             :key="category.id"
             class="category-item"
             :class="{ active: recordForm.categoryId === category.id }"
-            @tap="selectCategory(category)"
+            @tap="throttledSelectCategory(category)"
             role="button"
             :aria-pressed="recordForm.categoryId === category.id"
             :aria-label="category.name"
@@ -104,7 +104,7 @@
         :value="recordForm.date"
         :start="'2000-01-01'"
         :end="maxDate"
-        @change="onDateChange"
+        @change="throttledOnDateChange"
         aria-label="记账日期选择"
       >
         <view class="date-section">
@@ -200,9 +200,7 @@ import './index.scss'
 import request from '../../utils/request'
 
 import { useRecordForm } from '../../hooks/useRecordForm'
-import { useUserStore, useFamilyStore } from '../../stores'
-import Taro from '@tarojs/taro'
-import { onMounted } from 'vue'
+import { throttle } from '../../utils/performance/debounce'
 
 const userStore = useUserStore()
 const familyStore = useFamilyStore()
@@ -227,6 +225,10 @@ const {
   debouncedSaveRecord,
   loadData
 } = useRecordForm()
+
+const throttledSwitchType = throttle(switchType, 300)
+const throttledSelectCategory = throttle(selectCategory, 300)
+const throttledOnDateChange = throttle(onDateChange, 300)
 
 const goToAddCategory = () => {
   Taro.navigateTo({

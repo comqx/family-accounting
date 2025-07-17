@@ -1,242 +1,252 @@
 <template>
   <view class="advanced-reports-page">
-    <!-- 时间范围选择 -->
-    <view class="time-range-selector">
-      <view class="range-tabs">
-        <view 
-          v-for="range in timeRanges" 
-          :key="range.value"
-          class="range-tab"
-          :class="{ active: selectedRange === range.value }"
-          @tap="selectTimeRange(range.value)"
-        >
-          {{ range.label }}
-        </view>
-      </view>
-      
-      <view v-if="selectedRange === 'custom'" class="custom-range">
-        <picker 
-          mode="date" 
-          :value="customStartDate"
-          @change="onStartDateChange"
-        >
-          <view class="date-picker">{{ customStartDate }}</view>
-        </picker>
-        <text class="range-separator">至</text>
-        <picker 
-          mode="date" 
-          :value="customEndDate"
-          @change="onEndDateChange"
-        >
-          <view class="date-picker">{{ customEndDate }}</view>
-        </picker>
+    <!-- 统计区骨架屏 -->
+    <view v-if="loadingData" class="metrics-skeleton">
+      <view class="metrics-item-skeleton" v-for="i in 3" :key="i">
+        <view class="metrics-label-skeleton"></view>
+        <view class="metrics-value-skeleton"></view>
       </view>
     </view>
-
-    <!-- 核心指标 -->
-    <view class="key-metrics">
-      <view class="metric-card">
-        <text class="metric-label">总支出</text>
-        <text class="metric-value expense">¥{{ formatAmount(metrics.totalExpense) }}</text>
-        <text class="metric-change" :class="metrics.expenseChange >= 0 ? 'increase' : 'decrease'">
-          {{ metrics.expenseChange >= 0 ? '+' : '' }}{{ metrics.expenseChange.toFixed(1) }}%
-        </text>
-      </view>
-      
-      <view class="metric-card">
-        <text class="metric-label">总收入</text>
-        <text class="metric-value income">¥{{ formatAmount(metrics.totalIncome) }}</text>
-        <text class="metric-change" :class="metrics.incomeChange >= 0 ? 'increase' : 'decrease'">
-          {{ metrics.incomeChange >= 0 ? '+' : '' }}{{ metrics.incomeChange.toFixed(1) }}%
-        </text>
-      </view>
-      
-      <view class="metric-card">
-        <text class="metric-label">结余</text>
-        <text class="metric-value" :class="metrics.balance >= 0 ? 'income' : 'expense'">
-          ¥{{ formatAmount(Math.abs(metrics.balance)) }}
-        </text>
-        <text class="metric-change" :class="metrics.balanceChange >= 0 ? 'increase' : 'decrease'">
-          {{ metrics.balanceChange >= 0 ? '+' : '' }}{{ metrics.balanceChange.toFixed(1) }}%
-        </text>
-      </view>
-    </view>
-
-    <!-- 分类分析 -->
-    <view class="analysis-section">
-      <view class="section-header">
-        <text class="section-title">分类分析</text>
-        <view class="view-toggle">
-          <text 
-            class="toggle-item"
-            :class="{ active: analysisView === 'chart' }"
-            @tap="switchAnalysisView('chart')"
+    <!-- 统计区 -->
+    <view v-else class="metrics-section">
+      <!-- 时间范围选择 -->
+      <view class="time-range-selector">
+        <view class="range-tabs">
+          <view 
+            v-for="range in timeRanges" 
+            :key="range.value"
+            class="range-tab"
+            :class="{ active: selectedRange === range.value }"
+            @tap="selectTimeRange(range.value)"
           >
-            图表
-          </text>
-          <text 
-            class="toggle-item"
-            :class="{ active: analysisView === 'list' }"
-            @tap="switchAnalysisView('list')"
-          >
-            列表
-          </text>
-        </view>
-      </view>
-
-      <view v-if="analysisView === 'chart'" class="chart-view">
-        <Suspense>
-          <template #default>
-            <AsyncEChart v-if="categoryAnalysis.length > 0" :option="pieOption" style="width:100%;height:400rpx" />
-            <view v-else class="chart-placeholder">
-              <view class="chart-icon">📊</view>
-              <text class="chart-text">暂无分类数据</text>
-            </view>
-          </template>
-          <template #fallback>
-            <view class="chart-placeholder"><text>加载中...</text></view>
-          </template>
-        </Suspense>
-      </view>
-
-      <view v-else class="list-view">
-        <view 
-          v-for="category in categoryAnalysis" 
-          :key="category.id"
-          class="category-analysis-item"
-        >
-          <view class="category-header">
-            <view class="category-icon" :style="{ backgroundColor: category.color }">
-              {{ category.icon }}
-            </view>
-            <view class="category-info">
-              <text class="category-name">{{ category.name }}</text>
-              <text class="category-count">{{ category.count }}笔</text>
-            </view>
-            <view class="category-amount">
-              <text class="amount-value">¥{{ formatAmount(category.amount) }}</text>
-              <text class="amount-percent">{{ category.percentage.toFixed(1) }}%</text>
-            </view>
+            {{ range.label }}
           </view>
-          
-          <view class="category-trend">
-            <text class="trend-label">较上期</text>
-            <text class="trend-value" :class="category.trend >= 0 ? 'increase' : 'decrease'">
-              {{ category.trend >= 0 ? '+' : '' }}{{ category.trend.toFixed(1) }}%
+        </view>
+        
+        <view v-if="selectedRange === 'custom'" class="custom-range">
+          <picker 
+            mode="date" 
+            :value="customStartDate"
+            @change="onStartDateChange"
+          >
+            <view class="date-picker">{{ customStartDate }}</view>
+          </picker>
+          <text class="range-separator">至</text>
+          <picker 
+            mode="date" 
+            :value="customEndDate"
+            @change="onEndDateChange"
+          >
+            <view class="date-picker">{{ customEndDate }}</view>
+          </picker>
+        </view>
+      </view>
+
+      <!-- 核心指标 -->
+      <view class="key-metrics">
+        <view class="metric-card">
+          <text class="metric-label">总支出</text>
+          <text class="metric-value expense">¥{{ formatAmount(metrics.totalExpense) }}</text>
+          <text class="metric-change" :class="metrics.expenseChange >= 0 ? 'increase' : 'decrease'">
+            {{ metrics.expenseChange >= 0 ? '+' : '' }}{{ metrics.expenseChange.toFixed(1) }}%
+          </text>
+        </view>
+        
+        <view class="metric-card">
+          <text class="metric-label">总收入</text>
+          <text class="metric-value income">¥{{ formatAmount(metrics.totalIncome) }}</text>
+          <text class="metric-change" :class="metrics.incomeChange >= 0 ? 'increase' : 'decrease'">
+            {{ metrics.incomeChange >= 0 ? '+' : '' }}{{ metrics.incomeChange.toFixed(1) }}%
+          </text>
+        </view>
+        
+        <view class="metric-card">
+          <text class="metric-label">结余</text>
+          <text class="metric-value" :class="metrics.balance >= 0 ? 'income' : 'expense'">
+            ¥{{ formatAmount(Math.abs(metrics.balance)) }}
+          </text>
+          <text class="metric-change" :class="metrics.balanceChange >= 0 ? 'increase' : 'decrease'">
+            {{ metrics.balanceChange >= 0 ? '+' : '' }}{{ metrics.balanceChange.toFixed(1) }}%
+          </text>
+        </view>
+      </view>
+
+      <!-- 分类分析 -->
+      <view class="analysis-section">
+        <view class="section-header">
+          <text class="section-title">分类分析</text>
+          <view class="view-toggle">
+            <text 
+              class="toggle-item"
+              :class="{ active: analysisView === 'chart' }"
+              @tap="switchAnalysisView('chart')"
+            >
+              图表
+            </text>
+            <text 
+              class="toggle-item"
+              :class="{ active: analysisView === 'list' }"
+              @tap="switchAnalysisView('list')"
+            >
+              列表
             </text>
           </view>
-          
-          <view class="category-bar">
-            <view 
-              class="bar-fill" 
-              :style="{ 
-                width: category.percentage + '%',
-                backgroundColor: category.color 
-              }"
-            ></view>
-          </view>
         </view>
-      </view>
-    </view>
 
-    <!-- 趋势分析 -->
-    <view class="trend-section">
-      <view class="section-header">
-        <text class="section-title">趋势分析</text>
-        <view class="trend-type-selector">
-          <text 
-            class="type-item"
-            :class="{ active: trendType === 'daily' }"
-            @tap="switchTrendType('daily')"
-          >
-            日
-          </text>
-          <text 
-            class="type-item"
-            :class="{ active: trendType === 'weekly' }"
-            @tap="switchTrendType('weekly')"
-          >
-            周
-          </text>
-          <text 
-            class="type-item"
-            :class="{ active: trendType === 'monthly' }"
-            @tap="switchTrendType('monthly')"
-          >
-            月
-          </text>
+        <view v-if="analysisView === 'chart'" class="chart-view">
+          <Suspense>
+            <template #default>
+              <AsyncEChart v-if="categoryAnalysis.length > 0" :option="pieOption" style="width:100%;height:400rpx" />
+              <view v-else class="chart-placeholder">
+                <view class="chart-icon">📊</view>
+                <text class="chart-text">暂无分类数据</text>
+              </view>
+            </template>
+            <template #fallback>
+              <view class="chart-placeholder"><text>加载中...</text></view>
+            </template>
+          </Suspense>
         </view>
-      </view>
 
-      <view class="trend-chart">
-        <Suspense>
-          <template #default>
-            <AsyncEChart v-if="trendInsights.values && trendInsights.values.length > 0" :option="trendOption" style="width:100%;height:400rpx" />
-            <view v-else class="chart-placeholder">
-              <view class="chart-icon">📈</view>
-              <text class="chart-text">暂无趋势数据</text>
+        <view v-else class="list-view">
+          <view 
+            v-for="category in categoryAnalysis" 
+            :key="category.id"
+            class="category-analysis-item"
+          >
+            <view class="category-header">
+              <view class="category-icon" :style="{ backgroundColor: category.color }">
+                {{ category.icon }}
+              </view>
+              <view class="category-info">
+                <text class="category-name">{{ category.name }}</text>
+                <text class="category-count">{{ category.count }}笔</text>
+              </view>
+              <view class="category-amount">
+                <text class="amount-value">¥{{ formatAmount(category.amount) }}</text>
+                <text class="amount-percent">{{ category.percentage.toFixed(1) }}%</text>
+              </view>
             </view>
-          </template>
-          <template #fallback>
-            <view class="chart-placeholder"><text>加载中...</text></view>
-          </template>
-        </Suspense>
-      </view>
-
-      <view class="trend-insights">
-        <view class="insight-item">
-          <text class="insight-label">平均{{ trendType === 'daily' ? '日' : trendType === 'weekly' ? '周' : '月' }}支出</text>
-          <text class="insight-value">¥{{ formatAmount(trendInsights.avgExpense) }}</text>
-        </view>
-        <view class="insight-item">
-          <text class="insight-label">最高单{{ trendType === 'daily' ? '日' : trendType === 'weekly' ? '周' : '月' }}</text>
-          <text class="insight-value">¥{{ formatAmount(trendInsights.maxExpense) }}</text>
-        </view>
-        <view class="insight-item">
-          <text class="insight-label">波动率</text>
-          <text class="insight-value">{{ trendInsights.volatility.toFixed(1) }}%</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 成员分析 -->
-    <view class="member-section">
-      <view class="section-header">
-        <text class="section-title">成员分析</text>
-      </view>
-
-      <view class="member-list">
-        <view 
-          v-for="member in memberAnalysis" 
-          :key="member.userId"
-          class="member-item"
-        >
-          <image 
-            class="member-avatar" 
-            :src="member.avatarUrl || '/assets/default-avatar.png'"
-            mode="aspectFill"
-          />
-          <view class="member-info">
-            <text class="member-name">{{ member.nickName }}</text>
-            <text class="member-records">{{ member.recordCount }}笔记录</text>
-          </view>
-          <view class="member-stats">
-            <text class="member-expense">支出 ¥{{ formatAmount(member.totalExpense) }}</text>
-            <text class="member-income">收入 ¥{{ formatAmount(member.totalIncome) }}</text>
-          </view>
-          <view class="member-percentage">
-            <text class="percentage-text">{{ member.expensePercentage.toFixed(1) }}%</text>
+            
+            <view class="category-trend">
+              <text class="trend-label">较上期</text>
+              <text class="trend-value" :class="category.trend >= 0 ? 'increase' : 'decrease'">
+                {{ category.trend >= 0 ? '+' : '' }}{{ category.trend.toFixed(1) }}%
+              </text>
+            </view>
+            
+            <view class="category-bar">
+              <view 
+                class="bar-fill" 
+                :style="{ 
+                  width: category.percentage + '%',
+                  backgroundColor: category.color 
+                }"
+              ></view>
+            </view>
           </view>
         </view>
       </view>
-    </view>
 
-    <!-- 导出按钮 -->
-    <view class="export-section">
-      <button class="export-btn" @tap="exportReport">
-        <text class="btn-icon">📤</text>
-        <text class="btn-text">导出详细报表</text>
-      </button>
+      <!-- 趋势分析 -->
+      <view class="trend-section">
+        <view class="section-header">
+          <text class="section-title">趋势分析</text>
+          <view class="trend-type-selector">
+            <text 
+              class="type-item"
+              :class="{ active: trendType === 'daily' }"
+              @tap="switchTrendType('daily')"
+            >
+              日
+            </text>
+            <text 
+              class="type-item"
+              :class="{ active: trendType === 'weekly' }"
+              @tap="switchTrendType('weekly')"
+            >
+              周
+            </text>
+            <text 
+              class="type-item"
+              :class="{ active: trendType === 'monthly' }"
+              @tap="switchTrendType('monthly')"
+            >
+              月
+            </text>
+          </view>
+        </view>
+
+        <view class="trend-chart">
+          <Suspense>
+            <template #default>
+              <AsyncEChart v-if="trendInsights.values && trendInsights.values.length > 0" :option="trendOption" style="width:100%;height:400rpx" />
+              <view v-else class="chart-placeholder">
+                <view class="chart-icon">📈</view>
+                <text class="chart-text">暂无趋势数据</text>
+              </view>
+            </template>
+            <template #fallback>
+              <view class="chart-placeholder"><text>加载中...</text></view>
+            </template>
+          </Suspense>
+        </view>
+
+        <view class="trend-insights">
+          <view class="insight-item">
+            <text class="insight-label">平均{{ trendType === 'daily' ? '日' : trendType === 'weekly' ? '周' : '月' }}支出</text>
+            <text class="insight-value">¥{{ formatAmount(trendInsights.avgExpense) }}</text>
+          </view>
+          <view class="insight-item">
+            <text class="insight-label">最高单{{ trendType === 'daily' ? '日' : trendType === 'weekly' ? '周' : '月' }}</text>
+            <text class="insight-value">¥{{ formatAmount(trendInsights.maxExpense) }}</text>
+          </view>
+          <view class="insight-item">
+            <text class="insight-label">波动率</text>
+            <text class="insight-value">{{ trendInsights.volatility.toFixed(1) }}%</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 成员分析 -->
+      <view class="member-section">
+        <view class="section-header">
+          <text class="section-title">成员分析</text>
+        </view>
+
+        <view class="member-list">
+          <view 
+            v-for="member in memberAnalysis" 
+            :key="member.userId"
+            class="member-item"
+          >
+            <image 
+              class="member-avatar" 
+              :src="member.avatarUrl || '/assets/default-avatar.png'"
+              mode="aspectFill"
+            />
+            <view class="member-info">
+              <text class="member-name">{{ member.nickName }}</text>
+              <text class="member-records">{{ member.recordCount }}笔记录</text>
+            </view>
+            <view class="member-stats">
+              <text class="member-expense">支出 ¥{{ formatAmount(member.totalExpense) }}</text>
+              <text class="member-income">收入 ¥{{ formatAmount(member.totalIncome) }}</text>
+            </view>
+            <view class="member-percentage">
+              <text class="percentage-text">{{ member.expensePercentage.toFixed(1) }}%</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 导出按钮 -->
+      <view class="export-section">
+        <button class="export-btn" @tap="exportReport">
+          <text class="btn-icon">📤</text>
+          <text class="btn-text">导出详细报表</text>
+        </button>
+      </view>
     </view>
   </view>
 </template>
@@ -276,6 +286,7 @@ const trendInsights = ref({
   volatility: 0
 })
 const memberAnalysis = ref([])
+const loadingData = ref(true)
 
 const timeRanges = [
   { label: '本周', value: 'week' },
@@ -343,6 +354,7 @@ const getDateRange = () => {
 }
 
 const loadReportData = async () => {
+  loadingData.value = true
   try {
     const { startDate, endDate } = getDateRange()
     const familyId = userStore.user?.familyId
@@ -378,6 +390,8 @@ const loadReportData = async () => {
     // TODO: 如果 cloud 没有成员分析接口，可补充实现
   } catch (error) {
     console.error('加载报表数据失败:', error)
+  } finally {
+    loadingData.value = false
   }
 }
 
@@ -468,6 +482,34 @@ Taro.useLoad(() => {
   min-height: 100vh;
   background: var(--color-bg);
   padding-bottom: 120rpx;
+
+  // 统计区骨架屏
+  .metrics-skeleton {
+    display: flex;
+    background: #f2f3f5;
+    border-radius: 24rpx;
+    margin-bottom: 32rpx;
+    padding: 32rpx 24rpx;
+    .metrics-item-skeleton {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .metrics-label-skeleton {
+        width: 60rpx;
+        height: 20rpx;
+        background: #e0e0e0;
+        border-radius: 8rpx;
+        margin-bottom: 12rpx;
+      }
+      .metrics-value-skeleton {
+        width: 80rpx;
+        height: 28rpx;
+        background: #e0e0e0;
+        border-radius: 12rpx;
+      }
+    }
+  }
 
   // 时间范围选择器
   .time-range-selector {

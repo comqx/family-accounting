@@ -20,8 +20,15 @@
       </view>
     </view>
 
+    <!-- 总览卡片骨架屏 -->
+    <view v-if="loadingData" class="overview-card-skeleton">
+      <view class="overview-item-skeleton" v-for="i in 3" :key="i">
+        <view class="overview-label-skeleton"></view>
+        <view class="overview-value-skeleton"></view>
+      </view>
+    </view>
     <!-- 总览卡片 -->
-    <view class="overview-card">
+    <view v-else class="overview-card">
       <view class="overview-item">
         <text class="overview-label">总支出</text>
         <text class="overview-value expense">¥{{ formatAmount(totalExpense) }}</text>
@@ -40,8 +47,16 @@
       </view>
     </view>
 
+    <!-- 支出分析骨架屏 -->
+    <view v-if="loadingData" class="category-stats-skeleton">
+      <view class="category-item-skeleton" v-for="i in 4" :key="i">
+        <view class="category-icon-skeleton"></view>
+        <view class="category-label-skeleton"></view>
+        <view class="category-value-skeleton"></view>
+      </view>
+    </view>
     <!-- 支出分析 -->
-    <view class="analysis-section">
+    <view v-else class="analysis-section">
       <view class="section-header">
         <text class="section-title">支出分析</text>
         <text class="section-subtitle">按分类统计</text>
@@ -172,6 +187,7 @@ const familyStore = useFamilyStore()
 const selectedPeriod = ref('month')
 const customDate = ref(new Date().toISOString().split('T')[0].substring(0, 7))
 const showTimePicker = ref(false)
+const loadingData = ref(true)
 
 // 真实数据
 const totalExpense = ref(0)
@@ -261,6 +277,7 @@ const getDateRange = () => {
 }
 
 const loadReportData = async () => {
+  loadingData.value = true
   try {
     const { startDate, endDate } = getDateRange()
     const familyId = familyStore.familyId
@@ -351,6 +368,8 @@ const loadReportData = async () => {
     console.error('❌ 加载报表数据失败:', error)
     console.error('错误详情:', error.message, error.stack)
     appStore.showToast('加载数据失败', 'none')
+  } finally {
+    loadingData.value = false
   }
 }
 
@@ -539,6 +558,34 @@ Taro.useShareAppMessage(() => {
     }
   }
 
+  // 总览卡片骨架屏
+  .overview-card-skeleton {
+    display: flex;
+    background: #f2f3f5;
+    border-radius: 24rpx;
+    margin-bottom: 32rpx;
+    padding: 32rpx 24rpx;
+    .overview-item-skeleton {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      .overview-label-skeleton {
+        width: 60rpx;
+        height: 20rpx;
+        background: #e0e0e0;
+        border-radius: 8rpx;
+        margin-bottom: 12rpx;
+      }
+      .overview-value-skeleton {
+        width: 80rpx;
+        height: 28rpx;
+        background: #e0e0e0;
+        border-radius: 12rpx;
+      }
+    }
+  }
+
   // 分析区域
   .analysis-section,
   .trend-section {
@@ -688,6 +735,36 @@ Taro.useShareAppMessage(() => {
             border-radius: 3rpx;
             transition: width 0.3s ease;
           }
+        }
+      }
+    }
+
+    // 支出分析骨架屏
+    .category-stats-skeleton {
+      margin-top: 32rpx;
+      .category-item-skeleton {
+        display: flex;
+        align-items: center;
+        padding: 20rpx 0;
+        .category-icon-skeleton {
+          width: 40rpx;
+          height: 40rpx;
+          border-radius: 50%;
+          background: #e0e0e0;
+          margin-right: 20rpx;
+        }
+        .category-label-skeleton {
+          width: 80rpx;
+          height: 20rpx;
+          background: #e0e0e0;
+          border-radius: 8rpx;
+          margin-right: 12rpx;
+        }
+        .category-value-skeleton {
+          width: 60rpx;
+          height: 20rpx;
+          background: #e0e0e0;
+          border-radius: 8rpx;
         }
       }
     }

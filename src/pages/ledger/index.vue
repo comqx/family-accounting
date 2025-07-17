@@ -26,7 +26,7 @@
         :value="selectedDate"
         :start="'2000-01-01'"
         :end="maxDate"
-        @change="onDateChange"
+        @change="throttledOnDateChange"
       >
         <view class="filter-item">
         <text class="filter-text">{{ currentMonth }}</text>
@@ -81,7 +81,7 @@
             :key="option.value"
             class="option-item"
             :class="{ active: typeFilter === option.value }"
-            @tap="selectTypeFilter(option.value)"
+            @tap="throttledSelectTypeFilter(option.value)"
           >
             <text class="option-text">{{ option.label }}</text>
             <text v-if="typeFilter === option.value" class="check-icon">✓</text>
@@ -100,7 +100,7 @@
           <view
             class="option-item"
             :class="{ active: categoryFilter === '' }"
-            @tap="selectCategoryFilter('')"
+            @tap="throttledSelectCategoryFilter('')"
           >
             <text class="option-text">全部分类</text>
             <text v-if="categoryFilter === ''" class="check-icon">✓</text>
@@ -110,7 +110,7 @@
             :key="category.id"
             class="option-item"
             :class="{ active: categoryFilter === category.id }"
-            @tap="selectCategoryFilter(category.id)"
+            @tap="throttledSelectCategoryFilter(category.id)"
           >
             <view class="option-icon" :style="{ backgroundColor: category.color }">
               {{ category.icon }}
@@ -135,6 +135,7 @@ import VirtualList from 'taro-virtual-list'
 import EmptyState from '@/components/common/EmptyState.vue'
 import Skeleton from '@/components/common/Skeleton.vue'
 import ActionButton from '@/components/common/ActionButton.vue'
+import { throttle } from '../../utils/performance/debounce'
 
 // Store
 const userStore = useUserStore()
@@ -314,6 +315,10 @@ const onDateChange = (e) => {
   selectedDate.value = e.detail.value
   loadData()
 }
+
+const throttledOnDateChange = throttle(onDateChange, 300)
+const throttledSelectTypeFilter = throttle(selectTypeFilter, 300)
+const throttledSelectCategoryFilter = throttle(selectCategoryFilter, 300)
 
 const showTypeFilter = () => {
   showTypeModal.value = true
