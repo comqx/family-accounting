@@ -85,12 +85,18 @@
       </view>
 
       <view v-if="analysisView === 'chart'" class="chart-view">
-        <view class="chart-container">
-          <view class="chart-placeholder">
-            <view class="chart-icon">📊</view>
-            <text class="chart-text">饼图显示各分类占比</text>
-          </view>
-        </view>
+        <Suspense>
+          <template #default>
+            <AsyncEChart v-if="categoryAnalysis.length > 0" :option="pieOption" style="width:100%;height:400rpx" />
+            <view v-else class="chart-placeholder">
+              <view class="chart-icon">📊</view>
+              <text class="chart-text">暂无分类数据</text>
+            </view>
+          </template>
+          <template #fallback>
+            <view class="chart-placeholder"><text>加载中...</text></view>
+          </template>
+        </Suspense>
       </view>
 
       <view v-else class="list-view">
@@ -163,10 +169,18 @@
       </view>
 
       <view class="trend-chart">
-        <view class="chart-placeholder">
-          <view class="chart-icon">📈</view>
-          <text class="chart-text">{{ trendType === 'daily' ? '日' : trendType === 'weekly' ? '周' : '月' }}度趋势图</text>
-        </view>
+        <Suspense>
+          <template #default>
+            <AsyncEChart v-if="trendInsights.values && trendInsights.values.length > 0" :option="trendOption" style="width:100%;height:400rpx" />
+            <view v-else class="chart-placeholder">
+              <view class="chart-icon">📈</view>
+              <text class="chart-text">暂无趋势数据</text>
+            </view>
+          </template>
+          <template #fallback>
+            <view class="chart-placeholder"><text>加载中...</text></view>
+          </template>
+        </Suspense>
       </view>
 
       <view class="trend-insights">
@@ -228,11 +242,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../../stores'
 import { formatAmount } from '../../../utils/format'
 import request from '../../../utils/request'
+
+// 异步加载 taro-echarts 组件
+const AsyncEChart = defineAsyncComponent(() => import('taro-echarts'))
 
 // Store
 const userStore = useUserStore()
@@ -384,6 +401,44 @@ const exportReport = async () => {
   }
 }
 
+// 饼图 option
+const pieOption = computed(() => ({
+  tooltip: { trigger: 'item' },
+  legend: { top: '5%', left: 'center' },
+  series: [
+    {
+      name: '分类占比',
+      type: 'pie',
+      radius: ['40%', '70%'],
+      avoidLabelOverlap: false,
+      itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false, position: 'center' },
+      emphasis: { label: { show: true, fontSize: 18, fontWeight: 'bold' } },
+      labelLine: { show: false },
+      data: categoryAnalysis.value.map(cat => ({
+        value: cat.amount,
+        name: cat.name,
+        itemStyle: { color: cat.color }
+      }))
+    }
+  ]
+}))
+
+// 趋势图 option
+const trendOption = computed(() => ({
+  tooltip: { trigger: 'axis' },
+  xAxis: { type: 'category', data: trendInsights.value.dates || [] },
+  yAxis: { type: 'value' },
+  series: [
+    {
+      data: trendInsights.value.values || [],
+      type: 'line',
+      smooth: true,
+      areaStyle: {}
+    }
+  ]
+}))
+
 // 检查用户状态
 const checkUserStatus = () => {
   if (!userStore.isLoggedIn) {
@@ -411,7 +466,7 @@ Taro.useLoad(() => {
 <style lang="scss" scoped>
 .advanced-reports-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--color-bg);
   padding-bottom: 120rpx;
 
   // 时间范围选择器
@@ -534,7 +589,7 @@ Taro.useLoad(() => {
       .section-title {
         font-size: 32rpx;
         font-weight: bold;
-        color: #333;
+        color: var(--color-text-secondary);
       }
 
       .view-toggle, .trend-type-selector {
@@ -561,8 +616,9 @@ Taro.useLoad(() => {
 
     .chart-container, .trend-chart {
       height: 300rpx;
-      background: #f8f9fa;
-      border-radius: 12rpx;
+      background: var(--color-card);
+      border-radius: 16rpx;
+      box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
       display: flex;
       align-items: center;
       justify-content: center;

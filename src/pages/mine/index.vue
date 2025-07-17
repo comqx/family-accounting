@@ -106,7 +106,7 @@ const monthExpense = ref(0)
 const monthIncome = ref(0)
 const recordCount = ref(0)
 const familyList = ref([])
-const defaultAvatar = profilePng
+const defaultAvatar = 'https://cdn.jsdelivr.net/gh/baimingxuan/media-host@master/img/avatar-default.png'
 
 const myRole = computed(() => {
   const me = familyStore.members.find(m => m.id === user.value.id)

@@ -1,17 +1,16 @@
 // 业务类型定义 - 已转换为纯JavaScript
 
 // 用户相关类型
-/**
- * @typedef {Object} User
- * @property {string} id - 用户ID
- * @property {string} openid - 微信openid
- * @property {string} nickName - 昵称
- * @property {string} avatarUrl - 头像URL
- * @property {string} [familyId] - 家庭ID
- * @property {string} role - 用户角色
- * @property {Date} createTime - 创建时间
- * @property {Date} updateTime - 更新时间
- */
+export interface User {
+  id: string;
+  nickName: string;
+  avatarUrl: string;
+  phone?: string;
+  familyId?: string;
+  role: string;
+  createTime: Date;
+  updateTime: Date;
+}
 
 /**
  * @enum {string}
@@ -23,60 +22,57 @@ export const UserRole = {
 };
 
 // 家庭相关类型
-/**
- * @typedef {Object} Family
- * @property {string} id - 家庭ID
- * @property {string} name - 家庭名称
- * @property {string} [description] - 家庭描述
- * @property {string} adminId - 管理员ID
- * @property {Array} members - 成员列表
- * @property {Object} settings - 家庭设置
- * @property {Date} createTime - 创建时间
- * @property {Date} updateTime - 更新时间
- */
+export interface Family {
+  id: string;
+  name: string;
+  description?: string;
+  adminId: string;
+  members: FamilyMember[];
+  settings: FamilySettings;
+  createTime: Date;
+  updateTime: Date;
+}
 
-/**
- * @typedef {Object} FamilyMember
- * @property {string} userId - 用户ID
- * @property {string} nickName - 昵称
- * @property {string} avatarUrl - 头像URL
- * @property {string} role - 角色
- * @property {Date} joinTime - 加入时间
- */
+export interface FamilyMember {
+  userId: string;
+  nickName: string;
+  avatarUrl: string;
+  role: string;
+  joinTime: Date;
+}
 
-/**
- * @typedef {Object} FamilySettings
- * @property {string} currency - 货币单位
- * @property {boolean} budgetAlert - 预算预警
- * @property {boolean} autoSync - 自动同步
- * @property {Object} memberPermissions - 成员权限
- * @property {boolean} memberPermissions.canAddRecord - 可添加记录
- * @property {boolean} memberPermissions.canEditRecord - 可编辑记录
- * @property {boolean} memberPermissions.canDeleteRecord - 可删除记录
- * @property {boolean} memberPermissions.canViewReports - 可查看报表
- */
+export interface FamilySettings {
+  currency: string;
+  budgetAlert: boolean;
+  autoSync: boolean;
+  memberPermissions: {
+    canAddRecord: boolean;
+    canEditRecord: boolean;
+    canDeleteRecord: boolean;
+    canViewReports: boolean;
+  };
+}
 
 // 记账记录类型
-/**
- * @typedef {Object} AccountRecord
- * @property {string} id - 记录ID
- * @property {string} familyId - 家庭ID
- * @property {string} userId - 用户ID
- * @property {string} type - 记录类型
- * @property {number} amount - 金额
- * @property {string} category - 分类名称
- * @property {string} categoryId - 分类ID
- * @property {string} [description] - 描述
- * @property {Date} date - 日期
- * @property {Array<string>} [tags] - 标签
- * @property {Array<string>} [images] - 图片
- * @property {string} [location] - 位置
- * @property {boolean} isDeleted - 是否删除
- * @property {Date} createTime - 创建时间
- * @property {Date} updateTime - 更新时间
- * @property {string} createdBy - 创建者
- * @property {string} [updatedBy] - 更新者
- */
+export interface AccountRecord {
+  id: string;
+  familyId: string;
+  userId: string;
+  type: string;
+  amount: number;
+  category: string;
+  categoryId: string;
+  description?: string;
+  date: Date;
+  tags?: string[];
+  images?: string[];
+  location?: string;
+  isDeleted: boolean;
+  createTime: Date;
+  updateTime: Date;
+  createdBy: string;
+  updatedBy?: string;
+}
 
 /**
  * @enum {string}
@@ -87,36 +83,34 @@ export const RecordType = {
 };
 
 // 分类类型
-/**
- * @typedef {Object} Category
- * @property {string} id - 分类ID
- * @property {string} name - 分类名称
- * @property {string} icon - 图标
- * @property {string} color - 颜色
- * @property {string} type - 记录类型
- * @property {string} [parentId] - 父分类ID
- * @property {boolean} isDefault - 是否默认
- * @property {string} [familyId] - 家庭ID
- * @property {number} sort - 排序
- * @property {boolean} isActive - 是否激活
- * @property {Date} createTime - 创建时间
- */
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  type: string;
+  parentId?: string;
+  isDefault: boolean;
+  familyId?: string;
+  sort: number;
+  isActive: boolean;
+  createTime: Date;
+}
 
 // 账单导入相关类型
-/**
- * @typedef {Object} BillImport
- * @property {string} id - 导入ID
- * @property {string} familyId - 家庭ID
- * @property {string} userId - 用户ID
- * @property {string} platform - 平台
- * @property {Array<string>} originalImages - 原始图片
- * @property {string} status - 状态
- * @property {Object} [ocrResult] - OCR结果
- * @property {Object} [parsedData] - 解析数据
- * @property {string} [errorMessage] - 错误信息
- * @property {Date} createTime - 创建时间
- * @property {Date} updateTime - 更新时间
- */
+export interface BillImport {
+  id: string;
+  familyId: string;
+  userId: string;
+  platform: string;
+  originalImages: string[];
+  status: string;
+  ocrResult?: any;
+  parsedData?: any;
+  errorMessage?: string;
+  createTime: Date;
+  updateTime: Date;
+}
 
 /**
  * @enum {string}
@@ -140,66 +134,67 @@ export const ImportStatus = {
   MANUAL_REVIEW: 'manual_review'
 };
 
-/**
- * @typedef {Object} OCRResult
- * @property {string} text - 识别文本
- * @property {number} confidence - 置信度
- * @property {Array} words - 单词列表
- * @property {Array} regions - 区域列表
- */
+// OCR 相关类型
+export interface OCRResult {
+  text: string;
+  confidence: number;
+  words: OCRWord[];
+  regions: OCRRegion[];
+}
 
-/**
- * @typedef {Object} OCRWord
- * @property {string} text - 文本
- * @property {number} confidence - 置信度
- * @property {Object} boundingBox - 边界框
- */
+export interface OCRWord {
+  text: string;
+  confidence: number;
+  boundingBox: BoundingBox;
+}
 
-/**
- * @typedef {Object} OCRRegion
- * @property {string} text - 文本
- * @property {number} confidence - 置信度
- * @property {Object} boundingBox - 边界框
- * @property {Array} words - 单词列表
- */
+export interface OCRRegion {
+  text: string;
+  confidence: number;
+  boundingBox: BoundingBox;
+  words: OCRWord[];
+}
 
-/**
- * @typedef {Object} BoundingBox
- * @property {number} x - X坐标
- * @property {number} y - Y坐标
- * @property {number} width - 宽度
- * @property {number} height - 高度
- */
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
-/**
- * @typedef {Object} ParsedBillData
- * @property {string} platform - 平台
- * @property {Array} transactions - 交易列表
- * @property {Object} summary - 汇总信息
- * @property {number} confidence - 置信度
- */
+export interface ParsedBillData {
+  platform: string;
+  transactions: ParsedTransaction[];
+  summary: {
+    totalAmount: number;
+    transactionCount: number;
+    dateRange: {
+      start: Date;
+      end: Date;
+    };
+  };
+  confidence: number;
+}
 
-/**
- * @typedef {Object} ParsedTransaction
- * @property {number} amount - 金额
- * @property {string} type - 类型
- * @property {string} merchant - 商户
- * @property {string} [category] - 分类
- * @property {string} description - 描述
- * @property {Date} date - 日期
- * @property {number} confidence - 置信度
- * @property {boolean} needsReview - 需要审核
- */
+export interface ParsedTransaction {
+  amount: number;
+  type: string;
+  merchant: string;
+  category?: string;
+  description: string;
+  date: Date;
+  confidence: number;
+  needsReview: boolean;
+}
 
 // 报表相关类型
-/**
- * @typedef {Object} ReportData
- * @property {string} period - 报表周期
- * @property {Object} summary - 汇总信息
- * @property {Array} categoryStats - 分类统计
- * @property {Array} trends - 趋势数据
- * @property {Array} [comparisons] - 对比数据
- */
+export interface ReportData {
+  period: string;
+  summary: ReportSummary;
+  categoryStats: CategoryStat[];
+  trends: TrendData[];
+  comparisons?: ComparisonData[];
+}
 
 /**
  * @enum {string}
@@ -212,54 +207,49 @@ export const ReportPeriod = {
   CUSTOM: 'custom'
 };
 
-/**
- * @typedef {Object} ReportSummary
- * @property {number} totalIncome - 总收入
- * @property {number} totalExpense - 总支出
- * @property {number} balance - 余额
- * @property {number} transactionCount - 交易数量
- * @property {number} avgDailyExpense - 平均日支出
- */
+export interface ReportSummary {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+  transactionCount: number;
+  avgDailyExpense: number;
+}
 
-/**
- * @typedef {Object} CategoryStat
- * @property {string} categoryId - 分类ID
- * @property {string} categoryName - 分类名称
- * @property {number} amount - 金额
- * @property {number} percentage - 百分比
- * @property {number} transactionCount - 交易数量
- * @property {number} trend - 趋势变化
- */
+export interface CategoryStat {
+  categoryId: string;
+  categoryName: string;
+  amount: number;
+  percentage: number;
+  transactionCount: number;
+  trend: number;
+}
 
-/**
- * @typedef {Object} TrendData
- * @property {string} date - 日期
- * @property {number} income - 收入
- * @property {number} expense - 支出
- * @property {number} balance - 余额
- */
+export interface TrendData {
+  date: string;
+  income: number;
+  expense: number;
+  balance: number;
+}
 
-/**
- * @typedef {Object} ComparisonData
- * @property {string} period - 周期
- * @property {number} income - 收入
- * @property {number} expense - 支出
- * @property {number} change - 变化
- */
+export interface ComparisonData {
+  period: string;
+  income: number;
+  expense: number;
+  change: number;
+}
 
 // 通知相关类型
-/**
- * @typedef {Object} Notification
- * @property {string} id - 通知ID
- * @property {string} familyId - 家庭ID
- * @property {string} [userId] - 用户ID
- * @property {string} type - 通知类型
- * @property {string} title - 标题
- * @property {string} content - 内容
- * @property {*} [data] - 数据
- * @property {boolean} isRead - 是否已读
- * @property {Date} createTime - 创建时间
- */
+export interface Notification {
+  id: string;
+  familyId: string;
+  userId?: string;
+  type: string;
+  title: string;
+  content: string;
+  data?: any;
+  isRead: boolean;
+  createTime: Date;
+}
 
 /**
  * @enum {string}

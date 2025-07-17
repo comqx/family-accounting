@@ -29,6 +29,12 @@ import Taro from '@tarojs/taro';
  */
 
 class RequestManager {
+  baseURL: string;
+  defaultTimeout: number;
+  token: string;
+  responseInterceptors: Array<(res: any) => any>;
+  errorInterceptors: Array<(err: any) => any>;
+
   constructor() {
     // 初始化属性
     this.baseURL = 'https://express-9o49-171950-8-1322802786.sh.run.tcloudbase.com';
@@ -325,23 +331,20 @@ class RequestManager {
   }
 
   // 文件下载
-  async downloadFile(url, fileName) {
+  async downloadFile(url: string, fileName?: string) {
     // 显示加载提示
     Taro.showLoading({ title: '下载中...' });
 
     try {
       // 发起下载请求
-      const response = await Taro.downloadFile({
-        url: this.baseURL + url,
-        header: this.token ? { 'Authorization': `Bearer ${this.token}` } : {}
-      });
+      const downloadRes = await Taro.downloadFile({ url: url as string });
 
       Taro.hideLoading();
 
       // 保存文件
-      if (response.statusCode === 200) {
+      if (downloadRes.statusCode === 200) {
         const savedPath = await Taro.saveFile({
-          tempFilePath: response.tempFilePath
+          tempFilePath: downloadRes.tempFilePath
         });
 
         Taro.showToast({
@@ -349,7 +352,10 @@ class RequestManager {
           icon: 'success'
         });
 
-        return savedPath.savedFilePath;
+        if (typeof savedPath === 'object' && 'savedFilePath' in savedPath) {
+          return (savedPath as any).savedFilePath;
+        }
+        return '';
       } else {
         throw new Error('下载失败');
       }
@@ -373,6 +379,35 @@ class RequestManager {
 
 // 创建默认实例
 const request = new RequestManager();
+
+// 全局响应拦截器（可扩展）
+request.addResponseInterceptor((res) => {
+  // 可在此统一处理后端自定义 code，如 401/403/500 等
+  if (res.code === 401) {
+    request.clearToken();
+    Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+    Taro.reLaunch({ url: '/pages/login/index' });
+    throw new Error('登录已过期');
+  }
+  if (res.code === 403) {
+    Taro.showToast({ title: '无权限访问', icon: 'none' });
+    throw new Error('无权限访问');
+  }
+  if (res.code === 500) {
+    Taro.showToast({ title: '服务器异常', icon: 'none' });
+    throw new Error('服务器异常');
+  }
+  return res;
+});
+
+// 全局错误拦截器（可扩展）
+request.addErrorInterceptor((err) => {
+  if (err && err.message) {
+    // 统一 toast 提示
+    Taro.showToast({ title: err.message, icon: 'none' });
+  }
+  return err;
+});
 
 // 导出实例和类
 export default request;

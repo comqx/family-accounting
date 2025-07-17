@@ -3,8 +3,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import Taro from '@tarojs/taro';
-import { AppSettings } from '../../types/business';
 import { getAppSettings, setAppSettings } from '../../utils/storage';
+import i18n from '../../i18n'
 
 export const useAppStore = defineStore('app', () => {
   // 状态
@@ -141,9 +141,9 @@ export const useAppStore = defineStore('app', () => {
   // 设置语言
   const setLanguage = (language) => {
     updateSettings({ language });
-    
-    // 这里可以集成国际化库
-    // i18n.locale = language;
+    if (i18n.global.locale) {
+      i18n.global.locale.value = language;
+    }
   };
 
   // 设置货币
@@ -355,4 +355,8 @@ export const useAppStore = defineStore('app', () => {
     previewImage,
     saveImageToPhotosAlbum
   };
+}, {
+  persist: {
+    paths: ['settings']
+  } as any
 });

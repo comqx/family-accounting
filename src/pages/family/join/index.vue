@@ -2,7 +2,7 @@
   <view class="family-join-page">
     <view class="form-section">
       <input class="form-input" v-model="inviteCode" placeholder="请输入邀请码" maxlength="8" @input="onInviteCodeInput" />
-      <button class="join-btn" @tap="handleJoin" :loading="isJoining" :disabled="!canJoin || isJoining">
+      <button class="join-btn" @tap="debouncedHandleJoin" :loading="isJoining" :disabled="!canJoin || isJoining">
         {{ isJoining ? '加入中...' : '加入' }}
       </button>
     </view>
@@ -13,6 +13,7 @@
 import { ref, computed } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
+import { debounce } from '../../../utils/performance/debounce'
 
 const userStore = useUserStore()
 const familyStore = useFamilyStore()
@@ -44,6 +45,8 @@ const handleJoin = async () => {
     isJoining.value = false
   }
 }
+
+const debouncedHandleJoin = debounce(handleJoin, 800)
 </script>
 
 <style lang="scss" scoped>

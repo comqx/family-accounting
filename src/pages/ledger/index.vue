@@ -47,58 +47,25 @@
 
     <!-- 记录列表 -->
     <view class="records-section">
-      <view v-if="groupedRecords.length === 0" class="empty-state">
-        <view class="empty-icon">📝</view>
-        <text class="empty-text">暂无记录</text>
-        <text class="empty-desc">点击下方"+"按钮开始记账</text>
-      </view>
-
-      <view v-else class="records-list">
-        <view
-          v-for="group in groupedRecords"
-          :key="group.date"
-          class="record-group"
-        >
-          <view class="group-header">
-            <text class="group-date">{{ group.date }}</text>
-            <view class="group-stats">
-              <text class="group-expense">支出 ¥{{ formatAmount(group.totalExpense) }}</text>
-              <text class="group-income">收入 ¥{{ formatAmount(group.totalIncome) }}</text>
-            </view>
-          </view>
-
-          <view class="group-records">
-            <view
-              v-for="record in group.records"
-              :key="record.id"
-              class="record-item"
-              @tap="goToRecordDetail(record.id)"
-            >
-              <view class="record-icon" :style="{ backgroundColor: record.categoryColor }">
-                {{ record.categoryIcon }}
-              </view>
-              <view class="record-info">
-                <text class="record-category">{{ record.categoryName }}</text>
-                <text class="record-desc">{{ record.description || '无备注' }}</text>
-              </view>
-              <view class="record-amount">
-                <text
-                  class="amount-text"
-                  :class="record.type"
-                >
-                  {{ record.type === 'expense' ? '-' : '+' }}¥{{ formatAmount(record.amount) }}
-                </text>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
+      <Skeleton v-if="loadingMore && flatRecords.length === 0" :rows="6" />
+      <EmptyState v-else-if="flatRecords.length === 0" desc="暂无记录，点击下方“+”按钮开始记账" icon="📝" />
+      <virtual-list
+        v-else
+        :height="800"
+        :width="'100%'"
+        :item-count="flatRecords.length"
+        :item-size="ITEM_SIZE"
+        :item-data="flatRecords"
+        :render="renderItem"
+        @scrolltolower="loadMore"
+        class="records-list"
+      />
+      <view v-if="loadingMore && flatRecords.length > 0" style="text-align:center;padding:20rpx;color:#999;">加载中...</view>
+      <view v-if="!hasMore && flatRecords.length > 0" style="text-align:center;padding:20rpx;color:#999;">没有更多了</view>
     </view>
 
     <!-- 添加按钮 -->
-    <view class="add-btn" @tap="goToAddRecord">
-      <text class="add-icon">+</text>
-    </view>
+    <ActionButton class="add-btn" @tap="goToAddRecord" icon="+" aria-label="新增记账" />
 
 
 
@@ -158,11 +125,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useCategoryStore, useAppStore, useRecordStore, useFamilyStore } from '../../stores'
 import { formatAmount, formatDate } from '../../utils/format'
 import request from '../../utils/request'
+import VirtualList from 'taro-virtual-list'
+// 新增通用组件
+import EmptyState from '@/components/common/EmptyState.vue'
+import Skeleton from '@/components/common/Skeleton.vue'
+import ActionButton from '@/components/common/ActionButton.vue'
 
 // Store
 const userStore = useUserStore()
@@ -257,6 +229,86 @@ const groupedRecords = computed(() => {
   return Object.values(groups).sort((a, b) => b.date.localeCompare(a.date))
 })
 
+// 虚拟列表相关
+const PAGE_SIZE = 50
+const page = ref(1)
+const hasMore = ref(true)
+const loadingMore = ref(false)
+
+// 将分组数据拍平成一维数组，包含分组头和记录
+const flatRecords = computed(() => {
+  const result = []
+  groupedRecords.value.forEach(group => {
+    result.push({ type: 'group', date: group.date, totalExpense: group.totalExpense, totalIncome: group.totalIncome })
+    group.records.forEach(record => {
+      result.push({ type: 'record', ...record, groupDate: group.date })
+    })
+  })
+  return result
+})
+
+// 虚拟列表 itemSize 估算（rpx 转 px 约等于 1:1，实际可微调）
+const ITEM_SIZE = 120
+
+// 虚拟列表渲染函数，兼容小程序，避免直接用 JSX
+const renderItem = ({ item, index, style }) => {
+  if (item.type === 'group') {
+    return h('view', { class: 'record-group', style }, [
+      h('view', { class: 'group-header' }, [
+        h('text', { class: 'group-date' }, item.date),
+        h('text', { class: 'group-total' }, `支出 ¥${item.totalExpense || 0} 收入 ¥${item.totalIncome || 0}`)
+      ])
+    ])
+  } else if (item.type === 'record') {
+    return h('view', { class: 'record-item', style, onClick: () => goToRecordDetail(item.id) }, [
+      h('view', { class: 'record-main' }, [
+        h('text', { class: 'record-category' }, item.categoryName),
+        h('text', { class: 'record-amount' }, `${item.type === 'expense' ? '-' : '+'}${item.amount}`)
+      ]),
+      h('view', { class: 'record-desc' }, item.description || ''),
+      h('view', { class: 'record-date' }, item.date)
+    ])
+  }
+  return null
+}
+
+// 分页加载更多
+const loadMore = async () => {
+  if (!hasMore.value || loadingMore.value) return
+  loadingMore.value = true
+  try {
+    page.value += 1
+    const familyIdMore = familyStore.familyId
+    const [year, month] = selectedDate.value.split('-')
+    const startDate = `${year}-${month}-01`
+    const endDate = `${year}-${month}-31`
+    const requestParams = {
+      familyId: familyIdMore,
+      page: page.value,
+      pageSize: PAGE_SIZE,
+      startDate,
+      endDate
+    }
+    if (typeFilter.value) requestParams.type = typeFilter.value
+    if (categoryFilter.value) requestParams.categoryId = Number(categoryFilter.value)
+    const recordsRes = await request.get('/api/record/list', requestParams)
+    let recordsData = null
+    if (recordsRes.data?.list) recordsData = recordsRes.data.list
+    else if (recordsRes.data?.records) recordsData = recordsRes.data.records
+    else if (Array.isArray(recordsRes.data)) recordsData = recordsRes.data
+    if (recordsData && recordsData.length > 0) {
+      records.value = [...records.value, ...recordsData]
+      if (recordsData.length < PAGE_SIZE) hasMore.value = false
+    } else {
+      hasMore.value = false
+    }
+  } catch (e) {
+    hasMore.value = false
+  } finally {
+    loadingMore.value = false
+  }
+}
+
 // 方法
 const onDateChange = (e) => {
   selectedDate.value = e.detail.value
@@ -304,73 +356,36 @@ const goToAddRecord = () => {
   })
 }
 
+// 修改 loadData，首次加载时重置分页
 const loadData = async () => {
   try {
-    // 确保家庭信息已加载
-    if (!familyStore.hasFamily) {
-      await familyStore.getFamilyInfo()
-    }
-    
-    const familyId = familyStore.familyId
-    if (!familyId) {
-      console.error('没有家庭ID，无法加载数据')
-      return
-    }
-    
-    // 获取分类
-    await categoryStore.loadCategories(familyId)
-    // 获取账单记录 - 先不限制日期范围，获取所有记录
-    console.log('加载记录参数:', {
-      familyId: familyId,
-      type: typeFilter.value || undefined,
-      categoryId: categoryFilter.value ? Number(categoryFilter.value) : undefined
-    })
-    // 构建请求参数，过滤掉undefined值
-    const requestParams = {
-      familyId: familyId,
-      page: 1,
-      pageSize: 100
-    }
-    
-    // 添加日期范围筛选
+    if (!familyStore.hasFamily) await familyStore.getFamilyInfo()
+    const familyIdInit = familyStore.familyId
+    if (!familyIdInit) return
+    await categoryStore.loadCategories(familyIdInit)
+    page.value = 1
+    hasMore.value = true
+    loadingMore.value = false
     const [year, month] = selectedDate.value.split('-')
     const startDate = `${year}-${month}-01`
     const endDate = `${year}-${month}-31`
-    requestParams.startDate = startDate
-    requestParams.endDate = endDate
-    
-    // 只有当有值时才添加参数
-    if (typeFilter.value) {
-      requestParams.type = typeFilter.value
+    const requestParams = {
+      familyId: familyIdInit,
+      page: 1,
+      pageSize: PAGE_SIZE,
+      startDate,
+      endDate
     }
-    if (categoryFilter.value) {
-      requestParams.categoryId = Number(categoryFilter.value)
-    }
-    
-    // 直接调用API获取记录
+    if (typeFilter.value) requestParams.type = typeFilter.value
+    if (categoryFilter.value) requestParams.categoryId = Number(categoryFilter.value)
     const recordsRes = await request.get('/api/record/list', requestParams)
-    
-    // 兼容不同的响应格式
-    let recordsData = null;
-    if (recordsRes.data?.list) {
-      recordsData = recordsRes.data.list;
-    } else if (recordsRes.data?.records) {
-      recordsData = recordsRes.data.records;
-    } else if (Array.isArray(recordsRes.data)) {
-      recordsData = recordsRes.data;
-    }
-    
-    if (recordsData) {
-      records.value = recordsData;
-    } else {
-      records.value = [];
-    }
+    let recordsData = null
+    if (recordsRes.data?.list) recordsData = recordsRes.data.list
+    else if (recordsRes.data?.records) recordsData = recordsRes.data.records
+    else if (Array.isArray(recordsRes.data)) recordsData = recordsRes.data
+    records.value = recordsData || []
     // 获取月统计
-    const statsRes = await request.get('/api/report/statistics', {
-      familyId: familyId,
-        startDate,
-        endDate
-    })
+    const statsRes = await request.get('/api/report/statistics', { familyId: familyIdInit, startDate, endDate })
     if (statsRes.data) {
       monthExpense.value = statsRes.data.totalExpense || 0
       monthIncome.value = statsRes.data.totalIncome || 0

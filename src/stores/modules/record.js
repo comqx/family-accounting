@@ -529,4 +529,12 @@ export const useRecordStore = defineStore('record', () => {
     refreshRecords,
     $reset
   };
+}, {
+  /**
+   * Pinia 持久化配置
+   * 仅持久化 recentRecords 字段，避免大数据量本地存储
+   */
+  persist: {
+    paths: ['recentRecords']
+  }
 }); 

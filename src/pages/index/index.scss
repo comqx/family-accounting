@@ -2,7 +2,7 @@
 
 .record-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-bg);
   padding-bottom: 120rpx;
 
   // 连接状态指示器
@@ -21,11 +21,11 @@
   // 顶部统计卡片
   .stats-card {
     display: flex;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-card);
     margin: 40rpx 30rpx 30rpx;
     border-radius: 20rpx;
     padding: 40rpx 30rpx;
-    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
 
     .stats-item {
       flex: 1;
@@ -34,7 +34,7 @@
       .stats-label {
         display: block;
         font-size: 28rpx;
-        color: #666;
+        color: var(--color-text-secondary);
         margin-bottom: 10rpx;
       }
 
@@ -42,6 +42,7 @@
         display: block;
         font-size: 36rpx;
         font-weight: bold;
+        color: var(--color-text-primary);
 
         &.expense {
           color: #ff4757;
@@ -62,11 +63,11 @@
 
   // 快速记账区域
   .quick-record {
-    background: white;
+    background: var(--color-card);
     margin: 0 30rpx;
     border-radius: 20rpx;
     padding: 40rpx 30rpx;
-    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
 
     // 类型切换标签
     .record-type-tabs {
@@ -124,7 +125,7 @@
 
       .section-title {
         font-size: 30rpx;
-        color: #333;
+        color: var(--color-text-primary);
         margin-bottom: 20rpx;
         font-weight: 500;
       }
@@ -156,7 +157,7 @@
           }
 
           &.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--color-brand) 0%, #764ba2 100%);
             transform: scale(1.05);
             box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
 
@@ -166,7 +167,7 @@
             }
 
             .category-name {
-              color: white;
+              color: #fff;
               font-weight: 500;
             }
           }
@@ -174,8 +175,8 @@
           &.add-category {
             .category-icon {
               background: #f8f9fa;
-              border: 2rpx dashed #ddd;
-              color: #999;
+              border: 2rpx dashed var(--color-divider);
+              color: var(--color-text-secondary);
 
               .add-icon {
                 color: #999;
@@ -185,7 +186,7 @@
             }
 
             .category-name {
-              color: #999;
+              color: var(--color-text-secondary);
             }
           }
 
@@ -205,7 +206,7 @@
           .category-name {
             display: block;
             font-size: 24rpx;
-            color: #666;
+            color: var(--color-text-secondary);
             max-width: 100rpx;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -230,7 +231,8 @@
         padding: 20rpx 0;
         border-bottom: 2rpx solid #eee;
         font-size: 30rpx;
-        color: #333;
+        color: var(--color-text-primary);
+        background: var(--color-card);
 
         &::placeholder {
           color: #999;
@@ -267,8 +269,8 @@
     .save-section {
       .save-btn {
         width: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: var(--color-brand);
+        color: #fff;
         border: none;
         border-radius: 12rpx;
         padding: 24rpx 0;

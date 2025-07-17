@@ -1,0 +1,30 @@
+.ledger-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  .ledger-header {
+    background: var(--color-card);
+    color: var(--color-text-primary);
+  }
+  .ledger-summary {
+    background: var(--color-card);
+    color: var(--color-text-primary);
+  }
+  .ledger-list {
+    background: var(--color-card);
+    .group-header {
+      color: var(--color-text-secondary);
+      background: var(--color-bg);
+    }
+    .record-item {
+      background: var(--color-card);
+      color: var(--color-text-primary);
+      border-bottom: 2rpx solid var(--color-divider);
+      .amount {
+        color: var(--color-danger);
+      }
+      .income {
+        color: var(--color-success);
+      }
+    }
+  }
+} 

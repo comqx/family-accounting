@@ -85,18 +85,15 @@
 
     <!-- 操作按钮 -->
     <view class="action-buttons">
-      <button class="action-btn secondary" @tap="goBack">
-        返回重新识别
-      </button>
-
-      <button
+      <ActionButton class="action-btn secondary" @tap="goBack">返回重新识别</ActionButton>
+      <ActionButton
         class="action-btn primary"
         @tap="confirmImport"
         :disabled="selectedRecords.length === 0"
         :loading="isImporting"
       >
         {{ isImporting ? '导入中...' : `导入选中记录(${selectedRecords.length})` }}
-      </button>
+      </ActionButton>
     </view>
 
     <!-- 编辑记录弹窗 -->
@@ -154,8 +151,8 @@
         </view>
 
         <view class="modal-footer">
-          <button class="modal-btn cancel" @tap="closeEditModal">取消</button>
-          <button class="modal-btn confirm" @tap="saveEdit">保存</button>
+          <ActionButton class="modal-btn cancel" @tap="closeEditModal">取消</ActionButton>
+          <ActionButton class="modal-btn confirm" @tap="saveEdit">保存</ActionButton>
         </view>
       </view>
     </view>
@@ -168,6 +165,8 @@ import Taro from '@tarojs/taro'
 import { useUserStore, useRecordStore, useAppStore, useFamilyStore } from '../../../stores'
 import { useRealTimeSync } from '../../../hooks/useRealTimeSync'
 import { formatAmount, formatDate } from '../../../utils/format'
+// 新增通用组件
+import ActionButton from '@/components/common/ActionButton.vue'
 
 // Store
 const userStore = useUserStore()

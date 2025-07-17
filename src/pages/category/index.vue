@@ -2,7 +2,7 @@
   <view class="category-page">
     <view class="section">
       <view class="section-title">支出分类</view>
-      <view v-if="expenseCategories.length === 0" class="empty-text">暂无支出分类</view>
+      <EmptyState v-if="expenseCategories.length === 0" desc="暂无支出分类" icon="📂" />
       <view v-for="cat in expenseCategories" :key="cat.id" class="category-card">
         <view class="category-info">
           <view class="category-icon" :style="{ backgroundColor: cat.color }">{{ cat.icon || '📂' }}</view>
@@ -12,14 +12,14 @@
           </view>
         </view>
         <view class="category-actions">
-          <button size="mini" @tap="editCategory(cat)">编辑</button>
-          <button size="mini" type="warn" @tap="deleteCategory(cat)">删除</button>
+          <ActionButton size="mini" @tap="editCategory(cat)">编辑</ActionButton>
+          <ActionButton size="mini" type="warn" @tap="deleteCategory(cat)">删除</ActionButton>
         </view>
       </view>
     </view>
     <view class="section">
       <view class="section-title">收入分类</view>
-      <view v-if="incomeCategories.length === 0" class="empty-text">暂无收入分类</view>
+      <EmptyState v-if="incomeCategories.length === 0" desc="暂无收入分类" icon="📂" />
       <view v-for="cat in incomeCategories" :key="cat.id" class="category-card">
         <view class="category-info">
           <view class="category-icon" :style="{ backgroundColor: cat.color }">{{ cat.icon || '📂' }}</view>
@@ -29,13 +29,13 @@
           </view>
         </view>
         <view class="category-actions">
-          <button size="mini" @tap="editCategory(cat)">编辑</button>
-          <button size="mini" type="warn" @tap="deleteCategory(cat)">删除</button>
+          <ActionButton size="mini" @tap="editCategory(cat)">编辑</ActionButton>
+          <ActionButton size="mini" type="warn" @tap="deleteCategory(cat)">删除</ActionButton>
         </view>
       </view>
     </view>
     <view class="add-btn-bar">
-      <button type="primary" @tap="addCategory">新增分类</button>
+      <ActionButton type="primary" @tap="addCategory">新增分类</ActionButton>
     </view>
 
     <!-- 分类编辑弹窗 -->
@@ -65,16 +65,17 @@
       </view>
     </view>
     <!-- 删除确认弹窗 -->
-    <view v-if="showDeleteModal" class="modal-mask" @tap="closeDeleteModal">
-      <view class="modal-content" @tap.stop>
-        <view class="modal-title">确认删除</view>
-        <view class="modal-body">确定要删除分类“{{ deleteTarget?.name }}”吗？</view>
-        <view class="form-actions">
-          <button size="mini" @tap="closeDeleteModal">取消</button>
-          <button size="mini" type="warn" @tap="confirmDeleteCategory">删除</button>
-        </view>
-      </view>
-    </view>
+    <ConfirmModal
+      v-if="showDeleteModal"
+      :visible="showDeleteModal"
+      title="确认删除"
+      :content="`确定要删除分类“${deleteTarget?.name}”吗？`"
+      @cancel="closeDeleteModal"
+      @confirm="confirmDeleteCategory"
+      confirmText="删除"
+      cancelText="取消"
+      confirmType="warn"
+    />
   </view>
 </template>
 
@@ -83,6 +84,10 @@ import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useCategoryStore } from '../../stores/modules/category'
 import { useFamilyStore } from '@/stores'
+// 新增通用组件
+import EmptyState from '@/components/common/EmptyState.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import ActionButton from '@/components/common/ActionButton.vue'
 
 const categoryStore = useCategoryStore()
 const familyStore = useFamilyStore()

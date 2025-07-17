@@ -1,39 +1,47 @@
 <template>
   <view class="record-page">
     <!-- 连接状态指示器 -->
-    <view v-if="!isConnected" class="connection-status">
+    <view v-if="!isConnected" class="connection-status" aria-live="polite">
       <text class="status-text">⚠️ 实时同步已断开</text>
     </view>
 
+    <!-- 顶部统计卡片骨架屏 -->
+    <view v-if="loadingData" class="stats-card-skeleton" aria-busy="true" aria-label="数据加载中"></view>
     <!-- 顶部统计卡片 -->
-    <view class="stats-card">
+    <view v-else class="stats-card" aria-label="本月统计">
       <view class="stats-item">
-        <text class="stats-label">本月支出</text>
+        <text class="stats-label">{{ $t('index.expense') }}</text>
         <text class="stats-value expense">{{ formatAmount(monthExpense) }}</text>
       </view>
       <view class="stats-divider"></view>
       <view class="stats-item">
-        <text class="stats-label">本月收入</text>
+        <text class="stats-label">{{ $t('index.income') }}</text>
         <text class="stats-value income">{{ formatAmount(monthIncome) }}</text>
       </view>
     </view>
 
     <!-- 快速记账区域 -->
-    <view class="quick-record">
-      <view class="record-type-tabs">
+    <view class="quick-record" aria-label="快速记账">
+      <view class="record-type-tabs" role="tablist">
         <view
           class="type-tab"
           :class="{ active: recordForm.type === 'expense' }"
           @tap="switchType('expense')"
+          role="tab"
+          :aria-selected="recordForm.type === 'expense'"
+          aria-label="支出"
         >
-          支出
+          {{ $t('index.expense') }}
         </view>
         <view
           class="type-tab"
           :class="{ active: recordForm.type === 'income' }"
           @tap="switchType('income')"
+          role="tab"
+          :aria-selected="recordForm.type === 'income'"
+          aria-label="收入"
         >
-          收入
+          {{ $t('index.income') }}
         </view>
       </view>
 
@@ -47,30 +55,34 @@
           @input="onAmountInput"
           placeholder="0.00"
           :focus="amountFocused"
+          aria-label="金额输入"
         />
       </view>
 
       <!-- 分类选择 -->
       <view class="category-section">
         <view class="section-title">选择分类</view>
-        <scroll-view class="category-list" scroll-x>
+        <scroll-view class="category-list" scroll-x aria-label="分类列表">
           <view
             v-for="category in currentCategories"
             :key="category.id"
             class="category-item"
             :class="{ active: recordForm.categoryId === category.id }"
             @tap="selectCategory(category)"
+            role="button"
+            :aria-pressed="recordForm.categoryId === category.id"
+            :aria-label="category.name"
           >
             <view class="category-icon" :style="{ backgroundColor: category.color }">
               {{ category.icon }}
             </view>
             <text class="category-name">{{ category.name }}</text>
           </view>
-          <view class="category-item add-category" @tap="goToAddCategory">
+          <view class="category-item add-category" @tap="goToAddCategory" role="button" aria-label="添加分类">
             <view class="category-icon">
               <text class="add-icon">+</text>
             </view>
-            <text class="category-name">添加</text>
+            <text class="category-name">{{ $t('index.add') }}</text>
           </view>
         </scroll-view>
       </view>
@@ -81,7 +93,8 @@
           class="remark-input"
           :value="recordForm.description"
           @input="onRemarkInput"
-          placeholder="添加备注..."
+          placeholder="{{ $t('index.remark') }}"
+          aria-label="备注"
         />
       </view>
 
@@ -92,13 +105,14 @@
         :start="'2000-01-01'"
         :end="maxDate"
         @change="onDateChange"
+        aria-label="记账日期选择"
       >
         <view class="date-section">
-        <text class="date-label">记账日期</text>
-        <text class="date-value">{{ formatDate(recordForm.date) }}</text>
-        <text class="arrow">></text>
+          <text class="date-label">记账日期</text>
+          <text class="date-value">{{ formatDate(recordForm.date) }}</text>
+          <text class="arrow">></text>
           <text style="font-size: 20rpx; color: #999; margin-left: 10rpx;">点击选择</text>
-      </view>
+        </view>
       </picker>
 
       <!-- 保存按钮 -->
@@ -106,16 +120,30 @@
         <button
           class="save-btn"
           :class="{ disabled: !canSave }"
-          @tap="saveRecord"
+          @tap="debouncedSaveRecord"
           :loading="saving"
+          :disabled="!canSave || saving"
+          aria-label="保存"
+          :aria-disabled="!canSave || saving"
         >
-          {{ saving ? '保存中...' : '保存' }}
+          {{ saving ? $t('index.saving') : $t('index.save') }}
         </button>
       </view>
     </view>
 
+    <!-- 最近记录骨架屏 -->
+    <view v-if="loadingData" class="recent-records-skeleton">
+      <view class="record-item-skeleton" v-for="i in 3" :key="i">
+        <view class="record-icon-skeleton"></view>
+        <view class="record-info-skeleton">
+          <view class="record-category-skeleton"></view>
+          <view class="record-desc-skeleton"></view>
+        </view>
+        <view class="record-amount-skeleton"></view>
+      </view>
+    </view>
     <!-- 最近记录 -->
-    <view class="recent-records">
+    <view v-else class="recent-records">
       <view class="section-header">
         <text class="section-title">最近记录</text>
         <text class="more-link" @tap="goToLedger">查看更多</text>
@@ -171,241 +199,59 @@ import { formatAmount, formatDate, formatRelativeTime } from '../../utils/format
 import './index.scss'
 import request from '../../utils/request'
 
-// Store
+import { useRecordForm } from '../../hooks/useRecordForm'
+import { useUserStore, useFamilyStore } from '../../stores'
+import Taro from '@tarojs/taro'
+import { onMounted } from 'vue'
+
 const userStore = useUserStore()
-const categoryStore = useCategoryStore()
-const recordStore = useRecordStore()
 const familyStore = useFamilyStore()
-
-// 实时同步
-const { isConnected, syncRecordChange } = useRealTimeSync()
-
-// 响应式数据
-const recordForm = ref({
-  type: 'expense',
-  amount: '',
-  categoryId: '',
-  description: '',
-  date: new Date().toISOString().split('T')[0]
-})
-
-const amountFocused = ref(false)
-const saving = ref(false)
-const monthExpense = ref(0)
-const monthIncome = ref(0)
-const recentRecords = ref([])
-
-// 日期选择器范围
-const maxDate = new Date().toISOString().split('T')[0]
-
-// 计算属性
-const currentCategories = computed(() => {
-  return categoryStore.categories.filter(cat => cat.type === recordForm.value.type)
-})
-
-const canSave = computed(() => {
-  return recordForm.value.amount &&
-         parseFloat(recordForm.value.amount) > 0 &&
-         recordForm.value.categoryId
-})
-
-// 方法
-const switchType = (type) => {
-  recordForm.value.type = type
-  recordForm.value.categoryId = '' // 清空分类选择
-  // 重新加载分类
-  loadCategories()
-}
-
-const onAmountInput = (e) => {
-  let value = e.detail.value
-  // 限制小数点后两位
-  if (value.includes('.')) {
-    const parts = value.split('.')
-    if (parts[1] && parts[1].length > 2) {
-      value = parts[0] + '.' + parts[1].substring(0, 2)
-    }
-  }
-  recordForm.value.amount = value
-}
-
-const onRemarkInput = (e) => {
-  recordForm.value.description = e.detail.value
-}
-
-const selectCategory = (category) => {
-  recordForm.value.categoryId = Number(category.id)
-}
-
-const onDateChange = (e) => {
-  console.log('日期选择变化:', e.detail.value)
-  recordForm.value.date = e.detail.value
-  console.log('更新后的日期:', recordForm.value.date)
-}
-
-const saveRecord = async () => {
-  if (!canSave.value || saving.value) return
-
-  // 检查家庭ID
-  if (!familyStore.familyId) {
-    Taro.showToast({
-      title: '请先加入或创建家庭',
-      icon: 'none'
-    })
-    return
-  }
-
-  try {
-    saving.value = true
-
-    // 创建记录数据
-    const recordData = {
-      familyId: familyStore.familyId,
-      type: recordForm.value.type,
-      amount: parseFloat(recordForm.value.amount),
-      categoryId: Number(recordForm.value.categoryId),
-      description: recordForm.value.description,
-      date: recordForm.value.date
-    }
-    
-    // 调试：打印发送的数据
-    console.log('发送记账数据:', {
-      familyId: familyStore.familyId,
-      familyStore: familyStore,
-      recordData: recordData
-    })
-
-    // 调用后端 API 保存记录
-    const success = await recordStore.createRecord(recordData)
-
-    if (success) {
-      // 同步到其他设备
-      syncRecordChange('create', recordData)
-
-      Taro.showToast({
-        title: '保存成功',
-        icon: 'success'
-      })
-
-      // 重置表单
-      resetForm()
-
-      // 刷新数据
-      loadData()
-    } else {
-      throw new Error('保存失败')
-    }
-  } catch (error) {
-    console.error('保存记录错误:', error)
-    Taro.showToast({
-      title: error.message || '保存失败',
-      icon: 'none'
-    })
-  } finally {
-    saving.value = false
-  }
-}
-
-const resetForm = () => {
-  recordForm.value = {
-    type: 'expense',
-    amount: '',
-    categoryId: '',
-    description: '',
-    date: new Date().toISOString().split('T')[0]
-  }
-}
+const {
+  recordForm,
+  amountFocused,
+  saving,
+  monthExpense,
+  monthIncome,
+  recentRecords,
+  loadingData,
+  maxDate,
+  currentCategories,
+  canSave,
+  switchType,
+  onAmountInput,
+  onRemarkInput,
+  selectCategory,
+  onDateChange,
+  resetForm,
+  saveRecord,
+  debouncedSaveRecord,
+  loadData
+} = useRecordForm()
 
 const goToAddCategory = () => {
   Taro.navigateTo({
     url: `/pages/category/add/index?type=${recordForm.value.type}`
   })
 }
-
 const goToLedger = () => {
-  Taro.switchTab({
-    url: '/pages/ledger/index'
-  })
+  Taro.switchTab({ url: '/pages/ledger/index' })
 }
-
 const goToRecordDetail = (recordId) => {
-  Taro.navigateTo({
-    url: `/pages/record/detail/index?id=${recordId}`
-  })
+  Taro.navigateTo({ url: `/pages/record/detail/index?id=${recordId}` })
 }
-
 const goToImport = () => {
-  Taro.navigateTo({
-    url: '/pages/import/index'
-  })
+  Taro.navigateTo({ url: '/pages/import/index' })
 }
 
-// 加载分类
-const loadCategories = async () => {
-  try {
-    await categoryStore.loadCategories(familyStore.familyId)
-  } catch (error) {
-    console.error('加载分类失败:', error)
-  }
-}
-
-// 加载最近记录
-const loadRecentRecords = async () => {
-  try {
-    console.log('开始加载最近记录...')
-    const res = await recordStore.getRecentRecords(10)
-    console.log('loadRecentRecords result:', res)
-    recentRecords.value = res || []
-    console.log('recentRecords.value:', recentRecords.value)
-  } catch (error) {
-    console.error('加载最近记录失败:', error)
-  }
-}
-
-// 加载月统计
-const loadMonthStats = async () => {
-  try {
-    const now = new Date()
-    const startDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-01`
-    const endDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-31`
-    const res = await request.get('/api/report/statistics', {
-      familyId: familyStore.familyId,
-      startDate,
-      endDate
-    })
-    if (res.data) {
-      monthExpense.value = res.data.totalExpense || 0
-      monthIncome.value = res.data.totalIncome || 0
-    }
-  } catch (error) {
-    console.error('加载月统计失败:', error)
-  }
-}
-
-const loadData = async () => {
-  await loadCategories()
-  await loadRecentRecords()
-  await loadMonthStats()
-}
-
-// 生命周期
 onMounted(async () => {
-  // 检查登录状态
   if (!userStore.isLoggedIn) {
-    Taro.reLaunch({
-      url: '/pages/login/index'
-    })
+    Taro.reLaunch({ url: '/pages/login/index' })
     return
   }
-  
-  // 初始化家庭状态
   familyStore.initFamilyState()
-  
-  // 如果没有家庭信息，尝试获取
   if (!familyStore.hasFamily) {
     await familyStore.getFamilyInfo()
   }
-  
   loadData()
 })
 
@@ -466,5 +312,68 @@ Taro.useDidShow(() => {
 
 .index-list-item:last-child {
   border-bottom: none;
+}
+.stats-card-skeleton {
+  display: flex;
+  background: #f2f3f5;
+  border-radius: 24rpx;
+  margin-bottom: 32rpx;
+  padding: 32rpx 24rpx;
+  .stats-item-skeleton {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .stats-label-skeleton {
+      width: 60rpx;
+      height: 20rpx;
+      background: #e0e0e0;
+      border-radius: 8rpx;
+      margin-bottom: 12rpx;
+    }
+    .stats-value-skeleton {
+      width: 80rpx;
+      height: 28rpx;
+      background: #e0e0e0;
+      border-radius: 12rpx;
+    }
+  }
+}
+.recent-records-skeleton {
+  margin-top: 32rpx;
+  .record-item-skeleton {
+    display: flex;
+    align-items: center;
+    padding: 20rpx 0;
+    .record-icon-skeleton {
+      width: 60rpx;
+      height: 60rpx;
+      border-radius: 50%;
+      background: #e0e0e0;
+      margin-right: 20rpx;
+    }
+    .record-info-skeleton {
+      flex: 1;
+      .record-category-skeleton {
+        width: 80rpx;
+        height: 20rpx;
+        background: #e0e0e0;
+        border-radius: 8rpx;
+        margin-bottom: 8rpx;
+      }
+      .record-desc-skeleton {
+        width: 120rpx;
+        height: 16rpx;
+        background: #e0e0e0;
+        border-radius: 8rpx;
+      }
+    }
+    .record-amount-skeleton {
+      width: 60rpx;
+      height: 20rpx;
+      background: #e0e0e0;
+      border-radius: 8rpx;
+    }
+  }
 }
 </style>

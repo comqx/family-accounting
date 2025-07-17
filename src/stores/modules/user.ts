@@ -1,4 +1,16 @@
 // 用户状态管理
+//
+// 负责管理全局用户登录、认证、信息、权限等相关状态，
+// 提供微信登录、用户信息获取与更新、token 刷新、权限校验、登出等核心方法。
+//
+// 依赖 Pinia 状态管理，Taro 本地存储，统一 API 请求工具。
+//
+// 典型调用场景：
+// - 页面初始化时自动恢复登录态
+// - 登录页调用 login 进行微信认证
+// - 个人中心、设置页获取/更新用户信息
+// - 业务操作前校验权限
+// - 退出登录时清理所有本地和全局状态
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -8,21 +20,58 @@ import { AuthAPI, UserAPI } from '../../types/api';
 import request from '../../utils/request';
 import { clearUserData } from '../../utils/storage';
 
+/**
+ * 用户 Pinia Store
+ * @description 管理全局用户认证、信息、权限等状态，支持微信登录、token 刷新、登出、权限校验等。
+ */
 export const useUserStore = defineStore('user', () => {
-  // 状态
-  const user = ref(null);
+  /**
+   * 当前登录用户信息（未登录为 null）
+   * @type {import('../../types/business').User|null}
+   */
+  const user = ref<User | null>(null);
+  /**
+   * 当前用户 token
+   * @type {string}
+   */
   const token = ref('');
+  /**
+   * 是否已登录
+   * @type {boolean}
+   */
   const isLoggedIn = ref(false);
+  /**
+   * 是否处于加载/请求中
+   * @type {boolean}
+   */
   const isLoading = ref(false);
 
-  // 计算属性
+  /**
+   * 当前用户角色
+   * @returns {UserRole}
+   */
   const userRole = computed(() => user.value?.role || UserRole.MEMBER);
+  /**
+   * 是否为管理员
+   */
   const isAdmin = computed(() => userRole.value === UserRole.ADMIN);
+  /**
+   * 是否为普通成员
+   */
   const isMember = computed(() => userRole.value === UserRole.MEMBER);
+  /**
+   * 是否为观察员
+   */
   const isObserver = computed(() => userRole.value === UserRole.OBSERVER);
+  /**
+   * 是否已加入家庭
+   */
   const hasFamily = computed(() => !!user.value?.familyId);
 
-  // 初始化用户状态
+  /**
+   * 初始化用户状态（从本地存储恢复登录态）
+   * 页面/应用启动时调用
+   */
   const initUserState = () => {
     const savedToken = Taro.getStorageSync('token');
     const savedUser = Taro.getStorageSync('userInfo');
@@ -33,12 +82,15 @@ export const useUserStore = defineStore('user', () => {
         user.value = savedUser;
       }
       isLoggedIn.value = true;
-      request.token = savedToken;
+      request.setToken(savedToken); // 修正：通过 setToken 设置
     }
   };
 
-  // 微信登录
-  // 支持外部传入 { code, userInfo }，避免重复调用 Taro.login()
+  /**
+   * 微信登录
+   * @param {object} options - 支持 { code, userInfo }，避免重复调用 Taro.login
+   * @returns {Promise<boolean>} 登录是否成功
+   */
   const login = async (options = {}) => {
     /**
      * @typedef LoginOptions
@@ -59,9 +111,9 @@ export const useUserStore = defineStore('user', () => {
       // 如果外部未提供 code，则自行调用 Taro.login()
       let loginCode = externalCode;
       if (!loginCode) {
-        const loginResult = await Taro.login();
-        if (!loginResult.code) {
-          throw new Error('获取微信登录code失败');
+      const loginResult = await Taro.login();
+      if (!loginResult.code) {
+        throw new Error('获取微信登录code失败');
         }
         loginCode = loginResult.code;
       }
@@ -70,7 +122,7 @@ export const useUserStore = defineStore('user', () => {
       const response = await request.post('/api/auth/wechat-login', {
         code: loginCode,
         userInfo: userInfo
-      });
+      }, undefined);
 
       if (response.data) {
         const { token: newToken, user: userInfo, family } = response.data;
@@ -83,7 +135,7 @@ export const useUserStore = defineStore('user', () => {
         // 只用 Taro API 存储
         Taro.setStorageSync('token', newToken);
         Taro.setStorageSync('userInfo', userInfo);
-        request.token = newToken;
+        request.setToken(newToken); // 修正：通过 setToken 设置
 
         // 如果有家庭信息，触发家庭store更新
         if (family) {
@@ -117,10 +169,13 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  // 获取用户信息
+  /**
+   * 获取用户信息（从后端）
+   * @returns {Promise<boolean>} 是否成功
+   */
   const getUserProfile = async () => {
     try {
-      const response = await request.get('/api/user/profile');
+      const response = await request.get('/api/user/profile', undefined);
       
       if (response.data?.user) {
         user.value = response.data.user;
@@ -135,12 +190,16 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  // 更新用户信息
+  /**
+   * 更新用户信息（昵称、头像等）
+   * @param {object} profileData
+   * @returns {Promise<boolean>} 是否成功
+   */
   const updateProfile = async (profileData) => {
     try {
       isLoading.value = true;
 
-      const response = await request.put('/api/user/profile', profileData);
+      const response = await request.put('/api/user/profile', profileData, undefined);
       
       if (response.data?.user) {
         user.value = response.data.user;
@@ -161,7 +220,10 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  // 获取微信用户信息
+  /**
+   * 获取微信用户信息（弹窗授权）
+   * @returns {Promise<{nickName: string, avatarUrl: string}|null>}
+   */
   const getWechatUserInfo = async () => {
     console.log('[userStore] 准备调用 Taro.getUserProfile')
     try {
@@ -185,7 +247,10 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  // 刷新token
+  /**
+   * 刷新 token（自动续期）
+   * @returns {Promise<boolean>} 是否成功
+   */
   const refreshToken = async () => {
     try {
       const currentToken = Taro.getStorageSync('token');
@@ -195,13 +260,13 @@ export const useUserStore = defineStore('user', () => {
 
       const response = await request.post('/api/auth/refresh', {
         token: currentToken
-      });
+      }, undefined);
 
       if (response.data) {
         const { token: newToken } = response.data;
         token.value = newToken;
         Taro.setStorageSync('token', newToken);
-        request.token = newToken;
+        request.setToken(newToken); // 修正：通过 setToken 设置
         return true;
       }
 
@@ -214,7 +279,10 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  // 检查登录状态
+  /**
+   * 检查登录状态（token 有效性）
+   * @returns {Promise<boolean>} 是否有效
+   */
   const checkLoginStatus = async () => {
     if (!isLoggedIn.value || !token.value) {
       return false;
@@ -230,7 +298,9 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  // 登出
+  /**
+   * 退出登录，清除所有本地和全局状态
+   */
   const logout = () => {
     user.value = null;
     token.value = '';
@@ -238,7 +308,7 @@ export const useUserStore = defineStore('user', () => {
     
     // 清除所有本地数据
     clearUserData();
-    request.clearToken();
+    request.clearToken(); // 修正：通过 clearToken 清除
 
     // 清除其他store的数据
     const { useFamilyStore } = require('./family');
@@ -259,7 +329,11 @@ export const useUserStore = defineStore('user', () => {
     });
   };
 
-  // 检查权限
+  /**
+   * 检查当前用户是否有指定权限
+   * @param {string} permission - 权限标识
+   * @returns {boolean}
+   */
   const hasPermission = (permission) => {
     if (!user.value || !hasFamily.value) {
       return false;
@@ -280,7 +354,10 @@ export const useUserStore = defineStore('user', () => {
     return true;
   };
 
-  // 更新用户角色
+  /**
+   * 更新当前用户角色（本地）
+   * @param {string} newRole
+   */
   const updateUserRole = (newRole) => {
     if (user.value) {
       user.value.role = newRole;
@@ -288,19 +365,29 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  // 设置用户信息（用于其他store调用）
+  /**
+   * 设置用户信息（供其他 store 调用）
+   * @param {object} userInfo
+   */
   const setUser = (userInfo) => {
     user.value = userInfo;
     Taro.setStorageSync('userInfo', userInfo);
   };
 
-  // 兼容页面调用的 getUserInfo
+  /**
+   * 兼容页面调用的 getUserInfo
+   * @returns {Promise<object|null>}
+   */
   const getUserInfo = async () => {
     if (user.value) return user.value
     return null
   }
 
-  // 兼容页面调用的 updateUserInfo
+  /**
+   * 兼容页面调用的 updateUserInfo
+   * @param {object} profileData
+   * @returns {Promise<boolean>}
+   */
   const updateUserInfo = async (profileData) => {
     return await updateProfile(profileData)
   }
@@ -334,4 +421,8 @@ export const useUserStore = defineStore('user', () => {
     getUserInfo,
     updateUserInfo
   };
+}, {
+  persist: {
+    paths: ['user', 'token', 'isLoggedIn']
+  } as any
 });

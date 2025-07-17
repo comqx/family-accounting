@@ -1,4 +1,16 @@
 // 家庭状态管理
+//
+// 负责管理全局家庭信息、成员、预算、权限等相关状态，
+// 提供家庭创建/加入/解散、成员管理、预算设置、权限校验等核心方法。
+//
+// 依赖 Pinia 状态管理，Taro 本地存储，统一 API 请求工具。
+//
+// 典型调用场景：
+// - 用户登录后自动恢复家庭信息
+// - 家庭创建/加入/解散等操作
+// - 家庭成员增删改查、角色变更
+// - 预算设置与获取、分类预算管理
+// - 业务操作前校验家庭和成员权限
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -6,63 +18,105 @@ import Taro from '@tarojs/taro';
 import request from '../../utils/request';
 import { setFamilyInfo, clearFamilyInfo } from '../../utils/storage';
 
+/**
+ * 家庭 Pinia Store
+ * @description 管理全局家庭信息、成员、预算、权限等状态，支持家庭创建/加入/解散、成员管理、预算设置、权限校验等。
+ */
 export const useFamilyStore = defineStore('family', () => {
-  // 状态
+  /**
+   * 当前家庭信息（未加入为 null）
+   * @type {object|null}
+   */
   const family = ref(null);
+  /**
+   * 当前家庭成员列表
+   * @type {Array}
+   */
   const members = ref([]);
+  /**
+   * 是否处于加载/请求中
+   * @type {boolean}
+   */
   const isLoading = ref(false);
 
-  // 计算属性
+  /**
+   * 是否已加入家庭
+   * @returns {boolean}
+   */
   const hasFamily = computed(() => !!family.value);
+  /**
+   * 当前家庭ID
+   * @returns {string}
+   */
   const familyId = computed(() => family.value?.id || '');
+  /**
+   * 当前家庭名称
+   * @returns {string}
+   */
   const familyName = computed(() => family.value?.name || '');
-  
-  // 修复管理员权限检查逻辑
+
+  /**
+   * 是否为当前家庭管理员
+   * @returns {boolean}
+   */
   const isAdmin = computed(() => {
     const { useUserStore } = require('./user');
     const userStore = useUserStore();
-    
     if (!userStore.user || !family.value) {
       return false;
     }
-    
-    // 检查用户是否是家庭管理员
-    // 1. 检查家庭信息中的role字段
+    // 检查家庭信息中的 role 字段
     if (family.value.role === 'owner' || family.value.role === 'admin') {
       return true;
     }
-    
-    // 2. 检查用户ID是否匹配adminId
+    // 检查用户ID是否匹配 adminId
     if (userStore.user.id === family.value.adminId) {
       return true;
     }
-    
-    // 3. 检查家庭成员列表中的角色
+    // 检查成员列表中的角色
     const currentMember = members.value.find(member => member.id === userStore.user.id);
     if (currentMember && (currentMember.role === 'owner' || currentMember.role === 'admin')) {
       return true;
     }
-    
     return false;
   });
 
+  /**
+   * 家庭成员总数
+   * @returns {number}
+   */
   const memberCount = computed(() => members.value.length);
+  /**
+   * 管理员成员对象
+   */
   const adminMember = computed(() => 
     members.value.find(member => member.id === family.value?.adminId)
   );
-
+  /**
+   * 普通成员列表
+   */
   const regularMembers = computed(() => 
     members.value.filter(member => member.role === 'MEMBER')
   );
-
+  /**
+   * 观察员成员列表
+   */
   const observers = computed(() => 
     members.value.filter(member => member.role === 'OBSERVER')
   );
 
-  // 家庭预算相关
+  /**
+   * 家庭预算信息
+   * @type {object|null}
+   */
   const budget = ref(null)
 
-  // 获取家庭预算
+  /**
+   * 获取家庭预算
+   * @param {number} year
+   * @param {number} month
+   * @returns {Promise<object|null>}
+   */
   const getBudget = async (year = new Date().getFullYear(), month = new Date().getMonth() + 1) => {
     if (!family.value?.id) return null
     try {
@@ -89,7 +143,11 @@ export const useFamilyStore = defineStore('family', () => {
     }
   }
 
-  // 设置家庭预算
+  /**
+   * 设置家庭预算
+   * @param {object} param0
+   * @returns {Promise<boolean>}
+   */
   const setBudget = async ({ year = new Date().getFullYear(), month = new Date().getMonth() + 1, amount, alerts_enabled = true, alert_threshold = 80 }) => {
     if (!family.value?.id) throw new Error('未加入家庭')
     try {
@@ -114,7 +172,12 @@ export const useFamilyStore = defineStore('family', () => {
     }
   }
 
-  // 获取分类预算
+  /**
+   * 获取分类预算
+   * @param {number} year
+   * @param {number} month
+   * @returns {Promise<Array>}
+   */
   const getCategoryBudgets = async (year = new Date().getFullYear(), month = new Date().getMonth() + 1) => {
     if (!family.value?.id) return []
     try {
@@ -141,7 +204,11 @@ export const useFamilyStore = defineStore('family', () => {
     }
   }
 
-  // 设置分类预算
+  /**
+   * 设置分类预算
+   * @param {object} param0
+   * @returns {Promise<boolean>}
+   */
   const setCategoryBudget = async ({ category_id, year = new Date().getFullYear(), month = new Date().getMonth() + 1, amount }) => {
     if (!family.value?.id) throw new Error('未加入家庭')
     try {
@@ -164,7 +231,10 @@ export const useFamilyStore = defineStore('family', () => {
     }
   }
 
-  // 获取预算历史
+  /**
+   * 获取预算历史
+   * @returns {Promise<Array>}
+   */
   const getBudgetHistory = async () => {
     if (!family.value?.id) return []
     try {
@@ -182,7 +252,9 @@ export const useFamilyStore = defineStore('family', () => {
     }
   }
 
-  // 初始化家庭状态
+  /**
+   * 初始化家庭状态（从本地存储恢复）
+   */
   const initFamilyState = () => {
     const { getFamilyInfo } = require('../../utils/storage');
     const savedFamily = getFamilyInfo();
@@ -193,7 +265,11 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 创建家庭
+  /**
+   * 创建家庭
+   * @param {object} familyData
+   * @returns {Promise<boolean>}
+   */
   const createFamily = async (familyData) => {
     console.log('[FamilyStore] createFamily called', familyData)
     try {
@@ -235,7 +311,11 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 加入家庭
+  /**
+   * 加入家庭
+   * @param {string} inviteCode
+   * @returns {Promise<boolean>}
+   */
   const joinFamily = async (inviteCode) => {
     try {
       isLoading.value = true;
@@ -278,7 +358,10 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 获取家庭信息
+  /**
+   * 获取家庭信息（从后端）
+   * @returns {Promise<boolean>}
+   */
   const getFamilyInfo = async () => {
     try {
       const response = await request.get('/api/family/list');
@@ -296,7 +379,11 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 更新家庭信息
+  /**
+   * 更新家庭信息
+   * @param {object} familyData
+   * @returns {Promise<boolean>}
+   */
   const updateFamily = async (familyData) => {
     try {
       isLoading.value = true;
@@ -328,7 +415,10 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 获取家庭成员
+  /**
+   * 加载家庭成员列表
+   * @returns {Promise<boolean>}
+   */
   const loadMembers = async () => {
     try {
       const response = await request.get(`/api/family/${family.value?.id}/members`);
@@ -345,7 +435,10 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 生成邀请码
+  /**
+   * 生成家庭邀请码
+   * @returns {Promise<string>}
+   */
   const generateInviteCode = async () => {
     try {
       const response = await request.post(`/api/family/${family.value?.id}/invite`);
@@ -361,7 +454,12 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 邀请成员
+  /**
+   * 邀请成员加入家庭
+   * @param {string} userId
+   * @param {string} role
+   * @returns {Promise<boolean>}
+   */
   const inviteMember = async (userId, role = 'MEMBER') => {
     try {
       const response = await request.post(`/api/family/${family.value?.id}/invite`, {
@@ -388,7 +486,11 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 移除成员
+  /**
+   * 移除家庭成员
+   * @param {string} userId
+   * @returns {Promise<boolean>}
+   */
   const removeMember = async (userId) => {
     try {
       const response = await request.delete(`/api/family/${family.value?.id}/members/${userId}`);
@@ -415,7 +517,12 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 更新成员角色
+  /**
+   * 更新成员角色
+   * @param {string} userId
+   * @param {string} role
+   * @returns {Promise<boolean>}
+   */
   const updateMemberRole = async (userId, role) => {
     try {
       const response = await request.put(`/api/family/${family.value?.id}/members/${userId}/role`, {
@@ -444,7 +551,10 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 离开家庭
+  /**
+   * 退出家庭
+   * @returns {Promise<boolean>}
+   */
   const leaveFamily = async () => {
     try {
       const response = await request.post(`/api/family/${family.value?.id}/leave`);
@@ -483,7 +593,10 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 解散家庭
+  /**
+   * 解散家庭
+   * @returns {Promise<boolean>}
+   */
   const dissolveFamily = async () => {
     try {
       const response = await request.delete(`/api/family/${family.value?.id}`);
@@ -522,13 +635,21 @@ export const useFamilyStore = defineStore('family', () => {
     }
   };
 
-  // 设置家庭信息（用于其他store调用）
+  /**
+   * 设置家庭信息（供其他 store 调用）
+   * @param {object} familyInfo
+   */
   const setFamily = (familyInfo) => {
     family.value = familyInfo;
     setFamilyInfo(familyInfo);
   };
 
-  // 检查成员权限
+  /**
+   * 检查成员权限
+   * @param {string} userId
+   * @param {string} permission
+   * @returns {boolean}
+   */
   const checkMemberPermission = (userId, permission) => {
     if (!family.value || !members.value.length) {
       return false;
@@ -553,7 +674,9 @@ export const useFamilyStore = defineStore('family', () => {
     return true;
   };
 
-  // 重置状态
+  /**
+   * 重置家庭状态
+   */
   const $reset = () => {
     family.value = null;
     members.value = [];
@@ -599,4 +722,8 @@ export const useFamilyStore = defineStore('family', () => {
     generateInvite: generateInviteCode,
     $reset
   };
+}, {
+  persist: {
+    paths: ['family']
+  }
 }); 

@@ -1,8 +1,10 @@
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPersistedstate from 'pinia-plugin-persistedstate'
 import { handleGlobalError, setupGlobalErrorHandler } from './utils/error-handler'
 import './app.scss'
+import i18n from './i18n'
 
 const App = createApp({
   onLaunch (options) {
@@ -27,6 +29,7 @@ const App = createApp({
   }
 })
 
-App.use(createPinia())
+App.use(createPinia().use(piniaPersistedstate))
+App.use(i18n)
 
 export default App

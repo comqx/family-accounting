@@ -2,40 +2,36 @@
   <view class="settings-page">
     <!-- 个人设置 -->
     <view class="settings-section">
-      <text class="section-title">个人设置</text>
+      <text class="section-title">{{ $t('settings.title') }}</text>
 
       <view class="settings-group">
-        <view class="setting-item" @tap="editProfile">
+        <view class="setting-item" @tap="editProfile" role="button" aria-label="{{ $t('settings.profile') }}">
           <view class="setting-info">
-            <text class="setting-label">个人资料</text>
+            <text class="setting-label">{{ $t('settings.profile') }}</text>
             <text class="setting-desc">修改昵称和头像</text>
           </view>
           <text class="setting-arrow">></text>
         </view>
 
-        <view class="setting-item">
+        <view class="setting-item" @tap="showThemeModal = true" role="button" aria-label="{{ $t('settings.theme') }}">
           <view class="setting-info">
-            <text class="setting-label">主题模式</text>
+            <text class="setting-label">{{ $t('settings.theme') }}</text>
             <text class="setting-desc">{{ themeText }}</text>
           </view>
-          <switch
-            :checked="isDarkMode"
-            @change="onThemeChange"
-            color="#1296db"
-          />
+          <text class="setting-arrow">></text>
         </view>
 
-        <view class="setting-item" @tap="showLanguageSelector">
+        <view class="setting-item" @tap="showLanguageSelector" role="button" aria-label="{{ $t('settings.language') }}">
           <view class="setting-info">
-            <text class="setting-label">语言</text>
+            <text class="setting-label">{{ $t('settings.language') }}</text>
             <text class="setting-desc">{{ languageText }}</text>
           </view>
           <text class="setting-arrow">></text>
         </view>
 
-        <view class="setting-item" @tap="showCurrencySelector">
+        <view class="setting-item" @tap="showCurrencySelector" role="button" aria-label="{{ $t('settings.currency') }}">
           <view class="setting-info">
-            <text class="setting-label">货币单位</text>
+            <text class="setting-label">{{ $t('settings.currency') }}</text>
             <text class="setting-desc">{{ currencyText }}</text>
           </view>
           <text class="setting-arrow">></text>
@@ -45,7 +41,7 @@
 
     <!-- 通知设置 -->
     <view class="settings-section">
-      <text class="section-title">通知设置</text>
+      <text class="section-title">{{ $t('settings.notification') }}</text>
 
       <view class="settings-group">
         <view class="setting-item">
@@ -180,10 +176,10 @@
     </view>
 
     <!-- 语言选择弹窗 -->
-    <view v-if="showLanguageModal" class="modal-overlay" @tap="closeLanguageModal">
+    <view v-if="showLanguageModal" class="modal-overlay" @tap="closeLanguageModal" aria-modal="true" aria-label="{{ $t('settings.selectLanguage') }}">
       <view class="modal-content" @tap.stop>
         <view class="modal-header">
-          <text class="modal-title">选择语言</text>
+          <text class="modal-title">{{ $t('settings.selectLanguage') }}</text>
         </view>
         <view class="modal-body">
           <view
@@ -192,6 +188,9 @@
             class="option-item"
             :class="{ active: currentLanguage === lang.value }"
             @tap="selectLanguage(lang.value)"
+            role="option"
+            :aria-selected="currentLanguage === lang.value"
+            :aria-label="lang.label"
           >
             <text class="option-text">{{ lang.label }}</text>
             <text v-if="currentLanguage === lang.value" class="check-icon">✓</text>
@@ -201,10 +200,10 @@
     </view>
 
     <!-- 货币选择弹窗 -->
-    <view v-if="showCurrencyModal" class="modal-overlay" @tap="closeCurrencyModal">
+    <view v-if="showCurrencyModal" class="modal-overlay" @tap="closeCurrencyModal" aria-modal="true" aria-label="{{ $t('settings.selectCurrency') }}">
       <view class="modal-content" @tap.stop>
         <view class="modal-header">
-          <text class="modal-title">选择货币</text>
+          <text class="modal-title">{{ $t('settings.selectCurrency') }}</text>
         </view>
         <view class="modal-body">
           <view
@@ -213,9 +212,36 @@
             class="option-item"
             :class="{ active: currentCurrency === currency.value }"
             @tap="selectCurrency(currency.value)"
+            role="option"
+            :aria-selected="currentCurrency === currency.value"
+            :aria-label="currency.label"
           >
             <text class="option-text">{{ currency.label }}</text>
             <text v-if="currentCurrency === currency.value" class="check-icon">✓</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 主题选择弹窗 -->
+    <view v-if="showThemeModal" class="modal-overlay" @tap="showThemeModal = false" aria-modal="true" aria-label="{{ $t('settings.selectTheme') }}">
+      <view class="modal-content" @tap.stop>
+        <view class="modal-header">
+          <text class="modal-title">{{ $t('settings.selectTheme') }}</text>
+        </view>
+        <view class="modal-body">
+          <view
+            v-for="theme in themeOptions"
+            :key="theme.value"
+            class="option-item"
+            :class="{ active: currentTheme === theme.value }"
+            @tap="selectTheme(theme.value)"
+            role="option"
+            :aria-selected="currentTheme === theme.value"
+            :aria-label="theme.label"
+          >
+            <text class="option-text">{{ theme.label }}</text>
+            <text v-if="currentTheme === theme.value" class="check-icon">✓</text>
           </view>
         </view>
       </view>
@@ -235,6 +261,7 @@ const appStore = useAppStore()
 // 响应式数据
 const showLanguageModal = ref(false)
 const showCurrencyModal = ref(false)
+const showThemeModal = ref(false)
 
 const notifications = ref({
   recordChanges: true,
@@ -264,11 +291,20 @@ const currencyOptions = [
   { label: '日元 (¥)', value: 'JPY' }
 ]
 
+const themeOptions = [
+  { label: '自动（跟随系统）', value: 'auto' },
+  { label: '浅色模式', value: 'light' },
+  { label: '深色模式', value: 'dark' }
+]
+
+const currentTheme = computed(() => appStore.settings.theme || 'light')
+
 // 计算属性
 const isDarkMode = computed(() => appStore.isDarkMode)
 
 const themeText = computed(() => {
-  return isDarkMode.value ? '深色模式' : '浅色模式'
+  const t = themeOptions.find(t => t.value === currentTheme.value)
+  return t?.label || '浅色模式'
 })
 
 const languageText = computed(() => {
@@ -405,6 +441,12 @@ const showPrivacyPolicy = () => {
 
 const showUserAgreement = () => {
   appStore.showToast('功能开发中', 'none')
+}
+
+const selectTheme = (theme) => {
+  appStore.setTheme(theme)
+  showThemeModal.value = false
+  appStore.showToast('主题设置已保存', 'success')
 }
 
 // 检查用户状态

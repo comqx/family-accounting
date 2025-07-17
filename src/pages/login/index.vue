@@ -150,40 +150,40 @@ const handleWechatLogin = async () => {
     if (!loginResult.code) throw new Error('获取微信登录code失败')
     const success = await userStore.login({ code: loginResult.code })
     if (!success) throw new Error('登录失败')
-    // 登录成功后，检查家庭状态
-    const { useFamilyStore } = await import('../../stores/modules/family')
-    const familyStore = useFamilyStore()
+      // 登录成功后，检查家庭状态
+      const { useFamilyStore } = await import('../../stores/modules/family')
+      const familyStore = useFamilyStore()
     console.log('[login] 登录成功，检查家庭状态', userStore.user, familyStore.hasFamily)
-    
-    // 检查登录响应中是否直接包含家庭信息
-    if (userStore.user?.familyId || familyStore.hasFamily) {
-      // 有家庭，直接进入主页
-      Taro.reLaunch({
-        url: '/pages/index/index'
-      })
-      return
-    }
-    
-    // 如果用户有家庭ID但没有家庭信息，尝试获取家庭信息
-    if (userStore.user?.familyId) {
-      try {
-        const hasFamily = await familyStore.getFamilyInfo()
-        if (hasFamily) {
-          // 有家庭，直接进入主页
-          Taro.reLaunch({
-            url: '/pages/index/index'
-          })
-          return
-        }
-      } catch (error) {
-        console.error('获取家庭信息失败:', error)
+      
+      // 检查登录响应中是否直接包含家庭信息
+      if (userStore.user?.familyId || familyStore.hasFamily) {
+        // 有家庭，直接进入主页
+        Taro.reLaunch({
+          url: '/pages/index/index'
+        })
+        return
       }
-    }
-    
-    // 没有家庭，引导创建或加入家庭
-    Taro.reLaunch({
-      url: '/pages/family/create/index'
-    })
+      
+      // 如果用户有家庭ID但没有家庭信息，尝试获取家庭信息
+      if (userStore.user?.familyId) {
+        try {
+          const hasFamily = await familyStore.getFamilyInfo()
+          if (hasFamily) {
+            // 有家庭，直接进入主页
+            Taro.reLaunch({
+              url: '/pages/index/index'
+            })
+            return
+          }
+        } catch (error) {
+          console.error('获取家庭信息失败:', error)
+        }
+      }
+      
+      // 没有家庭，引导创建或加入家庭
+      Taro.reLaunch({
+        url: '/pages/family/create/index'
+      })
   } catch (error) {
     console.error('Login error:', error)
     appStore.showToast(error.message || '登录失败，请重试', 'none')

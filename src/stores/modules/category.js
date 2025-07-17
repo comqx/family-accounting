@@ -249,4 +249,8 @@ export const useCategoryStore = defineStore('category', () => {
     searchCategories,
     $reset
   };
+}, {
+  persist: {
+    paths: ['categories']
+  }
 }); 

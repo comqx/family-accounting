@@ -31,11 +31,7 @@
 
     <!-- 分摊列表 -->
     <view class="split-list">
-      <view v-if="filteredSplits.length === 0" class="empty-state">
-        <view class="empty-icon">💰</view>
-        <text class="empty-text">暂无分摊记录</text>
-        <text class="empty-desc">创建记录时可以选择分摊给家庭成员</text>
-      </view>
+      <EmptyState v-if="filteredSplits.length === 0" desc="暂无分摊记录，创建记录时可以选择分摊给家庭成员" icon="💰" />
 
       <view v-else>
         <view 
@@ -79,29 +75,24 @@
           </view>
 
           <view v-if="split.status === 'pending' && hasUserParticipant(split)" class="split-actions">
-            <button 
+            <ActionButton 
               class="action-btn confirm" 
               @tap.stop="confirmSplit(split.id)"
               :disabled="isProcessing"
-            >
-              确认
-            </button>
-            <button 
+            >确认</ActionButton>
+            <ActionButton 
               class="action-btn decline" 
               @tap.stop="declineSplit(split.id)"
               :disabled="isProcessing"
-            >
-              拒绝
-            </button>
+              type="warn"
+            >拒绝</ActionButton>
           </view>
         </view>
       </view>
     </view>
 
     <!-- 创建分摊按钮 -->
-    <view class="create-btn" @tap="goToCreateSplit">
-      <text class="create-icon">+</text>
-    </view>
+    <ActionButton class="create-btn" @tap="goToCreateSplit" icon="+" aria-label="创建分摊" />
   </view>
 </template>
 
@@ -111,6 +102,9 @@ import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../stores'
 import { formatAmount, formatRelativeTime } from '../../utils/format'
 import splitService from '../../services/split'
+// 新增通用组件
+import EmptyState from '@/components/common/EmptyState.vue'
+import ActionButton from '@/components/common/ActionButton.vue'
 
 // Store
 const userStore = useUserStore()

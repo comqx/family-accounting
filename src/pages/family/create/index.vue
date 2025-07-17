@@ -72,7 +72,7 @@
         <button
           class="family-btn"
           :class="{ 'family-btn--disabled': !canCreate }"
-          @tap="canCreate ? handleCreateFamily() : null"
+          @tap="debouncedHandleCreateFamily"
           :loading="isCreating"
           :disabled="!canCreate || isCreating"
         >
@@ -100,6 +100,7 @@
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useFamilyStore, useAppStore } from '../../../stores'
+import { debounce } from '../../../utils/performance/debounce'
 
 // Store
 const userStore = useUserStore()
@@ -142,6 +143,8 @@ const handleCreateFamily = async () => {
     isCreating.value = false
   }
 }
+
+const debouncedHandleCreateFamily = debounce(handleCreateFamily, 800)
 
 const goToJoinFamily = () => {
   Taro.navigateTo({
