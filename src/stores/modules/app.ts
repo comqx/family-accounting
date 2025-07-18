@@ -1,362 +1,225 @@
 // 应用状态管理
 
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import Taro from '@tarojs/taro';
-import { getAppSettings, setAppSettings } from '../../utils/storage';
-import i18n from '../../i18n'
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import Taro from '@tarojs/taro'
+
+export interface AppSettings {
+  theme: 'light' | 'dark' | 'auto'
+  language: 'zh-CN' | 'en-US'
+  currency: 'CNY' | 'USD' | 'EUR'
+  notifications: {
+    newRecord: boolean
+    budgetAlert: boolean
+    familyInvite: boolean
+    syncComplete: boolean
+  }
+  privacy: {
+    dataSync: boolean
+    analytics: boolean
+    crashReport: boolean
+  }
+}
 
 export const useAppStore = defineStore('app', () => {
   // 状态
-  const settings = ref({
-    theme: 'light',
+  const settings = ref<AppSettings>({
+    theme: 'auto',
     language: 'zh-CN',
     currency: 'CNY',
     notifications: {
-      recordChanges: true,
-      budgetAlerts: true,
-      memberActivities: true
+      newRecord: true,
+      budgetAlert: true,
+      familyInvite: true,
+      syncComplete: false
     },
     privacy: {
-      showAmountInList: true,
-      requirePasswordForReports: false
+      dataSync: true,
+      analytics: true,
+      crashReport: true
     }
-  });
+  })
 
-  const systemInfo = ref(null);
-  const networkType = ref('unknown');
-  const isOnline = ref(true);
-  const loading = ref(false);
-  const globalError = ref('');
+  const isLoading = ref(false)
+  const isConnected = ref(true)
 
   // 计算属性
-  const isDarkMode = computed(() => settings.value.theme === 'dark');
-  const isIOS = computed(() => systemInfo.value?.platform === 'ios');
-  const isAndroid = computed(() => systemInfo.value?.platform === 'android');
-  const statusBarHeight = computed(() => systemInfo.value?.statusBarHeight || 0);
-  const safeAreaTop = computed(() => systemInfo.value?.safeArea?.top || 0);
-  const safeAreaBottom = computed(() => systemInfo.value?.safeArea?.bottom || 0);
-
-  // 初始化应用设置
-  const initAppSettings = () => {
-    // 加载保存的设置
-    const savedSettings = getAppSettings();
-    if (savedSettings) {
-      settings.value = {
-        ...settings.value,
-        ...savedSettings,
-        theme: savedSettings.theme,
-        language: savedSettings.language
-      };
+  const isDarkMode = computed(() => {
+    if (settings.value.theme === 'auto') {
+      // 自动跟随系统主题
+      return Taro.getSystemInfoSync().theme === 'dark'
     }
+    return settings.value.theme === 'dark'
+  })
 
-    // 获取系统信息
-    getSystemInfo();
+  const currentTheme = computed(() => {
+    return isDarkMode.value ? 'dark' : 'light'
+  })
 
-    // 监听网络状态
-    watchNetworkStatus();
+  // 方法
+  const setTheme = (theme: 'light' | 'dark' | 'auto') => {
+    settings.value.theme = theme
+    applyTheme()
+    saveSettings()
+  }
 
-    // 设置主题
-    setTheme(settings.value.theme);
-  };
-
-  // 获取系统信息
-  const getSystemInfo = () => {
-    try {
-      const info = Taro.getSystemInfoSync();
-      systemInfo.value = info;
-      
-      // 根据系统主题设置默认主题
-      if (settings.value.theme === 'auto') {
-        const isDark = info.theme === 'dark';
-        setTheme(isDark ? 'dark' : 'light');
-      }
-    } catch (error) {
-      console.error('Get system info error:', error);
-    }
-  };
-
-  // 监听网络状态
-  const watchNetworkStatus = () => {
-    // 获取当前网络状态
-    Taro.getNetworkType({
-      success: (res) => {
-        networkType.value = res.networkType;
-        isOnline.value = res.networkType !== 'none';
-      }
-    });
-
-    // 监听网络状态变化
-    Taro.onNetworkStatusChange((res) => {
-      networkType.value = res.networkType;
-      isOnline.value = res.isConnected;
-      
-      if (!res.isConnected) {
-        showToast('网络连接已断开', 'none');
-      } else {
-        showToast('网络连接已恢复', 'success');
-      }
-    });
-  };
-
-  // 更新设置
-  const updateSettings = (newSettings) => {
-    settings.value = { ...settings.value, ...newSettings };
-    setAppSettings(settings.value);
-
-    // 如果更新了主题，立即应用
-    if (newSettings.theme) {
-      setTheme(newSettings.theme);
-    }
-  };
-
-  // 设置主题
-  const setTheme = (theme) => {
-    let actualTheme = theme;
+  const applyTheme = () => {
+    // 设置 data-theme 属性
+    const theme = currentTheme.value
+    document?.documentElement?.setAttribute('data-theme', theme)
     
-    if (theme === 'auto') {
-      // 根据系统主题自动设置
-      actualTheme = systemInfo.value?.theme === 'dark' ? 'dark' : 'light';
+    // 设置导航栏样式
+    Taro.setNavigationBarColor({
+      frontColor: theme === 'dark' ? '#ffffff' : '#000000',
+      backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff'
+    })
+  }
+
+  const setLanguage = (language: 'zh-CN' | 'en-US') => {
+    settings.value.language = language
+    saveSettings()
+  }
+
+  const setCurrency = (currency: 'CNY' | 'USD' | 'EUR') => {
+    settings.value.currency = currency
+    saveSettings()
+  }
+
+  const updateSettings = (newSettings: Partial<AppSettings>) => {
+    settings.value = { ...settings.value, ...newSettings }
+    saveSettings()
+  }
+
+  const saveSettings = () => {
+    try {
+      Taro.setStorageSync('app_settings', settings.value)
+    } catch (error) {
+      console.error('保存设置失败:', error)
     }
+  }
 
-    // 设置页面样式
-    if (actualTheme === 'dark') {
-      Taro.setNavigationBarColor({
-        frontColor: '#ffffff',
-        backgroundColor: '#1f1f1f'
-      });
-    } else {
-      Taro.setNavigationBarColor({
-        frontColor: '#000000',
-        backgroundColor: '#ffffff'
-      });
+  const loadSettings = () => {
+    try {
+      const saved = Taro.getStorageSync('app_settings')
+      if (saved) {
+        settings.value = { ...settings.value, ...saved }
+      }
+      applyTheme()
+    } catch (error) {
+      console.error('加载设置失败:', error)
     }
+  }
 
-    // 更新CSS变量
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', actualTheme);
-    }
-  };
-
-  // 设置语言
-  const setLanguage = (language) => {
-    updateSettings({ language });
-    if (i18n.global.locale) {
-      i18n.global.locale.value = language;
-    }
-  };
-
-  // 设置货币
-  const setCurrency = (currency) => {
-    updateSettings({ currency });
-  };
-
-  // 显示加载状态
-  const showLoading = (title = '加载中...') => {
-    loading.value = true;
-    Taro.showLoading({ title });
-  };
-
-  // 隐藏加载状态
-  const hideLoading = () => {
-    loading.value = false;
-    Taro.hideLoading();
-  };
-
-  // 显示提示
-  const showToast = (title, icon = 'none', duration = 2000) => {
+  const showToast = (title: string, icon: 'success' | 'error' | 'loading' | 'none' = 'none', duration = 2000) => {
     Taro.showToast({
       title,
       icon,
       duration
-    });
-  };
+    })
+  }
 
-  // 显示模态框
-  const showModal = (options) => {
+  const showLoading = (title: string = '加载中...') => {
+    isLoading.value = true
+    Taro.showLoading({
+      title,
+      mask: true
+    })
+  }
+
+  const hideLoading = () => {
+    isLoading.value = false
+    Taro.hideLoading()
+  }
+
+  const showModal = async (options: { title?: string; content: string; showCancel?: boolean }): Promise<boolean> => {
     return new Promise((resolve) => {
       Taro.showModal({
         title: options.title || '提示',
         content: options.content,
         showCancel: options.showCancel !== false,
-        cancelText: options.cancelText || '取消',
-        confirmText: options.confirmText || '确定',
         success: (res) => {
-          resolve(res.confirm);
+          resolve(res.confirm)
         },
         fail: () => {
-          resolve(false);
+          resolve(false)
         }
-      });
-    });
-  };
+      })
+    })
+  }
 
-  // 显示操作菜单
-  const showActionSheet = (itemList) => {
-    return new Promise((resolve, reject) => {
-      Taro.showActionSheet({
-        itemList,
-        success: (res) => {
-          resolve(res.tapIndex);
-        },
-        fail: (error) => {
-          reject(error);
-        }
-      });
-    });
-  };
-
-  // 设置全局错误
-  const setGlobalError = (error) => {
-    globalError.value = error;
-    if (error) {
-      showToast(error, 'none');
-    }
-  };
-
-  // 清除全局错误
-  const clearGlobalError = () => {
-    globalError.value = '';
-  };
-
-  // 检查权限
-  const checkPermission = async (scope) => {
-    try {
-      const result = await Taro.getSetting();
-      return result.authSetting[scope] === true;
-    } catch (error) {
-      console.error('Check permission error:', error);
-      return false;
-    }
-  };
-
-  // 请求权限
-  const requestPermission = async (scope) => {
-    try {
-      await Taro.authorize({ scope });
-      return true;
-    } catch (error) {
-      console.error('Request permission error:', error);
-      return false;
-    }
-  };
-
-  // 打开设置页面
-  const openSetting = () => {
-    return new Promise((resolve) => {
-      Taro.openSetting({
-        success: (_res) => {
-          resolve(true);
-        },
-        fail: () => {
-          resolve(false);
-        }
-      });
-    });
-  };
-
-  // 复制到剪贴板
-  const copyToClipboard = async (text) => {
-    try {
-      await Taro.setClipboardData({ data: text });
-      showToast('已复制到剪贴板', 'success');
-      return true;
-    } catch (error) {
-      console.error('Copy to clipboard error:', error);
-      showToast('复制失败', 'none');
-      return false;
-    }
-  };
-
-  // 分享
-  const share = (options) => {
-    // 这个方法主要用于设置分享信息
-    // 实际分享由页面的onShareAppMessage处理
+  const share = (options: { title: string; path: string; imageUrl?: string }) => {
     return {
-      title: options.title || '家账通 - 智能家庭记账',
-      path: options.path || '/pages/index/index',
-      imageUrl: options.imageUrl || '/assets/images/share.png'
-    };
-  };
+      title: options.title,
+      path: options.path,
+      imageUrl: options.imageUrl
+    }
+  }
 
-  // 预览图片
-  const previewImage = (urls, current) => {
+  const previewImage = (urls: string[], current?: string) => {
     Taro.previewImage({
       urls,
-      current: current || urls[0]
-    });
-  };
+      current
+    })
+  }
 
-  // 保存图片到相册
-  const saveImageToPhotosAlbum = async (filePath) => {
-    try {
-      // 检查权限
-      const hasPermission = await checkPermission('scope.writePhotosAlbum');
-      
-      if (!hasPermission) {
-        const granted = await requestPermission('scope.writePhotosAlbum');
-        if (!granted) {
-          const openSettings = await showModal({
-            content: '需要相册权限才能保存图片，是否去设置？'
-          });
-          
-          if (openSettings) {
-            await openSetting();
-          }
-          return false;
-        }
-      }
+  const setConnectionStatus = (connected: boolean) => {
+    isConnected.value = connected
+  }
 
-      await Taro.saveImageToPhotosAlbum({ filePath });
-      showToast('保存成功', 'success');
-      return true;
-    } catch (error) {
-      console.error('Save image error:', error);
-      showToast('保存失败', 'none');
-      return false;
+  // 初始化
+  const init = () => {
+    loadSettings()
+    
+    // 监听系统主题变化
+    Taro.onThemeChange((res) => {
+      if (settings.value.theme === 'auto') {
+        applyTheme()
     }
-  };
+    })
+  }
 
   return {
     // 状态
     settings,
-    systemInfo,
-    networkType,
-    isOnline,
-    loading,
-    globalError,
+    isLoading,
+    isConnected,
 
     // 计算属性
     isDarkMode,
-    isIOS,
-    isAndroid,
-    statusBarHeight,
-    safeAreaTop,
-    safeAreaBottom,
+    currentTheme,
 
     // 方法
-    initAppSettings,
-    updateSettings,
     setTheme,
     setLanguage,
     setCurrency,
+    updateSettings,
+    showToast,
     showLoading,
     hideLoading,
-    showToast,
     showModal,
-    showActionSheet,
-    setGlobalError,
-    clearGlobalError,
-    checkPermission,
-    requestPermission,
-    openSetting,
-    copyToClipboard,
     share,
     previewImage,
-    saveImageToPhotosAlbum
-  };
+    setConnectionStatus,
+    init
+  }
 }, {
   persist: {
-    paths: ['settings']
-  } as any
-});
+    key: 'app-store',
+    storage: {
+      getItem: (key) => {
+        try {
+          return Taro.getStorageSync(key)
+        } catch {
+          return null
+        }
+      },
+      setItem: (key, value) => {
+        try {
+          Taro.setStorageSync(key, value)
+        } catch {
+          // 忽略存储错误
+        }
+      }
+    }
+  }
+})

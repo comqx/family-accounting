@@ -1,35 +1,15 @@
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import piniaPersistedstate from 'pinia-plugin-persistedstate'
-import { handleGlobalError, setupGlobalErrorHandler } from './utils/error-handler'
 import './app.scss'
 import i18n from './i18n'
 
 const App = createApp({
-  onLaunch (options) {
-    console.log('App onLaunch', options)
-    // 设置全局错误处理
-    setupGlobalErrorHandler()
-  },
-  onShow (options) {
-    console.log('App onShow', options)
-  },
-  onHide () {
-    console.log('App onHide')
-  },
-  onError (error) {
-    handleGlobalError(error)
-  },
-  onPageNotFound (options) {
-    console.log('App onPageNotFound', options)
-  },
-  onUnhandledRejection (options) {
-    handleGlobalError(options.reason)
-  }
+  onShow (options) {},
+  // 入口组件不需要实现 render 方法，即使实现了也会被 taro 所覆盖
 })
 
-App.use(createPinia().use(piniaPersistedstate))
+App.use(createPinia())
 App.use(i18n)
 
 export default App

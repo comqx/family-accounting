@@ -1,29 +1,104 @@
-$brand: #1296db;
-$danger: #ff4757;
-$success: #2ed573;
-$text-primary: #333;
-$text-secondary: #666;
-$text-tertiary: #999;
-$card-radius: 24rpx;
-$card-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
-
+// 主题变量定义
 :root {
-  --color-bg: #f5f5f5;
-  --color-card: #fff;
-  --color-text-primary: #222;
-  --color-text-secondary: #666;
-  --color-divider: #eee;
-  --color-brand: #1296db;
-  --color-danger: #ff4757;
+  // 浅色主题
+  --color-primary: #f4845f;
+  --color-primary-light: #f7b267;
   --color-success: #2ed573;
+  --color-warning: #ffa502;
+  --color-danger: #ff4757;
+  --color-info: #1296db;
+  
+  --color-bg: #f7f8fa;
+  --color-card: #ffffff;
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-divider: #f0f0f0;
+  --color-border: #e0e0e0;
+  
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-overlay: rgba(0, 0, 0, 0.5);
 }
-[data-theme='dark'] {
-  --color-bg: #18191a;
-  --color-card: #232526;
-  --color-text-primary: #f5f5f5;
-  --color-text-secondary: #aaa;
-  --color-divider: #333;
-  --color-brand: #1296db;
-  --color-danger: #ff4757;
-  --color-success: #2ed573;
+
+// 深色主题
+[data-theme="dark"] {
+  --color-primary: #ff6b6b;
+  --color-primary-light: #ff8e8e;
+  --color-success: #4ecdc4;
+  --color-warning: #fdcb6e;
+  --color-danger: #e17055;
+  --color-info: #74b9ff;
+  
+  --color-bg: #1a1a1a;
+  --color-card: #2d2d2d;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #cccccc;
+  --color-text-tertiary: #999999;
+  --color-divider: #404040;
+  --color-border: #555555;
+  
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-overlay: rgba(0, 0, 0, 0.7);
+}
+
+// 自动跟随系统主题
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-primary: #ff6b6b;
+    --color-primary-light: #ff8e8e;
+    --color-success: #4ecdc4;
+    --color-warning: #fdcb6e;
+    --color-danger: #e17055;
+    --color-info: #74b9ff;
+    
+    --color-bg: #1a1a1a;
+    --color-card: #2d2d2d;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #cccccc;
+    --color-text-tertiary: #999999;
+    --color-divider: #404040;
+    --color-border: #555555;
+    
+    --color-shadow: rgba(0, 0, 0, 0.3);
+    --color-overlay: rgba(0, 0, 0, 0.7);
+  }
+}
+
+// 全局样式
+page {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+// 通用样式类
+.card {
+  background: var(--color-card);
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 12rpx var(--color-shadow);
+  border: 1rpx solid var(--color-border);
+}
+
+.text-primary {
+  color: var(--color-text-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-tertiary {
+  color: var(--color-text-tertiary);
+}
+
+.bg-card {
+  background: var(--color-card);
+}
+
+.bg-primary {
+  background: var(--color-primary);
+}
+
+.border-divider {
+  border-color: var(--color-divider);
 }

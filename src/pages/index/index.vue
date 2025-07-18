@@ -1,28 +1,28 @@
 <template>
-  <view class="record-page">
+  <view class="record-page" role="main" aria-label="家账通首页">
     <!-- 连接状态指示器 -->
-    <view v-if="!isConnected" class="connection-status" aria-live="polite">
+    <view v-if="!isConnected" class="connection-status" aria-live="polite" role="alert">
       <text class="status-text">⚠️ 实时同步已断开</text>
     </view>
 
     <!-- 顶部统计卡片骨架屏 -->
     <view v-if="loadingData" class="stats-card-skeleton" aria-busy="true" aria-label="数据加载中"></view>
     <!-- 顶部统计卡片 -->
-    <view v-else class="stats-card" aria-label="本月统计">
-      <view class="stats-item">
+    <view v-else class="stats-card" role="region" aria-label="本月统计">
+      <view class="stats-item" role="group" aria-label="支出统计">
         <text class="stats-label">{{ $t('index.expense') }}</text>
-        <text class="stats-value expense">{{ formatAmount(monthExpense) }}</text>
+        <text class="stats-value expense" aria-label="本月支出金额">{{ formatAmount(monthExpense) }}</text>
       </view>
-      <view class="stats-divider"></view>
-      <view class="stats-item">
+      <view class="stats-divider" aria-hidden="true"></view>
+      <view class="stats-item" role="group" aria-label="收入统计">
         <text class="stats-label">{{ $t('index.income') }}</text>
-        <text class="stats-value income">{{ formatAmount(monthIncome) }}</text>
+        <text class="stats-value income" aria-label="本月收入金额">{{ formatAmount(monthIncome) }}</text>
       </view>
     </view>
 
     <!-- 快速记账区域 -->
-    <view class="quick-record" aria-label="快速记账">
-      <view class="record-type-tabs" role="tablist">
+    <view class="quick-record" role="form" aria-label="快速记账">
+      <view class="record-type-tabs" role="tablist" aria-label="记录类型选择">
         <view
           class="type-tab"
           :class="{ active: recordForm.type === 'expense' }"
@@ -30,6 +30,7 @@
           role="tab"
           :aria-selected="recordForm.type === 'expense'"
           aria-label="支出"
+          tabindex="0"
         >
           {{ $t('index.expense') }}
         </view>
@@ -40,14 +41,15 @@
           role="tab"
           :aria-selected="recordForm.type === 'income'"
           aria-label="收入"
+          tabindex="0"
         >
           {{ $t('index.income') }}
         </view>
       </view>
 
       <!-- 金额输入 -->
-      <view class="amount-input">
-        <text class="currency-symbol">¥</text>
+      <view class="amount-input" role="group" aria-label="金额输入">
+        <text class="currency-symbol" aria-hidden="true">¥</text>
         <input
           class="amount-value"
           type="digit"
@@ -55,31 +57,34 @@
           @input="onAmountInput"
           placeholder="0.00"
           :focus="amountFocused"
-          aria-label="金额输入"
+          aria-label="金额输入框"
+          aria-describedby="amount-hint"
         />
+        <text id="amount-hint" class="sr-only">请输入记账金额</text>
       </view>
 
       <!-- 分类选择 -->
-      <view class="category-section">
-        <view class="section-title">选择分类</view>
-        <scroll-view class="category-list" scroll-x aria-label="分类列表">
+      <view class="category-section" role="group" aria-label="分类选择">
+        <text class="section-title">选择分类</text>
+        <scroll-view class="category-list" scroll-x aria-label="分类列表" role="listbox">
           <view
             v-for="category in currentCategories"
             :key="category.id"
             class="category-item"
             :class="{ active: recordForm.categoryId === category.id }"
             @tap="throttledSelectCategory(category)"
-            role="button"
-            :aria-pressed="recordForm.categoryId === category.id"
+            role="option"
+            :aria-selected="recordForm.categoryId === category.id"
             :aria-label="category.name"
+            tabindex="0"
           >
-            <view class="category-icon" :style="{ backgroundColor: category.color }">
+            <view class="category-icon" :style="{ backgroundColor: category.color }" aria-hidden="true">
               {{ category.icon }}
             </view>
             <text class="category-name">{{ category.name }}</text>
           </view>
-          <view class="category-item add-category" @tap="goToAddCategory" role="button" aria-label="添加分类">
-            <view class="category-icon">
+          <view class="category-item add-category" @tap="goToAddCategory" role="button" aria-label="添加分类" tabindex="0">
+            <view class="category-icon" aria-hidden="true">
               <text class="add-icon">+</text>
             </view>
             <text class="category-name">{{ $t('index.add') }}</text>
@@ -88,13 +93,13 @@
       </view>
 
       <!-- 备注输入 -->
-      <view class="remark-section">
+      <view class="remark-section" role="group" aria-label="备注输入">
         <input
           class="remark-input"
           :value="recordForm.description"
           @input="onRemarkInput"
-          placeholder="{{ $t('index.remark') }}"
-          aria-label="备注"
+          :placeholder="$t('index.remark')"
+          aria-label="备注输入框"
         />
       </view>
 
@@ -107,33 +112,35 @@
         @change="throttledOnDateChange"
         aria-label="记账日期选择"
       >
-        <view class="date-section">
-          <text class="date-label">记账日期</text>
-          <text class="date-value">{{ formatDate(recordForm.date) }}</text>
-          <text class="arrow">></text>
+        <view class="date-section" role="button" tabindex="0" aria-label="选择记账日期">
+        <text class="date-label">记账日期</text>
+        <text class="date-value">{{ formatDate(recordForm.date) }}</text>
+          <text class="arrow" aria-hidden="true">></text>
           <text style="font-size: 20rpx; color: #999; margin-left: 10rpx;">点击选择</text>
-        </view>
+      </view>
       </picker>
 
       <!-- 保存按钮 -->
-      <view class="save-section">
+      <view class="save-section" role="group" aria-label="保存操作">
         <button
           class="save-btn"
           :class="{ disabled: !canSave }"
           @tap="debouncedSaveRecord"
           :loading="saving"
           :disabled="!canSave || saving"
-          aria-label="保存"
+          aria-label="保存记录"
           :aria-disabled="!canSave || saving"
+          :aria-describedby="!canSave ? 'save-hint' : undefined"
         >
           {{ saving ? $t('index.saving') : $t('index.save') }}
         </button>
+        <text v-if="!canSave" id="save-hint" class="sr-only">请填写完整信息后才能保存</text>
       </view>
     </view>
 
     <!-- 最近记录骨架屏 -->
-    <view v-if="loadingData" class="recent-records-skeleton">
-      <view class="record-item-skeleton" v-for="i in 3" :key="i">
+    <view v-if="loadingData" class="recent-records-skeleton" aria-busy="true" aria-label="最近记录加载中">
+      <view class="record-item-skeleton" v-for="i in 3" :key="i" role="presentation">
         <view class="record-icon-skeleton"></view>
         <view class="record-info-skeleton">
           <view class="record-category-skeleton"></view>
@@ -143,24 +150,27 @@
       </view>
     </view>
     <!-- 最近记录 -->
-    <view v-else class="recent-records">
+    <view v-else class="recent-records" role="region" aria-label="最近记录">
       <view class="section-header">
-        <text class="section-title">最近记录</text>
-        <text class="more-link" @tap="goToLedger">查看更多</text>
+        <text class="section-title">{{ $t('index.recentRecords') }}</text>
+        <text class="more-link" @tap="goToLedger" role="button" tabindex="0" aria-label="查看更多记录">{{ $t('index.moreRecords') }}</text>
       </view>
 
-      <view v-if="recentRecords.length === 0" class="empty-state">
-        <text class="empty-text">暂无记录</text>
+      <view v-if="recentRecords.length === 0" class="empty-state" role="status" aria-label="暂无记录">
+        <text class="empty-text">{{ $t('common.noData') }}</text>
       </view>
 
-      <view v-else class="record-list">
+      <view v-else class="record-list" role="list" aria-label="最近记录列表">
         <view
           v-for="record in recentRecords"
           :key="record.id"
           class="record-item"
           @tap="goToRecordDetail(record.id)"
+          role="listitem"
+          tabindex="0"
+          :aria-label="`${record.categoryName} ${record.type === 'expense' ? '支出' : '收入'} ${formatAmount(record.amount)}`"
         >
-          <view class="record-icon" :style="{ backgroundColor: record.categoryColor }">
+          <view class="record-icon" :style="{ backgroundColor: record.categoryColor }" aria-hidden="true">
             {{ record.categoryIcon }}
           </view>
           <view class="record-info">
@@ -181,12 +191,10 @@
     </view>
 
     <!-- 智能导入按钮 -->
-    <view class="smart-import-btn" @tap="goToImport">
-      <view class="import-icon">📷</view>
-      <text class="import-text">智能导入</text>
+    <view class="smart-import-btn" @tap="goToImport" role="button" tabindex="0" aria-label="智能导入账单">
+      <view class="import-icon" aria-hidden="true">📷</view>
+      <text class="import-text">{{ $t('index.smartImport') }}</text>
     </view>
-
-
   </view>
 </template>
 
@@ -243,7 +251,7 @@ const goToRecordDetail = (recordId) => {
 }
 const goToImport = () => {
   Taro.navigateTo({ url: '/pages/import/index' })
-}
+  }
 
 onMounted(async () => {
   if (!userStore.isLoggedIn) {
@@ -377,5 +385,16 @@ Taro.useDidShow(() => {
       border-radius: 8rpx;
     }
   }
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 </style>

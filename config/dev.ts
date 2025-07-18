@@ -5,6 +5,11 @@ export default {
     quiet: false,
     stats: true
   },
-  mini: {},
+  mini: {
+    esnextModules: [
+      'taro-virtual-list',
+      'taro-echarts'
+    ]
+  } as any,
   h5: {}
 } satisfies UserConfigExport<'webpack5'>

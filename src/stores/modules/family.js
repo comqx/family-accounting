@@ -54,7 +54,7 @@ export const useFamilyStore = defineStore('family', () => {
    * @returns {string}
    */
   const familyName = computed(() => family.value?.name || '');
-
+  
   /**
    * 是否为当前家庭管理员
    * @returns {boolean}
