@@ -96,7 +96,7 @@
       <view v-if="analysisView === 'chart'" class="chart-view">
           <Suspense>
             <template #default>
-              <AsyncEChart v-if="categoryAnalysis.length > 0" :option="pieOption" style="width:100%;height:400rpx" />
+              <async-e-chart v-if="categoryAnalysis.length > 0" :option="pieOption" style="width:100%;height:400rpx" />
               <view v-else class="chart-placeholder">
             <view class="chart-icon">📊</view>
                 <text class="chart-text">暂无分类数据</text>
@@ -180,7 +180,7 @@
       <view class="trend-chart">
           <Suspense>
             <template #default>
-              <AsyncEChart v-if="trendInsights.values && trendInsights.values.length > 0" :option="trendOption" style="width:100%;height:400rpx" />
+              <async-e-chart v-if="trendInsights.values && trendInsights.values.length > 0" :option="trendOption" style="width:100%;height:400rpx" />
               <view v-else class="chart-placeholder">
           <view class="chart-icon">📈</view>
                 <text class="chart-text">暂无趋势数据</text>

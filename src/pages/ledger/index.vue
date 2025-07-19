@@ -47,8 +47,8 @@
 
     <!-- 记录列表 -->
     <view class="records-section">
-      <Skeleton v-if="loadingMore && flatRecords.length === 0" :rows="6" />
-      <EmptyState v-else-if="flatRecords.length === 0" desc="暂无记录，点击下方“+”按钮开始记账" icon="📝" />
+      <skeleton v-if="loadingMore && flatRecords.length === 0" :rows="6" />
+      <empty-state v-else-if="flatRecords.length === 0" desc="暂无记录，点击下方“+”按钮开始记账" icon="📝" />
       <virtual-list
         v-else
         :height="800"
@@ -65,7 +65,7 @@
     </view>
 
     <!-- 添加按钮 -->
-    <ActionButton class="add-btn" @tap="goToAddRecord" icon="+" aria-label="新增记账" />
+    <action-button class="add-btn" @tap="goToAddRecord" icon="+" aria-label="新增记账" />
 
 
 

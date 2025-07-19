@@ -1,7 +1,7 @@
 <template>
   <view class="category-picker" :class="{ horizontal }">
     <scroll-view v-if="horizontal" class="category-list" scroll-x aria-label="分类列表">
-      <CategoryCard
+      <category-card
         v-for="cat in categories"
         :key="cat.id"
         :category="cat"
@@ -15,7 +15,7 @@
       </view>
     </scroll-view>
     <view v-else class="category-list-vertical">
-      <CategoryCard
+      <category-card
         v-for="cat in categories"
         :key="cat.id"
         :category="cat"

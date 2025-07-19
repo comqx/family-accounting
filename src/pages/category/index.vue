@@ -2,7 +2,7 @@
   <view class="category-page">
     <view class="section">
       <view class="section-title">支出分类</view>
-      <EmptyState v-if="expenseCategories.length === 0" desc="暂无支出分类" icon="📂" />
+      <empty-state v-if="expenseCategories.length === 0" desc="暂无支出分类" icon="📂" />
       <view v-for="cat in expenseCategories" :key="cat.id" class="category-card">
         <view class="category-info">
           <view class="category-icon" :style="{ backgroundColor: cat.color }">{{ cat.icon || '📂' }}</view>
@@ -12,14 +12,14 @@
           </view>
         </view>
         <view class="category-actions">
-          <ActionButton size="mini" @tap="editCategory(cat)">编辑</ActionButton>
-          <ActionButton size="mini" type="warn" @tap="deleteCategory(cat)">删除</ActionButton>
+          <action-button size="mini" @tap="editCategory(cat)">编辑</action-button>
+          <action-button size="mini" type="warn" @tap="deleteCategory(cat)">删除</action-button>
         </view>
       </view>
     </view>
     <view class="section">
       <view class="section-title">收入分类</view>
-      <EmptyState v-if="incomeCategories.length === 0" desc="暂无收入分类" icon="📂" />
+      <empty-state v-if="incomeCategories.length === 0" desc="暂无收入分类" icon="📂" />
       <view v-for="cat in incomeCategories" :key="cat.id" class="category-card">
         <view class="category-info">
           <view class="category-icon" :style="{ backgroundColor: cat.color }">{{ cat.icon || '📂' }}</view>
@@ -29,13 +29,13 @@
           </view>
         </view>
         <view class="category-actions">
-          <ActionButton size="mini" @tap="editCategory(cat)">编辑</ActionButton>
-          <ActionButton size="mini" type="warn" @tap="deleteCategory(cat)">删除</ActionButton>
+          <action-button size="mini" @tap="editCategory(cat)">编辑</action-button>
+          <action-button size="mini" type="warn" @tap="deleteCategory(cat)">删除</action-button>
         </view>
       </view>
     </view>
     <view class="add-btn-bar">
-      <ActionButton type="primary" @tap="addCategory">新增分类</ActionButton>
+      <action-button type="primary" @tap="addCategory">新增分类</action-button>
     </view>
 
     <!-- 分类编辑弹窗 -->
@@ -65,16 +65,16 @@
       </view>
     </view>
     <!-- 删除确认弹窗 -->
-    <ConfirmModal
+    <confirm-modal
       v-if="showDeleteModal"
       :visible="showDeleteModal"
       title="确认删除"
       :content="`确定要删除分类“${deleteTarget?.name}”吗？`"
       @cancel="closeDeleteModal"
       @confirm="confirmDeleteCategory"
-      confirmText="删除"
-      cancelText="取消"
-      confirmType="warn"
+      confirm-text="删除"
+      cancel-text="取消"
+      confirm-type="warn"
     />
   </view>
 </template>

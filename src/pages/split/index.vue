@@ -31,7 +31,7 @@
 
     <!-- 分摊列表 -->
     <view class="split-list">
-      <EmptyState v-if="filteredSplits.length === 0" desc="暂无分摊记录，创建记录时可以选择分摊给家庭成员" icon="💰" />
+      <empty-state v-if="filteredSplits.length === 0" desc="暂无分摊记录，创建记录时可以选择分摊给家庭成员" icon="💰" />
 
       <view v-else>
         <view 
@@ -75,24 +75,24 @@
           </view>
 
           <view v-if="split.status === 'pending' && hasUserParticipant(split)" class="split-actions">
-            <ActionButton 
+            <action-button 
               class="action-btn confirm" 
               @tap.stop="confirmSplit(split.id)"
               :disabled="isProcessing"
-            >确认</ActionButton>
-            <ActionButton 
+            >确认</action-button>
+            <action-button 
               class="action-btn decline" 
               @tap.stop="declineSplit(split.id)"
               :disabled="isProcessing"
               type="warn"
-            >拒绝</ActionButton>
+            >拒绝</action-button>
           </view>
         </view>
       </view>
     </view>
 
     <!-- 创建分摊按钮 -->
-    <ActionButton class="create-btn" @tap="goToCreateSplit" icon="+" aria-label="创建分摊" />
+    <action-button class="create-btn" @tap="goToCreateSplit" icon="+" aria-label="创建分摊" />
   </view>
 </template>
 

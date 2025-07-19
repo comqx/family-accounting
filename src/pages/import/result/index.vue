@@ -85,15 +85,15 @@
 
     <!-- 操作按钮 -->
     <view class="action-buttons">
-      <ActionButton class="action-btn secondary" @tap="goBack">返回重新识别</ActionButton>
-      <ActionButton
+      <action-button class="action-btn secondary" @tap="goBack">返回重新识别</action-button>
+      <action-button
         class="action-btn primary"
         @tap="confirmImport"
         :disabled="selectedRecords.length === 0"
         :loading="isImporting"
       >
         {{ isImporting ? '导入中...' : `导入选中记录(${selectedRecords.length})` }}
-      </ActionButton>
+      </action-button>
     </view>
 
     <!-- 编辑记录弹窗 -->
@@ -151,8 +151,8 @@
         </view>
 
         <view class="modal-footer">
-          <ActionButton class="modal-btn cancel" @tap="closeEditModal">取消</ActionButton>
-          <ActionButton class="modal-btn confirm" @tap="saveEdit">保存</ActionButton>
+          <action-button class="modal-btn cancel" @tap="closeEditModal">取消</action-button>
+          <action-button class="modal-btn confirm" @tap="saveEdit">保存</action-button>
         </view>
       </view>
     </view>
