@@ -47,7 +47,7 @@
 
     <!-- 记录列表 -->
     <view class="records-section">
-      <Skeleton v-if="loadingMore && flatRecords.length === 0" :rows="6" />
+      <Skeleton v-if="loading" :rows="6" />
       <EmptyState v-else-if="flatRecords.length === 0" desc="暂无记录，点击下方“+”按钮开始记账" icon="📝" />
       <virtual-list
         v-else
@@ -153,6 +153,7 @@ const categoryFilter = ref('')
 const showTypeModal = ref(false)
 const showCategoryModal = ref(false)
 const records = ref([])
+const loading = ref(true)
 
 // 日期选择器范围
 const maxDate = new Date().toISOString().split('T')[0]
@@ -250,6 +251,19 @@ const flatRecords = computed(() => {
 
 // 虚拟列表 itemSize 估算（rpx 转 px 约等于 1:1，实际可微调）
 const ITEM_SIZE = 120
+
+// 方法定义（需要在renderItem之前定义）
+const goToRecordDetail = (recordId) => {
+  Taro.navigateTo({
+    url: `/pages/record/detail/index?id=${recordId}`
+  })
+}
+
+const goToAddRecord = () => {
+  Taro.switchTab({
+    url: '/pages/index/index'
+  })
+}
 
 // 虚拟列表渲染函数，兼容小程序，避免直接用 JSX
 const renderItem = ({ item, index, style }) => {
@@ -349,21 +363,10 @@ const selectCategoryFilter = (value) => {
   loadData()
 }
 
-const goToRecordDetail = (recordId) => {
-  Taro.navigateTo({
-    url: `/pages/record/detail/index?id=${recordId}`
-  })
-}
-
-const goToAddRecord = () => {
-  Taro.switchTab({
-    url: '/pages/index/index'
-  })
-}
-
 // 修改 loadData，首次加载时重置分页
 const loadData = async () => {
   try {
+    loading.value = true
     if (!familyStore.hasFamily) await familyStore.getFamilyInfo()
     const familyIdInit = familyStore.familyId
     if (!familyIdInit) return
@@ -397,6 +400,8 @@ const loadData = async () => {
     }
   } catch (error) {
     console.error('账本页加载数据失败:', error)
+  } finally {
+    loading.value = false
   }
 }
 
