@@ -1,5 +1,9 @@
 <template>
   <view class="record-page" role="main" aria-label="家账通首页">
+    <!-- 语言测试显示 -->
+    <view class="language-test" style="padding: 20rpx; background: #f0f0f0; text-align: center; font-size: 24rpx;">
+      <text>当前语言: {{ $t('index.title') }} ({{ currentLanguage }})</text>
+    </view>
     <!-- 连接状态指示器 -->
     <view v-if="!isConnected" class="connection-status" aria-live="polite" role="alert">
       <text class="status-text">⚠️ 实时同步已断开</text>
@@ -223,6 +227,7 @@ import { useRecordForm } from '../../hooks/useRecordForm'
 import { throttle } from '../../utils/performance/debounce'
 import VirtualList from '../../components/common/VirtualList.vue'
 import { h } from 'vue'
+import { getLocale } from '../../i18n'
 
 const userStore = useUserStore()
 const familyStore = useFamilyStore()
@@ -251,6 +256,9 @@ const {
 const throttledSwitchType = throttle(switchType, 300)
 const throttledSelectCategory = throttle(selectCategory, 300)
 const throttledOnDateChange = throttle(onDateChange, 300)
+
+// 当前语言
+const currentLanguage = computed(() => getLocale())
 
 // 虚拟列表渲染函数
 const renderRecordItem = ({ item, style }) => {

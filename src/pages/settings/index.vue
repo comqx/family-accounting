@@ -253,6 +253,7 @@
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore } from '../../stores'
+import { setLocale } from '../../i18n'
 
 // Store
 const userStore = useUserStore()
@@ -274,8 +275,8 @@ const privacy = ref({
   requirePasswordForReports: false
 })
 
-const currentLanguage = ref('zh-CN')
-const currentCurrency = ref('CNY')
+const currentLanguage = ref(appStore.settings.language || 'zh-CN')
+const currentCurrency = ref(appStore.settings.currency || 'CNY')
 
 // 选项数据
 const languageOptions = [
@@ -337,7 +338,8 @@ const closeLanguageModal = () => {
 
 const selectLanguage = (language) => {
   currentLanguage.value = language
-      appStore.setLanguage(language)
+  appStore.setLanguage(language)
+  setLocale(language) // 实际切换i18n语言
   closeLanguageModal()
   appStore.showToast('语言设置已保存', 'success')
 }
