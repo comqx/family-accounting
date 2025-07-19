@@ -401,18 +401,9 @@ const loadTrendData = () => {
 }
 
 const exportReport = async () => {
-  try {
-    appStore.showLoading('生成报表中...')
-    
-    // 模拟导出过程
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    appStore.hideLoading()
-    appStore.showToast('报表已生成', 'success')
-  } catch (error) {
-    appStore.hideLoading()
-    appStore.showToast('导出失败', 'none')
-  }
+  Taro.navigateTo({
+    url: '/pages/export/index'
+  })
 }
 
 // 饼图 option

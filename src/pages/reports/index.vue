@@ -77,7 +77,18 @@
       </view>
 
       <view class="category-stats">
+        <VirtualList
+          v-if="categoryStats.length > 10"
+          :height="400"
+          :item-count="categoryStats.length"
+          :item-size="100"
+          :item-data="categoryStats"
+          :render="renderCategoryStat"
+          :loading="loadingData"
+          :has-more="false"
+        />
         <view
+          v-else
           v-for="stat in categoryStats"
           :key="stat.categoryId"
           class="stat-item"
@@ -172,11 +183,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore, useAppStore, useFamilyStore } from '../../stores'
 import { formatAmount } from '../../utils/format'
 import request from '../../utils/request'
+import VirtualList from '../../components/common/VirtualList.vue'
 
 // Store
 const userStore = useUserStore()
@@ -217,6 +229,38 @@ const currentTimeText = computed(() => {
   const option = timeTabs.find(tab => tab.value === selectedPeriod.value)
   return option?.label || '本月'
 })
+
+// 虚拟列表渲染函数
+const renderCategoryStat = ({ item, style }) => {
+  return h('view', {
+    class: 'stat-item',
+    style
+  }, [
+    h('view', { class: 'stat-info' }, [
+      h('view', {
+        class: 'stat-icon',
+        style: { backgroundColor: item.color }
+      }, item.icon),
+      h('view', { class: 'stat-details' }, [
+        h('text', { class: 'stat-name' }, item.name),
+        h('text', { class: 'stat-count' }, `${item.count}笔`)
+      ])
+    ]),
+    h('view', { class: 'stat-amount' }, [
+      h('text', { class: 'amount-value' }, `¥${formatAmount(item.amount)}`),
+      h('text', { class: 'amount-percent' }, `${item.percentage}%`)
+    ]),
+    h('view', { class: 'stat-bar' }, [
+      h('view', {
+        class: 'bar-fill',
+        style: {
+          width: item.percentage + '%',
+          backgroundColor: item.color
+        }
+      })
+    ])
+  ])
+}
 
 // 方法
 const selectPeriod = (period) => {
@@ -374,7 +418,9 @@ const loadReportData = async () => {
 }
 
 const exportReport = () => {
-  appStore.showToast('功能开发中', 'none')
+  Taro.navigateTo({
+    url: '/pages/export/index'
+  })
 }
 
 const shareReport = () => {
@@ -521,8 +567,8 @@ Taro.useShareAppMessage(() => {
     justify-content: space-between;
     padding: 40rpx 20rpx;
     margin: 20rpx 30rpx;
-    border-radius: $card-radius;
-    box-shadow: $card-shadow;
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 
     .overview-item {
       flex: 1;
@@ -591,8 +637,8 @@ Taro.useShareAppMessage(() => {
   .trend-section {
     margin: 20rpx 30rpx;
     background: #ffffff;
-    border-radius: $card-radius;
-    box-shadow: $card-shadow;
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
     padding: 20rpx 0 30rpx;
 
     .section-header {

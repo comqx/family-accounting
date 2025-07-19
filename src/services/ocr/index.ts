@@ -13,40 +13,64 @@ import type { ParsedTransaction } from '@/types/business';
  */
 class OCRService {
   /**
-   * 识别图片中的文字（多重兜底）
+   * 识别图片中的文字（多重兜底 + 重试机制）
    * @param imagePath 图片本地路径
    * @returns Promise<OCRResult> 识别结果对象
    */
   async recognizeText(imagePath) {
-    try {
-      // 方案1: 使用后端OCR服务
-      const result = await this.callBackendOCR(imagePath);
-      if (result) {
-        return result;
+    const maxRetries = 3;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`OCR 识别尝试 ${attempt}/${maxRetries}`);
+
+        // 方案1: 使用后端OCR服务（优先）
+        const result = await this.callBackendOCR(imagePath);
+        if (result && (result as any).confidence > 0.6) {
+          console.log('后端OCR识别成功，置信度:', (result as any).confidence);
+          return result;
+        }
+
+        // 方案2: 使用微信原生OCR能力
+        const nativeResult = await this.tryNativeOCR(imagePath);
+        if (nativeResult && (nativeResult as any).confidence > 0.5) {
+          console.log('微信原生OCR识别成功，置信度:', (nativeResult as any).confidence);
+          return nativeResult;
+        }
+
+        // 方案3: 尝试图片预处理后重新识别
+        if (attempt === 1) {
+          const preprocessedResult = await this.tryPreprocessedOCR(imagePath);
+          if (preprocessedResult && (preprocessedResult as any).confidence > 0.4) {
+            console.log('预处理OCR识别成功，置信度:', (preprocessedResult as any).confidence);
+            return preprocessedResult;
+          }
+        }
+
+        // 如果所有方案都失败，等待后重试
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      } catch (error) {
+        console.error(`OCR 识别尝试 ${attempt} 失败:`, error);
+        lastError = error;
+        
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
       }
-      // 方案2: 使用微信原生OCR能力（如果可用）
-      const nativeResult = await this.tryNativeOCR(imagePath);
-      if (nativeResult) {
-        return nativeResult;
-      }
-      // 方案3: 降级到空数据
-      console.warn('OCR服务不可用，返回空数据');
-      return {
-        text: '',
-        words: [],
-        regions: [],
-        confidence: 0
-      };
-    } catch (error) {
-      console.error('OCR recognition error:', error);
-      // 降级到空数据
-      return {
-        text: '',
-        words: [],
-        regions: [],
-        confidence: 0
-      };
     }
+
+    // 所有尝试都失败，返回降级结果
+    console.warn('所有OCR服务都不可用，返回降级数据');
+    return {
+      text: '',
+      words: [],
+      regions: [],
+      confidence: 0,
+      error: (lastError as any)?.message || 'OCR服务不可用'
+    };
   }
 
   /**
@@ -84,6 +108,23 @@ class OCRService {
       return null;
     } catch (error) {
       console.error('Native OCR error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 尝试图片预处理后重新识别
+   * @param imagePath 图片本地路径
+   * @returns Promise<OCRResult|null>
+   */
+  async tryPreprocessedOCR(imagePath) {
+    try {
+      // 这里可以实现图片预处理逻辑
+      // 比如调整亮度、对比度、去噪等
+      // 暂时直接返回 null，后续可以扩展
+      return null;
+    } catch (error) {
+      console.error('Preprocessed OCR error:', error);
       return null;
     }
   }

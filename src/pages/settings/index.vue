@@ -381,18 +381,9 @@ const saveSettings = () => {
 }
 
 const exportData = async () => {
-  try {
-    appStore.showLoading('导出中...')
-
-    // 模拟导出过程
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    appStore.hideLoading()
-    appStore.showToast('导出成功', 'success')
-  } catch (error) {
-    appStore.hideLoading()
-    appStore.showToast('导出失败', 'none')
-  }
+  Taro.navigateTo({
+    url: '/pages/export/index'
+  })
 }
 
 const syncData = async () => {

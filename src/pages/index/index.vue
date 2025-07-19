@@ -161,7 +161,19 @@
       </view>
 
       <view v-else class="record-list" role="list" aria-label="最近记录列表">
+        <VirtualList
+          v-if="recentRecords.length > 10"
+          :height="400"
+          :item-count="recentRecords.length"
+          :item-size="120"
+          :item-data="recentRecords"
+          :render="renderRecordItem"
+          :loading="loadingData"
+          :has-more="false"
+          @scroll-to-lower="loadMoreRecords"
+        />
         <view
+          v-else
           v-for="record in recentRecords"
           :key="record.id"
           class="record-item"
@@ -209,6 +221,8 @@ import request from '../../utils/request'
 
 import { useRecordForm } from '../../hooks/useRecordForm'
 import { throttle } from '../../utils/performance/debounce'
+import VirtualList from '../../components/common/VirtualList.vue'
+import { h } from 'vue'
 
 const userStore = useUserStore()
 const familyStore = useFamilyStore()
@@ -237,6 +251,41 @@ const {
 const throttledSwitchType = throttle(switchType, 300)
 const throttledSelectCategory = throttle(selectCategory, 300)
 const throttledOnDateChange = throttle(onDateChange, 300)
+
+// 虚拟列表渲染函数
+const renderRecordItem = ({ item, style }) => {
+  return h('view', {
+    class: 'record-item',
+    style,
+    onClick: () => goToRecordDetail(item.id),
+    role: 'listitem',
+    tabIndex: 0,
+    'aria-label': `${item.categoryName} ${item.type === 'expense' ? '支出' : '收入'} ${formatAmount(item.amount)}`
+  }, [
+    h('view', {
+      class: 'record-icon',
+      style: { backgroundColor: item.categoryColor },
+      'aria-hidden': 'true'
+    }, item.categoryIcon),
+    h('view', { class: 'record-info' }, [
+      h('text', { class: 'record-category' }, item.categoryName),
+      h('text', { class: 'record-desc' }, item.description || '无备注')
+    ]),
+    h('view', { class: 'record-amount' }, [
+      h('text', {
+        class: 'amount-text',
+        class: item.type
+      }, `${item.type === 'expense' ? '-' : '+'}${formatAmount(item.amount, { showSymbol: false })}`),
+      h('text', { class: 'record-time' }, formatRelativeTime(item.date))
+    ])
+  ])
+}
+
+// 加载更多记录
+const loadMoreRecords = async () => {
+  // 这里可以加载更多记录，目前首页只显示最近记录，所以暂时不需要
+  console.log('Load more records triggered')
+}
 
 const goToAddCategory = () => {
   Taro.navigateTo({

@@ -261,8 +261,8 @@ Taro.useShareAppMessage(() => {
   .family-card {
     background: linear-gradient(135deg, #1296db 0%, #56ccf2 100%);
     margin: 24rpx 30rpx;
-    border-radius: $card-radius;
-    box-shadow: $card-shadow;
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
     padding: 40rpx 30rpx;
     color: #ffffff;
 
@@ -366,8 +366,8 @@ Taro.useShareAppMessage(() => {
 
     .members-list {
       background: #ffffff;
-      border-radius: $card-radius;
-      box-shadow: $card-shadow;
+      border-radius: 16rpx;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
       overflow: hidden;
 
       .member-item {
@@ -443,8 +443,8 @@ Taro.useShareAppMessage(() => {
   .menu-section {
     background: #ffffff;
     margin: 24rpx 30rpx 120rpx;
-    border-radius: $card-radius;
-    box-shadow: $card-shadow;
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
     overflow: hidden;
 
     .menu-item {

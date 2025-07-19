@@ -19,7 +19,8 @@ export default defineAppConfig({
     'pages/family/budget/index',   // 新增预算管理页面
     'pages/import/index',
     'pages/import/result/index',
-    'pages/settings/index'
+    'pages/settings/index',
+    'pages/export/index'
   ],
   window: {
     backgroundTextStyle: 'light',

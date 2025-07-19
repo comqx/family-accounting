@@ -22,16 +22,56 @@
     <view class="members-list">
       <view class="list-header">
         <text class="header-title">成员列表</text>
-        <text v-if="familyStore.isAdmin" class="invite-btn" @tap="showInviteModal">邀请成员</text>
+        <view class="header-actions">
+          <text v-if="familyStore.isAdmin && !isBatchMode" class="batch-btn" @tap="enterBatchMode">批量操作</text>
+          <text v-if="familyStore.isAdmin" class="invite-btn" @tap="showInviteModal">邀请成员</text>
+        </view>
+      </view>
+
+      <!-- 搜索栏 -->
+      <view class="search-bar">
+        <view class="search-input-wrapper">
+          <text class="search-icon">🔍</text>
+          <input 
+            class="search-input" 
+            v-model="searchKeyword" 
+            placeholder="搜索成员姓名"
+            @input="onSearchInput"
+          />
+          <text v-if="searchKeyword" class="clear-btn" @tap="clearSearch">×</text>
+        </view>
+        <view class="filter-btn" @tap="openFilterModal">
+          <text class="filter-icon">⚙️</text>
+        </view>
+      </view>
+
+      <!-- 批量操作工具栏 -->
+      <view v-if="isBatchMode" class="batch-toolbar">
+        <view class="batch-info">
+          <text class="batch-count">已选择 {{ selectedMembers.length }} 个成员</text>
+        </view>
+        <view class="batch-actions">
+          <text class="batch-action" @tap="selectAllMembers">全选</text>
+          <text class="batch-action" @tap="clearSelection">清空</text>
+          <text class="batch-action" @tap="exitBatchMode">取消</text>
+        </view>
       </view>
 
       <view class="member-items">
         <view
-          v-for="member in members"
+          v-for="member in filteredMembers"
           :key="member.id"
           class="member-item"
-          @tap="showMemberActions(member)"
+          :class="{ 'selected': isBatchMode && selectedMembers.includes(member.id) }"
+          @tap="isBatchMode ? toggleMemberSelection(member.id) : showMemberActions(member)"
         >
+          <!-- 批量选择复选框 -->
+          <view v-if="isBatchMode" class="member-checkbox" @tap.stop="toggleMemberSelection(member.id)">
+            <text class="checkbox-icon" :class="{ 'checked': selectedMembers.includes(member.id) }">
+              {{ selectedMembers.includes(member.id) ? '✓' : '' }}
+            </text>
+          </view>
+          
           <view class="member-avatar">
             <text class="avatar-text">{{ member.nickname ? member.nickname.charAt(0) : '用' }}</text>
           </view>
@@ -41,9 +81,21 @@
             <text class="member-join-time">{{ formatDate(member.joinTime) }}</text>
           </view>
           <view class="member-actions">
-            <text v-if="canManageMember(member)" class="action-dot">⋯</text>
+            <text v-if="canManageMember(member) && !isBatchMode" class="action-dot">⋯</text>
           </view>
         </view>
+      </view>
+
+      <!-- 批量操作按钮 -->
+      <view v-if="isBatchMode && selectedMembers.length > 0" class="batch-operations">
+        <button class="batch-operation-btn role-btn" @tap="showBatchRoleSelector">
+          <text class="btn-icon">👑</text>
+          <text class="btn-text">批量修改角色</text>
+        </button>
+        <button class="batch-operation-btn remove-btn" @tap="confirmBatchRemove">
+          <text class="btn-icon">🚫</text>
+          <text class="btn-text">批量移除</text>
+        </button>
       </view>
     </view>
 
@@ -190,11 +242,79 @@ const showRoleModal = ref(false)
 const selectedRole = ref('')
 const showQRCodeModal = ref(false)
 
+// 批量操作相关
+const isBatchMode = ref(false)
+const selectedMembers = ref([])
+const showBatchRoleModal = ref(false)
+const batchSelectedRole = ref('')
+
+// 搜索和筛选相关
+const searchKeyword = ref('')
+const showFilterModal = ref(false)
+const filterOptions = ref({
+  role: '',
+  joinTime: '',
+  sortBy: 'name'
+})
+
 // 关键修正：members直接computed取store，保证为数组
 const members = computed(() => Array.isArray(familyStore.members) ? familyStore.members : [])
 const totalMembers = computed(() => members.value.length)
 const adminCount = computed(() => members.value.filter(m => m.role === 'ADMIN' || m.role === 'owner').length)
 const memberCount = computed(() => totalMembers.value - adminCount.value)
+
+// 筛选后的成员列表
+const filteredMembers = computed(() => {
+  let result = members.value
+
+  // 搜索过滤
+  if (searchKeyword.value) {
+    result = result.filter(member => 
+      member.nickname?.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
+      member.username?.toLowerCase().includes(searchKeyword.value.toLowerCase())
+    )
+  }
+
+  // 角色过滤
+  if (filterOptions.value.role) {
+    result = result.filter(member => member.role === filterOptions.value.role)
+  }
+
+  // 加入时间过滤
+  if (filterOptions.value.joinTime) {
+    const now = new Date()
+    const filterDate = new Date()
+    
+    switch (filterOptions.value.joinTime) {
+      case 'week':
+        filterDate.setDate(now.getDate() - 7)
+        break
+      case 'month':
+        filterDate.setMonth(now.getMonth() - 1)
+        break
+      case 'quarter':
+        filterDate.setMonth(now.getMonth() - 3)
+        break
+    }
+    
+    result = result.filter(member => new Date(member.joinTime) >= filterDate)
+  }
+
+  // 排序
+  switch (filterOptions.value.sortBy) {
+    case 'name':
+      result = result.sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''))
+      break
+    case 'joinTime':
+      result = result.sort((a, b) => new Date(b.joinTime) - new Date(a.joinTime))
+      break
+    case 'role':
+      result = result.sort((a, b) => a.role.localeCompare(b.role))
+      break
+  }
+
+  return result
+})
 
 const availableRoles = [
   { value: 'MEMBER', label: '普通成员', description: '可以记账和查看数据', icon: '👤' },
@@ -296,6 +416,148 @@ const closeQRCodeModal = () => {
   showQRCodeModal.value = false
 }
 
+// 批量操作方法
+const enterBatchMode = () => {
+  isBatchMode.value = true
+  selectedMembers.value = []
+}
+
+const exitBatchMode = () => {
+  isBatchMode.value = false
+  selectedMembers.value = []
+}
+
+const toggleMemberSelection = (memberId) => {
+  const index = selectedMembers.value.indexOf(memberId)
+  if (index > -1) {
+    selectedMembers.value.splice(index, 1)
+  } else {
+    selectedMembers.value.push(memberId)
+  }
+}
+
+const selectAllMembers = () => {
+  selectedMembers.value = members.value
+    .filter(member => canManageMember(member))
+    .map(member => member.id)
+}
+
+const clearSelection = () => {
+  selectedMembers.value = []
+}
+
+const showBatchRoleSelector = () => {
+  if (selectedMembers.value.length === 0) {
+    appStore.showToast('请先选择成员', 'none')
+    return
+  }
+  batchSelectedRole.value = ''
+  showBatchRoleModal.value = true
+}
+
+const confirmBatchRemove = async () => {
+  if (selectedMembers.value.length === 0) {
+    appStore.showToast('请先选择成员', 'none')
+    return
+  }
+
+  const confirmed = await appStore.showModal({
+    title: '确认批量移除',
+    content: `确定要移除选中的 ${selectedMembers.value.length} 个成员吗？此操作不可撤销。`
+  })
+
+  if (confirmed) {
+    try {
+      appStore.showLoading('正在移除成员...')
+      
+      // 批量移除成员
+      const promises = selectedMembers.value.map(memberId => 
+        familyStore.removeMember(memberId)
+      )
+      
+      await Promise.all(promises)
+      
+      appStore.hideLoading()
+      appStore.showToast('批量移除成功', 'success')
+      
+      // 退出批量模式
+      exitBatchMode()
+      
+      // 重新加载成员列表
+      await familyStore.getFamilyMembers()
+    } catch (error) {
+      console.error('批量移除成员失败:', error)
+      appStore.hideLoading()
+      appStore.showToast('批量移除失败', 'none')
+    }
+  }
+}
+
+const confirmBatchChangeRole = async () => {
+  if (!batchSelectedRole.value) {
+    appStore.showToast('请选择角色', 'none')
+    return
+  }
+
+  try {
+    appStore.showLoading('正在修改角色...')
+    
+    // 批量修改角色
+    const promises = selectedMembers.value.map(memberId => 
+      familyStore.changeMemberRole(memberId, batchSelectedRole.value)
+    )
+    
+    await Promise.all(promises)
+    
+    appStore.hideLoading()
+    appStore.showToast('批量修改角色成功', 'success')
+    
+    // 关闭弹窗并退出批量模式
+    showBatchRoleModal.value = false
+    exitBatchMode()
+    
+    // 重新加载成员列表
+    await familyStore.getFamilyMembers()
+  } catch (error) {
+    console.error('批量修改角色失败:', error)
+    appStore.hideLoading()
+    appStore.showToast('批量修改角色失败', 'none')
+  }
+}
+
+// 搜索和筛选方法
+const onSearchInput = () => {
+  // 搜索输入时的处理逻辑
+  console.log('搜索关键词:', searchKeyword.value)
+}
+
+const clearSearch = () => {
+  searchKeyword.value = ''
+}
+
+const openFilterModal = () => {
+  showFilterModal.value = true
+}
+
+const closeFilterModal = () => {
+  showFilterModal.value = false
+}
+
+const applyFilter = () => {
+  closeFilterModal()
+  appStore.showToast('筛选已应用', 'success')
+}
+
+const resetFilter = () => {
+  filterOptions.value = {
+    role: '',
+    joinTime: '',
+    sortBy: 'name'
+  }
+  closeFilterModal()
+  appStore.showToast('筛选已重置', 'success')
+}
+
 const showMemberActions = (member) => {
   if (!canManageMember(member)) return
   selectedMember.value = member
@@ -381,8 +643,8 @@ Taro.useLoad(() => {
   .members-stats {
     background: white;
     margin: 24rpx 30rpx;
-    border-radius: $card-radius;
-    box-shadow: $card-shadow;
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
     padding: 40rpx 30rpx;
     display: flex;
     align-items: center;
@@ -430,19 +692,108 @@ Taro.useLoad(() => {
         color: #333;
       }
 
-      .invite-btn {
-        font-size: 28rpx;
-        color: #1296db;
-        padding: 10rpx 20rpx;
-        background: rgba(18, 150, 219, 0.1);
-        border-radius: 20rpx;
+      .header-actions {
+        display: flex;
+        gap: 20rpx;
+
+        .batch-btn, .invite-btn {
+          font-size: 28rpx;
+          color: #1296db;
+          padding: 10rpx 20rpx;
+          background: rgba(18, 150, 219, 0.1);
+          border-radius: 20rpx;
+        }
+      }
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 20rpx;
+      margin-bottom: 20rpx;
+
+      .search-input-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: 12rpx;
+        padding: 0 20rpx;
+        box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+
+        .search-icon {
+          font-size: 28rpx;
+          color: #999;
+          margin-right: 15rpx;
+        }
+
+        .search-input {
+          flex: 1;
+          height: 80rpx;
+          font-size: 28rpx;
+          color: #333;
+          background: transparent;
+          border: none;
+        }
+
+        .clear-btn {
+          font-size: 32rpx;
+          color: #999;
+          padding: 10rpx;
+        }
+      }
+
+      .filter-btn {
+        width: 80rpx;
+        height: 80rpx;
+        background: white;
+        border-radius: 12rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+
+        .filter-icon {
+          font-size: 32rpx;
+        }
+      }
+    }
+
+    .batch-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20rpx;
+      background: rgba(18, 150, 219, 0.1);
+      border-radius: 12rpx;
+      margin-bottom: 20rpx;
+
+      .batch-info {
+        .batch-count {
+          font-size: 28rpx;
+          color: #1296db;
+          font-weight: bold;
+        }
+      }
+
+      .batch-actions {
+        display: flex;
+        gap: 20rpx;
+
+        .batch-action {
+          font-size: 26rpx;
+          color: #1296db;
+          padding: 8rpx 16rpx;
+          background: rgba(18, 150, 219, 0.2);
+          border-radius: 8rpx;
+        }
       }
     }
 
     .member-items {
       background: white;
-      border-radius: $card-radius;
-      box-shadow: $card-shadow;
+      border-radius: 16rpx;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
       overflow: hidden;
 
       .member-item {
@@ -450,9 +801,42 @@ Taro.useLoad(() => {
         align-items: center;
         padding: 30rpx;
         border-bottom: 1rpx solid #f0f0f0;
+        transition: all 0.3s ease;
 
         &:last-child {
           border-bottom: none;
+        }
+
+        &.selected {
+          background: rgba(18, 150, 219, 0.1);
+          border-left: 4rpx solid #1296db;
+        }
+
+        .member-checkbox {
+          width: 40rpx;
+          height: 40rpx;
+          border: 2rpx solid #ddd;
+          border-radius: 8rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 20rpx;
+          background: white;
+
+          .checkbox-icon {
+            font-size: 24rpx;
+            color: white;
+            font-weight: bold;
+
+            &.checked {
+              color: #1296db;
+            }
+          }
+
+          &:has(.checked) {
+            background: #1296db;
+            border-color: #1296db;
+          }
         }
 
         .member-avatar {
@@ -507,6 +891,51 @@ Taro.useLoad(() => {
             font-size: 40rpx;
             color: #999;
             padding: 10rpx;
+          }
+        }
+      }
+
+      .batch-operations {
+        display: flex;
+        gap: 20rpx;
+        padding: 30rpx;
+        background: white;
+        border-radius: 16rpx;
+        margin-top: 20rpx;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+
+        .batch-operation-btn {
+          flex: 1;
+          background: #f8f9fa;
+          border: none;
+          border-radius: 12rpx;
+          padding: 20rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &::after {
+            border: none;
+          }
+
+          .btn-icon {
+            font-size: 32rpx;
+            margin-right: 10rpx;
+          }
+
+          .btn-text {
+            font-size: 28rpx;
+            color: #333;
+          }
+
+          &.role-btn {
+            background: rgba(18, 150, 219, 0.1);
+            .btn-icon { color: #1296db; }
+          }
+
+          &.remove-btn {
+            background: rgba(255, 71, 87, 0.1);
+            .btn-icon { color: #ff4757; }
           }
         }
       }

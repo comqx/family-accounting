@@ -344,12 +344,9 @@ const showBudgetAlerts = () => {
 }
 
 const showDataExport = async () => {
-  try {
-    await familyStore.exportData()
-    appStore.showToast('导出成功', 'success')
-  } catch (e) {
-    appStore.showToast('导出失败', 'none')
-  }
+  Taro.navigateTo({
+    url: '/pages/export/index'
+  })
 }
 
 const showDataImport = async (e) => {
@@ -449,8 +446,8 @@ Taro.useLoad(() => {
 
     .settings-list {
       background: white;
-      border-radius: $card-radius;
-      box-shadow: $card-shadow;
+      border-radius: 16rpx;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
       overflow: hidden;
 
       .setting-item {

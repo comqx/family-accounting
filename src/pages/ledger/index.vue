@@ -452,8 +452,8 @@ Taro.useShareAppMessage(() => {
   // 顶部统计
   .stats-header {
     background: linear-gradient(135deg, #f7b267 0%, #f4845f 100%);
-    border-radius: $card-radius;
-    box-shadow: $card-shadow;
+    border-radius: 16rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
     display: flex;
     padding: 40rpx 30rpx;
     margin: 24rpx 30rpx;
@@ -499,12 +499,12 @@ Taro.useShareAppMessage(() => {
       padding: 18rpx 20rpx;
       background: #ffffff;
       border-radius: 40rpx;
-      box-shadow: $card-shadow;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
       margin: 0 10rpx;
 
       .filter-text {
         font-size: 28rpx;
-        color: $text-primary;
+        color: #333333;
       }
 
       .filter-arrow {
@@ -575,8 +575,8 @@ Taro.useShareAppMessage(() => {
 
         .group-records {
           background: #ffffff;
-          border-radius: $card-radius;
-          box-shadow: $card-shadow;
+          border-radius: 16rpx;
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
           overflow: hidden;
 
           .record-item {
@@ -646,7 +646,7 @@ Taro.useShareAppMessage(() => {
     height: 100rpx;
     border-radius: 50%;
     background: linear-gradient(135deg, #f4845f 0%, #f7b267 100%);
-    box-shadow: $card-shadow;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;

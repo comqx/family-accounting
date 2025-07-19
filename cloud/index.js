@@ -2,9 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
-const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
+
+// 中间件
+const { 
+  accessLogger, 
+  businessLogger, 
+  securityLogger, 
+  performanceLogger,
+  logger 
+} = require('./middleware/logger');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
 // 数据库相关
 const { testConnection, initPool } = require('./config/database');
@@ -18,13 +27,18 @@ const PORT = process.env.PORT || 80;
 // 中间件配置
 app.use(helmet());
 app.use(compression());
-app.use(morgan('combined'));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://servicewechat.com'] 
     : true,
   credentials: true
 }));
+
+// 日志中间件
+app.use(accessLogger);
+app.use(businessLogger);
+app.use(securityLogger);
+app.use(performanceLogger);
 
 // 限流配置
 const limiter = rateLimit({
@@ -60,23 +74,10 @@ app.use('/api/upload', require('./routes/upload'));
 app.use('/api/split', require('./routes/split'));
 
 // 404处理
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: '接口不存在',
-    path: req.originalUrl
-  });
-});
+app.use('*', notFoundHandler);
 
 // 错误处理中间件
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? '服务器内部错误' 
-      : err.message,
-    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
-  });
-});
+app.use(errorHandler);
 
 // 启动服务器
 const startServer = async () => {
